@@ -1,16 +1,48 @@
 {
   "dependencies": {
-    "express": "^4.18.2"
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "express": "^4.18.2",
+    "nodemon": "^3.0.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "web-vitals": "^2.1.4"
   },
-  "name": "bs3206-advanced-software-development",
+  "name": "client",
   "description": "��#\u0000 \u0000B\u0000S\u00003\u00002\u00000\u00006\u0000-\u0000A\u0000d\u0000v\u0000a\u0000n\u0000c\u0000e\u0000d\u0000-\u0000S\u0000o\u0000f\u0000t\u0000w\u0000a\u0000r\u0000e\u0000-\u0000D\u0000e\u0000v\u0000e\u0000l\u0000o\u0000p\u0000m\u0000e\u0000n\u0000t\u0000\r\u0000 \u0000",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "main": "index.js",
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "devDependencies": {
+    "concurrently": "^8.2.1"
   },
+  "scripts": {
+    "start:frontend": "react-scripts start",
+    "start:backend": "nodemon server/index.js",
+    "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\""
+  },
+  "proxy": "http://localhost:3001",
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "private": true,
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
 }
