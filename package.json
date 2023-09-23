@@ -15,7 +15,8 @@
   "version": "0.1.0",
   "main": "index.js",
   "devDependencies": {
-    "concurrently": "^8.2.1"
+    "concurrently": "^8.2.1",
+    "mongodb": "^6.1.0"
   },
   "scripts": {
     "start:frontend": "react-scripts start",
