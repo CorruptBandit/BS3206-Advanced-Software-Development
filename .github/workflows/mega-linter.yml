@@ -24,8 +24,15 @@ env:
   APPLY_FIXES: all
 
   # ENABLE_LINTERS: # If you use ENABLE_LINTERS variable, all other linters will be disabled by default
-  ENABLE_LINTERS: JAVASCRIPT_ES, JAVASCRIPT_STANDARD, JAVASCRIPT_PRETTIER, JSX_ESLINT, 
-  MARKDOWN_MARKDOWNLINT, YAML_YAMLLINT, YAML_PRETTIER, DOCKERFILE_HADOLINT
+  ENABLE_LINTERS: |
+    JAVASCRIPT_ES,
+    JAVASCRIPT_STANDARD,
+    JAVASCRIPT_PRETTIER,
+    JSX_ESLINT,
+    MARKDOWN_MARKDOWNLINT,
+    YAML_YAMLLINT,
+    YAML_PRETTIER,
+    DOCKERFILE_HADOLINT
 
   # Decide which event triggers application of fixes in a commit or a PR
   # (pull_request, push, all)
