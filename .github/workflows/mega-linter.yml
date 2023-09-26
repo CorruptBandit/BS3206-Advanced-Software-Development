@@ -17,6 +17,7 @@ on:
 
 # Comment env block if you do not want to apply fixes
 env:
+  DOCKER_DEFAULT_PLATFORM: linux/x86_64/v8
   # Apply linter fixes configuration
   #
   # When active, APPLY_FIXES must also be defined as environment variable
@@ -69,8 +70,6 @@ jobs:
         # More info at https://megalinter.io/flavors/
         uses: oxsecurity/megalinter@v7
         id: ml
-        with:
-          args: "--pull=always"
 
         # All available variables are described in documentation
         # https://megalinter.io/configuration/
