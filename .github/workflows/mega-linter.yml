@@ -17,7 +17,6 @@ on:
 
 # Comment env block if you do not want to apply fixes
 env:
-  DOCKER_DEFAULT_PLATFORM: linux/x86_64
   # Apply linter fixes configuration
   #
   # When active, APPLY_FIXES must also be defined as environment variable
@@ -42,7 +41,7 @@ concurrency:
 jobs:
   megalinter:
     name: MegaLinter
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     # Give the default GITHUB_TOKEN write permission to commit and push, comment
     # issues & post new PR; remove the ones you do not need
