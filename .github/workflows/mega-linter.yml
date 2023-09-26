@@ -17,7 +17,7 @@ on:
 
 # Comment env block if you do not want to apply fixes
 env:
-  DOCKER_DEFAULT_PLATFORM: linux/arm64
+  DOCKER_DEFAULT_PLATFORM: linux/x86_64
   # Apply linter fixes configuration
   #
   # When active, APPLY_FIXES must also be defined as environment variable
@@ -68,7 +68,7 @@ jobs:
 
         # You can override MegaLinter flavor used to have faster performances
         # More info at https://megalinter.io/flavors/
-        uses: oxsecurity/megalinter@beta
+        uses: oxsecurity/megalinter@v7
         id: ml
 
         # All available variables are described in documentation
