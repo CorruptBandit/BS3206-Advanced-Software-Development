@@ -17,6 +17,7 @@ on:
 
 # Comment env block if you do not want to apply fixes
 env:
+  DOCKER_DEFAULT_PLATFORM: linux/amd64
   # Apply linter fixes configuration
   #
   # When active, APPLY_FIXES must also be defined as environment variable
@@ -24,15 +25,7 @@ env:
   APPLY_FIXES: all
 
   # ENABLE_LINTERS: # If you use ENABLE_LINTERS variable, all other linters will be disabled by default
-  ENABLE_LINTERS: |
-    JAVASCRIPT_ES,
-    JAVASCRIPT_STANDARD,
-    JAVASCRIPT_PRETTIER,
-    JSX_ESLINT,
-    MARKDOWN_MARKDOWNLINT,
-    YAML_YAMLLINT,
-    YAML_PRETTIER,
-    DOCKERFILE_HADOLINT
+  ENABLE_LINTERS: JAVASCRIPT_ES,JAVASCRIPT_STANDARD,JAVASCRIPT_PRETTIER,JSX_ESLINT,MARKDOWN_MARKDOWNLINT,YAML_YAMLLINT,YAML_PRETTIER,DOCKERFILE_HADOLINT
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
@@ -41,7 +34,7 @@ concurrency:
 jobs:
   megalinter:
     name: MegaLinter
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     # Give the default GITHUB_TOKEN write permission to commit and push, comment
     # issues & post new PR; remove the ones you do not need
