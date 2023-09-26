@@ -70,7 +70,7 @@ jobs:
         uses: oxsecurity/megalinter@v7
         id: ml
         with:
-          args: "--platform linux/x86_64/v8"
+          args: "--pull-always --platform linux/x86_64/v8"
 
         # All available variables are described in documentation
         # https://megalinter.io/configuration/
