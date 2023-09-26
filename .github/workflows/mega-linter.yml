@@ -17,6 +17,10 @@ on:
 
 # Comment env block if you do not want to apply fixes
 env:
+  # To get Megalinter working it needs x86, so we use quemu for arm64 host
+  # sudo apt-get install qemu-user-static
+  # sudo update-binfmts --enable qemu-x86_64
+  # then set default platform
   DOCKER_DEFAULT_PLATFORM: linux/amd64
   # Apply linter fixes configuration
   #
