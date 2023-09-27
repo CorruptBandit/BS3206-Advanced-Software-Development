@@ -109,8 +109,6 @@ jobs:
           path: |
             megalinter-reports
             mega-linter.log
-      
-            # Create pull request if applicable (for now works only on PR from same repository, not from forks)
 
       # Create pull request if applicable (for now works only on PR from same repository, not from forks)
       - name: Create Pull Request with applied fixes

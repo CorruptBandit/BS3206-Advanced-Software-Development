@@ -30,8 +30,8 @@
   "private": true,
   "eslintConfig": {
     "extends": [
-      "client",
-      "client/jest"
+      "react-app",
+      "react-app/jest"
     ]
   },
   "browserslist": {
