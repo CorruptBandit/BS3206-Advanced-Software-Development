@@ -10,11 +10,6 @@ on:
   # (not recommended if you don't pay for GH Actions)
   push:
 
-  pull_request:
-    branches:
-      - main
-      - master
-
 # Comment env block if you do not want to apply fixes
 env:
   # To get Megalinter working it needs x86, so we use quemu for arm64 host
