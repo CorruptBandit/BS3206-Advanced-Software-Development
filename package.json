@@ -34,7 +34,7 @@
       "es2021": true
     },
     "extends": [
-        "eslint-config-standard",
+        "standard",
         "plugin:react/recommended"
     ],
     "parserOptions": {
