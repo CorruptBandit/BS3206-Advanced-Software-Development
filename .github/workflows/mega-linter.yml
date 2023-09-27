@@ -50,7 +50,7 @@ jobs:
     steps:
       # Set workdir perms
       - name: Set Permissions
-        run: sudo chown -R $USER:$USER ~/actions-runner/_work/${{ github.repository }}
+        run: sudo chown -R $USER:$USER ~/actions-runner/_work/
 
       # Git Checkout
       - name: Checkout Code
