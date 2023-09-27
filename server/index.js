@@ -8,7 +8,7 @@ const mongoDB = new MongoDBConnector()
 
 app.get('/api/users', async (req, res) => {
   try {
-    result = await mongoDB.queryCollection('users', {})
+    const result = await mongoDB.queryCollection('users', {})
     return res.status(200).json(result)
   } catch (error) {
     console.error('Error:', error)
