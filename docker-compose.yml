@@ -1,0 +1,9 @@
+---
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000" # Map your application's port to host
+      - "3001:3001"
