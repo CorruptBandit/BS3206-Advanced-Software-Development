@@ -7,9 +7,8 @@ WORKDIR /app
 # Copy package.json and package-lock.json to the container
 COPY . /app
 
-# Expose a port
-EXPOSE 3000
-EXPOSE 3001
+# Expose ports
+EXPOSE 3000 3001
 
 # Install application dependencies
 RUN npm install
