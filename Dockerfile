@@ -1,14 +1,11 @@
 # Use an official Node.js runtime as the base image
-FROM node:20
+FROM node:18-slim
 
 # Set the working directory in the container
 WORKDIR /app
 
 # Copy package.json and package-lock.json to the container
 COPY . /app
-
-# Expose ports
-EXPOSE 3000 3001
 
 # Install application dependencies
 RUN npm install
