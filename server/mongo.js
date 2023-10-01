@@ -7,7 +7,7 @@ class MongoDBConnector {
   constructor () {
     this.uri = `mongodb+srv://${env.MONGO_USERNAME}:${env.MONGO_PASSWORD}@bs3206.7ikwc7d.mongodb.net/?retryWrites=true&w=majority`
     this.dbName = 'AdvancedSoftwareDev'
-    this.client = new MongoClient(this.uri, { useUnifiedTopology: true })
+    this.client = new MongoClient(this.uri)
 
     this.connect()
   }
