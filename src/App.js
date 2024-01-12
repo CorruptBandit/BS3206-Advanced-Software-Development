@@ -1,25 +1,25 @@
-import { useEffect, useState } from 'react'
-import './App.css'
+import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+// routes
+import Router from './routes';
+// theme
+import ThemeProvider from './theme';
+// components
+import { StyledChart } from './components/chart';
+import ScrollToTop from './components/scroll-to-top';
 
-function App () {
-  const [users, setUsers] = useState([])
+// ----------------------------------------------------------------------
 
-  useEffect(() => {
-    if (window.location.pathname === '/db') {
-      fetch('/api/users')
-        .then((res) => res.json())
-        .then((data) => setUsers(data))
-    }
-  }, [])
-
+export default function App() {
   return (
-    <div className='App'>
-      <h1>Go to /db for users</h1>
-      {users.map((user) => (
-        <p key={user.id}>{user.name}</p>
-      ))}
-    </div>
-  )
+    <HelmetProvider>
+      <BrowserRouter>
+        <ThemeProvider>
+          <ScrollToTop />
+          <StyledChart />
+          <Router />
+        </ThemeProvider>
+      </BrowserRouter>
+    </HelmetProvider>
+  );
 }
-
-export default App
