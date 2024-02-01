@@ -42,9 +42,9 @@
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
   },
   "scripts": {
-    "start:frontend": "vite",
+    "start:frontend": "cd client && vite",
     "start:backend": "nodemon server/index.js",
-    "build": "tsc && vite build",
+    "build": "cd client && tsc && vite build",
     "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\""
   },
   "proxy": "http://localhost:3001",
