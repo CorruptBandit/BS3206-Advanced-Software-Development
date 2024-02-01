@@ -8,7 +8,6 @@
     "@mui/lab": "^5.0.0-alpha.103",
     "@mui/material": "^5.14.11",
     "@vitejs/plugin-react": "^4.2.1",
-    "@vitejs/plugin-react-swc": "^3.6.0",
     "apexcharts": "^3.37.0",
     "change-case": "^4.1.2",
     "concurrently": "^8.2.1",
@@ -28,13 +27,10 @@
     "react-hook-form": "^7.43.1",
     "react-router-dom": "^6.8.1",
     "simplebar-react": "^3.2.1",
-    "typescript": "^5.3.3",
     "vite": "^5.0.12",
-    "vite-plugin-svgr": "^4.2.0",
-    "vite-tsconfig-paths": "^4.3.1",
     "web-vitals": "^3.1.1"
   },
-  "name": "client",
+  "name": "advanced-software-dev",
   "description": "BS3206 Advanced Software Development",
   "version": "0.1.0",
   "main": "index.js",
@@ -42,9 +38,9 @@
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
   },
   "scripts": {
-    "start:frontend": "cd client && vite",
+    "start:frontend": "cd client && vite --host",
     "start:backend": "nodemon server/index.js",
-    "build": "cd client && tsc && vite build",
+    "build": "cd client && vite build",
     "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\""
   },
   "proxy": "http://localhost:3001",
