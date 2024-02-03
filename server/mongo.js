@@ -31,6 +31,21 @@ class MongoDBConnector {
     }
   }
 
+  async insertDocument(collectionName, document) {
+    if (!this.db) {
+      console.error('MongoDB not connected.');
+      return;
+    }
+
+    try {
+      const result = await this.db.collection(collectionName).insertOne(document);
+      return result;
+    } catch (error) {
+      console.error('Error inserting document:', error);
+      throw error;
+    }
+  }
+
   queryCollection (collectionName, query) {
     const asyncFunction = async (collectionName, query) => {
       try {
