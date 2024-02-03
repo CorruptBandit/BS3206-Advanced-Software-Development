@@ -39,8 +39,11 @@ export default function SignIn() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const email = data.get("email");
+
+    // HASHING ON CLIENT-SIDE AS WELL BECAUSE THIS IS HTTP NOT HTTPS (Not required on the latter)
+    const saltRounds = 10; // You can adjust the number of salt rounds
     const password = data.get("password");
+    const email = data.get("email");
 
     try {
       let response;
@@ -64,7 +67,7 @@ export default function SignIn() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email, password}),
         });
 
         if (response.ok) {

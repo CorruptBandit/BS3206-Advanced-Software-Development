@@ -1,24 +1,23 @@
-const express = require('express')
-const MongoDBConnector = require('./mongo')
-const { Console } = require('console')
+const express = require('express');
+const bcrypt = require('bcrypt'); // Add bcrypt for hashing on the server
+const MongoDBConnector = require('./mongo');
 
-const app = express()
+const app = express();
 
-const PORT = 3001
-const mongoDB = new MongoDBConnector()
-app.use(express.json()); // This line is important to parse JSON bodies
+const PORT = 3001;
+const mongoDB = new MongoDBConnector();
+app.use(express.json());
 
 app.get('/api/users', async (req, res) => {
   try {
-    const result = await mongoDB.queryCollection('users', {})
-    return res.status(200).json(result)
+    const result = await mongoDB.queryCollection('users', {});
+    return res.status(200).json(result);
   } catch (error) {
-    console.error('Error:', error)
-    return res.status(500).json({ error: 'Internal Server Error' })
+    console.error('Error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
-})
+});
 
-// Add this endpoint to your Express app
 app.post('/api/signin', async (req, res) => {
   const { email, password } = req.body;
 
@@ -28,13 +27,14 @@ app.post('/api/signin', async (req, res) => {
 
   try {
     const user = await mongoDB.queryCollection('users', { email });
-    if (!user) {
+    if (user.length == 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Here you should compare the password with the one in the database.
-    // Assuming the password is not encrypted for simplicity. Implement proper encryption in a real scenario.
-    if (user[0].password !== password) {
+    // Compare the hashed password with the one in the database using bcrypt.compare
+    const isPasswordValid = await bcrypt.compare(password, user[0].password);
+
+    if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
@@ -46,7 +46,6 @@ app.post('/api/signin', async (req, res) => {
   }
 });
 
-// Registration endpoint
 app.post('/api/register', async (req, res) => {
   const { email, password } = req.body;
 
@@ -62,10 +61,14 @@ app.post('/api/register', async (req, res) => {
       return res.status(400).json({ error: 'User with this email already exists' });
     }
 
-    // Create a new user (you should hash the password before storing it in a real scenario)
+    // Hash and salt the password before storing it
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Create a new user with the hashed password
     const newUser = {
       email,
-      password, // Remember to hash the password before storing it in production
+      password: hashedPassword, // Store the hashed password
     };
 
     // Save the new user to the database
@@ -79,5 +82,4 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-
-app.listen(PORT, () => console.log(`Listening on port ${PORT}`))
+app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
