@@ -12,6 +12,7 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import MD5 from 'crypto-js/md5';
 
 function Copyright(props) {
   return (
@@ -40,10 +41,9 @@ export default function SignIn() {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
 
-    // HASHING ON CLIENT-SIDE AS WELL BECAUSE THIS IS HTTP NOT HTTPS (Not required on the latter)
-    const saltRounds = 10; // You can adjust the number of salt rounds
-    const password = data.get("password");
     const email = data.get("email");
+    // HASHING ON CLIENT-SIDE AS WELL BECAUSE THIS IS HTTP NOT HTTPS (Not required on the latter)
+    const password = MD5(data.get("password")).toString();
 
     try {
       let response;
