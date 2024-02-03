@@ -8,6 +8,7 @@ const PORT = 3001;
 const mongoDB = new MongoDBConnector();
 app.use(express.json());
 
+// DEBUG ENDPOINT
 app.get('/api/users', async (req, res) => {
   try {
     const result = await mongoDB.queryCollection('users', {});
@@ -20,7 +21,6 @@ app.get('/api/users', async (req, res) => {
 
 app.post('/api/signin', async (req, res) => {
   const { email, password } = req.body;
-
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
   }
