@@ -27,7 +27,7 @@ app.post('/api/signin', async (req, res) => {
 
   try {
     const user = await mongoDB.queryCollection('users', { email });
-    if (user.length == 0) {
+    if (user.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
@@ -57,7 +57,7 @@ app.post('/api/register', async (req, res) => {
     // Check if the user already exists
     const existingUser = await mongoDB.queryCollection('users', { email });
 
-    if (existingUser.length != 0) {
+    if (existingUser.length !== 0) {
       return res.status(400).json({ error: 'User with this email already exists' });
     }
 
