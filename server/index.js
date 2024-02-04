@@ -46,6 +46,15 @@ app.post('/api/signin', async (req, res) => {
   }
 });
 
+app.post('/api/signout', (req, res) => {
+  // This endpoint doesn't actually change anything in the database.
+  // It's a placeholder to potentially perform server-side cleanup actions.
+  // The client will handle the actual "logout" by clearing local storage or cookies.
+  // To-Do JWT TOKENS
+  return res.status(200).json({ message: 'Sign-out requested' });
+});
+
+
 app.post('/api/register', async (req, res) => {
   const { email, password } = req.body;
 

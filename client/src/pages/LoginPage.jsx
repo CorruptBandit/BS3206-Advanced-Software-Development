@@ -12,7 +12,9 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { useAuth } from "../context/AuthContext";
 import MD5 from 'crypto-js/md5';
+import { Outlet, useNavigate } from 'react-router-dom';
 
 function Copyright(props) {
   return (
@@ -35,6 +37,8 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export default function SignIn() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const [isRegistering, setIsRegistering] = useState(false);
 
   const handleSubmit = async (event) => {
@@ -58,7 +62,8 @@ export default function SignIn() {
         });
 
         if (response.ok) {
-          alert("Registration successful");
+          login(); // Update login state
+          navigate('/'); // Redirect to homepage
         }
       } else {
         // Sign In
@@ -71,7 +76,9 @@ export default function SignIn() {
         });
 
         if (response.ok) {
-          alert("Sign-in successful");
+          login(); // Update login state
+          navigate('/'); // Redirect to homepage
+          return;
         }
       }
 

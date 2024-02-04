@@ -1,6 +1,8 @@
 import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom'; // Import BrowserRouter
+import { AuthProvider } from './context/AuthContext'; // Adjust the import path as needed to your AuthContext file
 
-//
+// Import App and other services
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 import reportWebVitals from './reportWebVitals';
@@ -9,12 +11,17 @@ import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
-root.render(<App />);
+// Wrap App component with Router and AuthProvider
+root.render(
+  <BrowserRouter>
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  </BrowserRouter>
+);
 
 // If you want to enable client cache, register instead.
 serviceWorker.unregister();
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+// For performance measurement
 reportWebVitals();

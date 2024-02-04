@@ -7,6 +7,7 @@ import {
 } from '@mui/material';
 // mocks
 import account from '../../../_mock/account';
+import { useAuth } from '../../../context/AuthContext';
 
 const MENU_OPTIONS = [
   { label: 'Home', icon: 'eva:home-fill' },
@@ -17,8 +18,10 @@ const MENU_OPTIONS = [
 export default function AccountPopover() {
   const [open, setOpen] = useState(null);
   // Placeholder for isLoggedIn state. This might be passed down from a parent component or managed globally
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Assuming this state is managed here for simplicity
+  const [setIsLoggedIn] = useState(false); // Assuming this state is managed here for simplicity
+  const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const handleOpen = (event) => {
     setOpen(event.currentTarget);
@@ -32,6 +35,32 @@ export default function AccountPopover() {
     navigate('/login'); // Redirect to /login
   };
 
+
+  const handleLogout = async () => {
+  try {
+    const response = await fetch("/api/signout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // No need to send email and password for logging out
+    });
+
+    if (response.ok) {
+      logout(); // Correctly update logout state
+      // If `handleClose` is meant to close a dialog or similar component
+      handleClose();
+    } else {
+      throw new Error('Logout failed');
+    }
+  } catch (error) {
+    console.error('Logout error:', error);
+    // Optionally handle error state here (e.g., show an error message)
+  }
+};
+
+
+  
   return (
     <>
       {!isLoggedIn && <Button onClick={handleLogin}>Login</Button>}
@@ -97,7 +126,7 @@ export default function AccountPopover() {
 
             <Divider sx={{ borderStyle: 'dashed' }} />
 
-            <MenuItem onClick={handleClose} sx={{ m: 1 }}>
+            <MenuItem onClick={handleLogout} sx={{ m: 1 }}>
               Logout
             </MenuItem>
           </Popover>

@@ -18,13 +18,12 @@ import {
   AppCurrentSubject,
   AppConversionRates,
 } from '../sections/@dashboard/app';
+import { useAuth } from '../context/AuthContext';
 
 export default function DashboardAppPage() {
   const theme = useTheme();
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Simple logged in state for demonstration
-
-  // Example function to simulate login - This would be replaced by your actual auth logic
-  const toggleLogin = () => setIsLoggedIn(!isLoggedIn);
+  const [setIsLoggedIn] = useState(false); // Simple logged in state for demonstration
+  const { isLoggedIn } = useAuth();
 
   // Function to determine the color based on login status
   const getColor = (color) => (isLoggedIn ? color : theme.palette.action.disabled);

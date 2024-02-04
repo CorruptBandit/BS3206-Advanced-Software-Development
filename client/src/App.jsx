@@ -1,25 +1,19 @@
-import { BrowserRouter } from 'react-router-dom';
+// App.jsx
 import { HelmetProvider } from 'react-helmet-async';
-// routes
-import Router from './routes';
-// theme
+import Routes from './routes'; // Renamed for clarity
 import ThemeProvider from './theme';
-// components
-import { StyledChart } from './components/chart';
 import ScrollToTop from './components/scroll-to-top';
-
-// ----------------------------------------------------------------------
+import { StyledChart } from './components/chart';
+// Other imports...
 
 export default function App() {
   return (
     <HelmetProvider>
-      <BrowserRouter>
-        <ThemeProvider>
-          <ScrollToTop />
-          <StyledChart />
-          <Router />
-        </ThemeProvider>
-      </BrowserRouter>
+      <ThemeProvider>
+        <ScrollToTop />
+        <StyledChart />
+        <Routes /> {/* Updated to use the new name */}
+      </ThemeProvider>
     </HelmetProvider>
   );
 }
