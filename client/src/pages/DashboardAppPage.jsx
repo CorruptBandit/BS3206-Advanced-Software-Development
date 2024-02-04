@@ -1,8 +1,9 @@
+import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { faker } from '@faker-js/faker';
 // @mui
 import { useTheme } from '@mui/material/styles';
-import { Grid, Container, Typography } from '@mui/material';
+import { Grid, Container, Typography, Box } from '@mui/material';
 // components
 import Iconify from '../components/iconify';
 // sections
@@ -18,10 +19,15 @@ import {
   AppConversionRates,
 } from '../sections/@dashboard/app';
 
-// ----------------------------------------------------------------------
-
 export default function DashboardAppPage() {
   const theme = useTheme();
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Simple logged in state for demonstration
+
+  // Example function to simulate login - This would be replaced by your actual auth logic
+  const toggleLogin = () => setIsLoggedIn(!isLoggedIn);
+
+  // Function to determine the color based on login status
+  const getColor = (color) => (isLoggedIn ? color : theme.palette.action.disabled);
 
   return (
     <>
@@ -29,19 +35,24 @@ export default function DashboardAppPage() {
         <title> Dashboard | Minimal UI </title>
       </Helmet>
 
-      <Container maxWidth="xl">
+      <Container maxWidth="xl" sx={{ filter: isLoggedIn ? 'none' : 'grayscale(1)' }}>
+      {isLoggedIn && (
         <Typography variant="h4" sx={{ mb: 5 }}>
           Hi, Welcome back
         </Typography>
+      )}
 
         <Grid container spacing={3}>
-          <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Weekly Sales" total={714000} icon={'ant-design:android-filled'} />
-          </Grid>
+          {/* Conditional rendering based on isLoggedIn state */}
+          {isLoggedIn ? (
+            <>
+            <Grid item xs={12} sm={6} md={3}>
+              <AppWidgetSummary title="Weekly Sales" total={714000} icon={'ant-design:android-filled'} />
+            </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="New Users" total={1352831} color="info" icon={'ant-design:apple-filled'} />
-          </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <AppWidgetSummary title="New Users" total={1352831} color="info" icon={'ant-design:apple-filled'} />
+            </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
             <AppWidgetSummary title="Item Orders" total={1723315} color="warning" icon={'ant-design:windows-filled'} />
@@ -210,10 +221,19 @@ export default function DashboardAppPage() {
                 { id: '4', label: 'Scoping & Estimations' },
                 { id: '5', label: 'Sprint Showcase' },
               ]}
-            />
+              />
+              </Grid>
+              </>
+          ) : (
+            // Display a message or a login button when logged out
+            <Box sx={{ width: '100%', textAlign: 'center', mt: 5 }}>
+              <Typography variant="h5" sx={{ mb: 2 }}>
+                You are currently logged out
+              </Typography>
+            </Box>
+          )}
           </Grid>
-        </Grid>
       </Container>
     </>
-  );
-}
+    )
+    }
