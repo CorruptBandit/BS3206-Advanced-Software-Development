@@ -1,5 +1,6 @@
 module.exports = {
   parserOptions: {
+    overlay: false,
     ecmaVersion: 2021,
     sourceType: 'module',
     ecmaFeatures: {
@@ -9,7 +10,10 @@ module.exports = {
   extends: ['eslint:recommended', 'plugin:react/recommended', 'plugin:react/jsx-runtime'],
   plugins: ['react'],
   rules: {
-    // Add rules here if needed
+    'no-unused-vars': 'warn',
+    'no-undef': 'warn',
+    'react/display-name': 'warn',
+    'react/prop-types': 'warn'
   },
   env: {
     browser: true,
@@ -20,15 +24,4 @@ module.exports = {
       version: 'detect',
     },
   },
-  overrides: [
-    {
-      files: ['*.js', '*.jsx', '*.ts', '*.tsx'],
-      rules: {
-        'no-unused-vars': 'warn',
-        'no-undef': 'warn',
-        'react/display-name': 'warn',
-        'react/prop-types': 'warn'
-      },
-    },
-  ],
 };

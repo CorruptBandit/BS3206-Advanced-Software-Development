@@ -12,12 +12,7 @@ export default defineConfig({
   base: '/',
   plugins: [
     react(),
-    checker({
-      eslint: {
-        lintCommand: 'eslint "./src/**/*.{js,ts,tsx,jsx}"',
-      },
-    },
-    ),
+    checker({ eslint: { lintCommand: 'eslint "./src/**/*.{js,ts,tsx,jsx}"' }, overlay: false })
   ],
   server: {
     port: CLIENT_PORT,
