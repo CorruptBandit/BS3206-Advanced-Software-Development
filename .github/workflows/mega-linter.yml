@@ -87,7 +87,7 @@ jobs:
 
           # ADD YOUR CUSTOM ENV VARIABLES HERE OR DEFINE THEM IN A FILE
           # .mega-linter.yml AT THE ROOT OF YOUR REPOSITORY
-          JSX_ESLINT_RULES_PATH: client/src/.eslintrc.cjs
+          JSX_ESLINT_RULES_PATH: ../client/src/.eslintrc.cjs
           # Uncomment to disable copy-paste and spell checks
           # DISABLE: COPYPASTE,SPELL
 
