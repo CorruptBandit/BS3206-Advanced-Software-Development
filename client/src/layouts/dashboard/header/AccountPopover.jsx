@@ -21,7 +21,7 @@ export default function AccountPopover() {
   const [setIsLoggedIn] = useState(false); // Assuming this state is managed here for simplicity
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, email, name } = useAuth();
 
   const handleOpen = (event) => {
     setOpen(event.currentTarget);
@@ -107,10 +107,10 @@ export default function AccountPopover() {
           >
             <Box sx={{ my: 1.5, px: 2.5 }}>
               <Typography variant="subtitle2" noWrap>
-                {account.displayName}
+                {name}
               </Typography>
               <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-                {account.email}
+                {email}
               </Typography>
             </Box>
 

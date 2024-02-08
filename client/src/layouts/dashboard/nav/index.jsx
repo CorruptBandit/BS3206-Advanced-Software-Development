@@ -14,6 +14,7 @@ import Scrollbar from '../../../components/scrollbar';
 import NavSection from '../../../components/nav-section';
 //
 import navConfig from './config';
+import { useAuth } from '../../../context/AuthContext';
 
 // ----------------------------------------------------------------------
 
@@ -36,6 +37,7 @@ Nav.propTypes = {
 
 export default function Nav({ openNav, onCloseNav }) {
   const { pathname } = useLocation();
+  const { name, email } = useAuth();
 
   const isDesktop = useResponsive('up', 'lg');
 
@@ -55,31 +57,33 @@ export default function Nav({ openNav, onCloseNav }) {
       <Box sx={{ px: 2.5, py: 3, display: 'inline-flex' }}>
         <Logo />
       </Box>
-
-      <Box sx={{ mb: 5, mx: 2.5 }}>
-        <Link underline="none">
-          <StyledAccount>
-            <Avatar src={account.photoURL} alt="photoURL" />
-
-            <Box sx={{ ml: 2 }}>
-              <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
-                {account.displayName}
-              </Typography>
-
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                {account.role}
-              </Typography>
-            </Box>
-          </StyledAccount>
-        </Link>
-      </Box>
-
+  
+      {useAuth().isLoggedIn ? ( // Check if the user is logged in
+        <Box sx={{ mb: 5, mx: 2.5 }}>
+          <Link underline="none">
+            <StyledAccount>
+              <Avatar src={account.photoURL} alt="photoURL" />
+  
+              <Box sx={{ ml: 2 }}>
+                <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
+                  {name}
+                </Typography>
+  
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                  {email}
+                </Typography>
+              </Box>
+            </StyledAccount>
+          </Link>
+        </Box>
+      ) : null}
+  
       <NavSection data={navConfig} />
-
+  
       <Box sx={{ flexGrow: 1 }} />
-
     </Scrollbar>
   );
+  
 
   return (
     <Box

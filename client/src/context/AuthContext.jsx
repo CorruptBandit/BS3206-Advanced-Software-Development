@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import account from '../_mock/account'; // Update the path accordingly
 
 const AuthContext = createContext();
 
@@ -13,8 +12,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // This effect runs whenever the email state changes
     console.log(email, name);
-    account.displayName = name;
-    account.email = email;
   }, [name, email]);
 
   const login = async (email, name) => {
@@ -26,12 +23,12 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     setIsLoggedIn(false);
-    setUserEmail('')
-    setUserName('')
+    setUserEmail("");
+    setUserName("");
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, email, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, name, email, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

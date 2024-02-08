@@ -1,6 +1,5 @@
 module.exports = {
   parserOptions: {
-    overlay: false,
     ecmaVersion: 2021,
     sourceType: 'module',
     ecmaFeatures: {
