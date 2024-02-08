@@ -45,6 +45,7 @@ export default function SignIn() {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
 
+    const name = data.get("name"); // Added line for name
     const email = data.get("email");
     // HASHING ON CLIENT-SIDE AS WELL BECAUSE THIS IS HTTP NOT HTTPS (Not required on the latter)
     const password = MD5(data.get("password")).toString();
@@ -58,7 +59,7 @@ export default function SignIn() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ name, email, password }),
         });
 
         if (response.ok) {
@@ -121,6 +122,18 @@ export default function SignIn() {
             noValidate
             sx={{ mt: 1, alignItems: "center" }}
           >
+            {isRegistering && (
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                id="name"
+                label="Full Name"
+                name="name"
+                autoComplete="name"
+                autoFocus
+              />
+            )}
             <TextField
               margin="normal"
               required

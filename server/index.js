@@ -19,6 +19,31 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
+
+app.get('/api/getUserName', async (req, res) => {
+  const { email } = req.query;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  try {
+    const user = await mongoDB.queryCollection('users', { email });
+
+    if (user.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const userName = user[0].name;
+
+    return res.status(200).json({ userName });
+  } catch (error) {
+    console.error('Error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
 app.post('/api/signin', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -56,7 +81,7 @@ app.post('/api/signout', (req, res) => {
 
 
 app.post('/api/register', async (req, res) => {
-  const { email, password } = req.body;
+  const { name, email, password } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
@@ -76,6 +101,7 @@ app.post('/api/register', async (req, res) => {
 
     // Create a new user with the hashed password
     const newUser = {
+      name,
       email,
       password: hashedPassword, // Store the hashed password
     };

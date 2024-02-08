@@ -8,24 +8,28 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [email, setUserEmail] = useState("");
+  const [name, setUserName] = useState("");
 
   useEffect(() => {
     // This effect runs whenever the email state changes
-    account.displayName = email;
+    console.log(email, name);
+    account.displayName = name;
     account.email = email;
-  }, [email]);
+  }, [name, email]);
 
-  const login = (email) => {
-    console.log('Login function called with email:', email);
+  const login = async (email) => {
+    const response = await fetch(`/api/getUserName?email=${encodeURIComponent(email)}`);
+    const data = await response.json();
+    // ADD err checking
     setUserEmail(email);
+    setUserName(data.userName);
     setIsLoggedIn(true);
-    // No need to set account.displayName and account.email here
-    // They will be set automatically by the useEffect
   };
 
   const logout = () => {
     setIsLoggedIn(false);
-    setUserEmail('N/A')
+    setUserEmail('')
+    setUserName('')
   };
 
   return (
