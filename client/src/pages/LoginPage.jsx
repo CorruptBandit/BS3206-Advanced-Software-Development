@@ -62,7 +62,7 @@ export default function SignIn() {
         });
 
         if (response.ok) {
-          login(); // Update login state
+          login(email); // Update login state
           navigate('/'); // Redirect to homepage
         }
       } else {
@@ -76,7 +76,7 @@ export default function SignIn() {
         });
 
         if (response.ok) {
-          login(); // Update login state
+          login(email); // Update login state
           navigate('/'); // Redirect to homepage
           return;
         }
