@@ -26,7 +26,7 @@ env:
   # APPLY_FIXES_MODE: pull_request # If APPLY_FIXES is used, defines if the fixes are directly committed (commit) or posted in a PR (pull_request)
 
   # ENABLE_LINTERS: # If you use ENABLE_LINTERS variable, all other linters will be disabled by default
-  JSX_ESLINT_RULES_PATH: client/src/.eslintrc.cjs
+  JSX_ESLINT_RULES_PATH: ../client/src/.eslintrc.cjs
   ENABLE_LINTERS: JSX_ESLINT, JAVASCRIPT_STANDARD,JAVASCRIPT_PRETTIER,MARKDOWN_MARKDOWNLINT,YAML_YAMLLINT,YAML_PRETTIER
 
 concurrency:
