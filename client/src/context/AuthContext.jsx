@@ -17,12 +17,10 @@ export const AuthProvider = ({ children }) => {
     account.email = email;
   }, [name, email]);
 
-  const login = async (email) => {
-    const response = await fetch(`/api/getUserName?email=${encodeURIComponent(email)}`);
-    const data = await response.json();
+  const login = async (email, name) => {
     // ADD err checking
     setUserEmail(email);
-    setUserName(data.userName);
+    setUserName(name);
     setIsLoggedIn(true);
   };
 

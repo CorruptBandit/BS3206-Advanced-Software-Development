@@ -63,7 +63,7 @@ export default function SignIn() {
         });
 
         if (response.ok) {
-          login(email); // Update login state
+          login(email, name); // Update login state
           navigate('/'); // Redirect to homepage
         }
       } else {
@@ -77,7 +77,9 @@ export default function SignIn() {
         });
 
         if (response.ok) {
-          login(email); // Update login state
+          const response = await fetch(`/api/getUserName?email=${encodeURIComponent(email)}`);
+          const data = await response.json();
+          login(email, data.userName); // Update login state
           navigate('/'); // Redirect to homepage
           return;
         }
