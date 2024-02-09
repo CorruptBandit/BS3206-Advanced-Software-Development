@@ -11,6 +11,7 @@ import Searchbar from './Searchbar';
 import AccountPopover from './AccountPopover';
 import LanguagePopover from './LanguagePopover';
 import NotificationsPopover from './NotificationsPopover';
+import { useAuth } from '../../../context/AuthContext'; // Import the AuthContext
 
 // ----------------------------------------------------------------------
 
@@ -43,6 +44,8 @@ Header.propTypes = {
 };
 
 export default function Header({ onOpenNav }) {
+  const { isLoggedIn } = useAuth(); // Get the login status from the context
+
   return (
     <StyledRoot>
       <StyledToolbar>
@@ -68,8 +71,7 @@ export default function Header({ onOpenNav }) {
             sm: 1,
           }}
         >
-          <LanguagePopover />
-          <NotificationsPopover />
+          {isLoggedIn && <NotificationsPopover />} {/* Conditionally render NotificationsPopover */}
           <AccountPopover />
         </Stack>
       </StyledToolbar>
