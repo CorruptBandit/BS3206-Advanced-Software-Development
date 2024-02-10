@@ -89,5 +89,5 @@ Logo.propTypes = {
   sx: PropTypes.object,
   disabledLink: PropTypes.bool,
 };
-
+Logo.displayName = 'Logo';
 export default Logo;

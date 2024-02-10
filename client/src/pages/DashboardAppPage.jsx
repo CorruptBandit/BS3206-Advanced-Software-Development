@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { faker } from '@faker-js/faker';
 // @mui
@@ -22,11 +21,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function DashboardAppPage() {
   const theme = useTheme();
-  const [setIsLoggedIn] = useState(false); // Simple logged in state for demonstration
   const { isLoggedIn } = useAuth();
-
-  // Function to determine the color based on login status
-  const getColor = (color) => (isLoggedIn ? color : theme.palette.action.disabled);
 
   return (
     <>

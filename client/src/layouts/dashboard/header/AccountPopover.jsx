@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // Make sure to import useNavigate
 // @mui
 import { alpha } from '@mui/material/styles';
@@ -17,8 +17,6 @@ const MENU_OPTIONS = [
 
 export default function AccountPopover() {
   const [open, setOpen] = useState(null);
-  // Placeholder for isLoggedIn state. This might be passed down from a parent component or managed globally
-  const [setIsLoggedIn] = useState(false); // Assuming this state is managed here for simplicity
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
   const { logout, email, name } = useAuth();

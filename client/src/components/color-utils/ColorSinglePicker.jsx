@@ -33,5 +33,5 @@ const ColorSinglePicker = forwardRef(({ colors, ...other }, ref) => (
 ColorSinglePicker.propTypes = {
   colors: PropTypes.arrayOf(PropTypes.string),
 };
-
+ColorSinglePicker.displayName = 'ColourSinglePicker';
 export default ColorSinglePicker;
