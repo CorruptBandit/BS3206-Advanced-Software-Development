@@ -1,18 +1,17 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
 import Link from "@mui/material/Link";
-import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { useAuth } from "../context/AuthContext";
 import MD5 from 'crypto-js/md5';
+import { useNavigate } from 'react-router-dom';
 
 function Copyright(props) {
   return (
@@ -35,12 +34,15 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export default function SignIn() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const [isRegistering, setIsRegistering] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
 
+    const name = data.get("name"); // Added line for name
     const email = data.get("email");
     // HASHING ON CLIENT-SIDE AS WELL BECAUSE THIS IS HTTP NOT HTTPS (Not required on the latter)
     const password = MD5(data.get("password")).toString();
@@ -54,11 +56,12 @@ export default function SignIn() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ name, email, password }),
         });
 
         if (response.ok) {
-          alert("Registration successful");
+          login(email, name); // Update login state
+          navigate('/'); // Redirect to homepage
         }
       } else {
         // Sign In
@@ -71,7 +74,11 @@ export default function SignIn() {
         });
 
         if (response.ok) {
-          alert("Sign-in successful");
+          const response = await fetch(`/api/getUserName?email=${encodeURIComponent(email)}`);
+          const data = await response.json();
+          login(email, data.userName); // Update login state
+          navigate('/'); // Redirect to homepage
+          return;
         }
       }
 
@@ -114,6 +121,18 @@ export default function SignIn() {
             noValidate
             sx={{ mt: 1, alignItems: "center" }}
           >
+            {isRegistering && (
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                id="name"
+                label="Full Name"
+                name="name"
+                autoComplete="name"
+                autoFocus
+              />
+            )}
             <TextField
               margin="normal"
               required

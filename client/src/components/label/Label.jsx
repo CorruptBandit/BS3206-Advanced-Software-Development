@@ -47,5 +47,5 @@ Label.propTypes = {
   variant: PropTypes.oneOf(['filled', 'outlined', 'ghost', 'soft']),
   color: PropTypes.oneOf(['default', 'primary', 'secondary', 'info', 'success', 'warning', 'error']),
 };
-
+Label.displayName = 'Label';
 export default Label;

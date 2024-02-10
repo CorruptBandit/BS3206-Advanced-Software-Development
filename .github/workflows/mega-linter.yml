@@ -26,7 +26,7 @@ env:
   # APPLY_FIXES_MODE: pull_request # If APPLY_FIXES is used, defines if the fixes are directly committed (commit) or posted in a PR (pull_request)
 
   # ENABLE_LINTERS: # If you use ENABLE_LINTERS variable, all other linters will be disabled by default
-  ENABLE_LINTERS: JAVASCRIPT_STANDARD,JAVASCRIPT_PRETTIER,MARKDOWN_MARKDOWNLINT,YAML_YAMLLINT,YAML_PRETTIER
+  ENABLE_LINTERS: JSX_ESLINT,JAVASCRIPT_STANDARD,JAVASCRIPT_PRETTIER,MARKDOWN_MARKDOWNLINT,YAML_YAMLLINT,YAML_PRETTIER
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
@@ -87,7 +87,9 @@ jobs:
 
           # ADD YOUR CUSTOM ENV VARIABLES HERE OR DEFINE THEM IN A FILE
           # .mega-linter.yml AT THE ROOT OF YOUR REPOSITORY
-
+          JSX_ESLINT_RULES_PATH: client/src/
+          JSX_ESLINT_CONFIG_FILE: .eslintrc.cjs
+          JSX_ESLINT_ARGUMENTS: --max-warnings=0
           # Uncomment to disable copy-paste and spell checks
           # DISABLE: COPYPASTE,SPELL
 
