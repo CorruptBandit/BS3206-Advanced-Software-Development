@@ -3,7 +3,6 @@ import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
-import Link from "@mui/material/Link";
 import Box from "@mui/material/Box";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
@@ -12,24 +11,6 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useAuth } from "../context/AuthContext";
 import MD5 from 'crypto-js/md5';
 import { useNavigate } from 'react-router-dom';
-
-function Copyright(props) {
-  return (
-    <Typography
-      variant="body2"
-      color="text.secondary"
-      align="center"
-      {...props}
-    >
-      {"Copyright © "}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{" "}
-      {new Date().getFullYear()}
-      {"."}
-    </Typography>
-  );
-}
 
 const defaultTheme = createTheme();
 
@@ -42,13 +23,13 @@ export default function SignIn() {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
   
-    const name = data.get("name");
     const email = data.get("email");
     const password = MD5(data.get("password")).toString();
   
     try {
       if (isRegistering) {
         // Registration
+        const name = data.get("name");
         const registrationError = await register(name, email, password);
         if (!registrationError) {
           navigate('/'); // Redirect to homepage only if registration is successful
@@ -153,7 +134,6 @@ export default function SignIn() {
             </Button>
           </Box>
         </Box>
-        <Copyright sx={{ mt: 8, mb: 4 }} />
       </Container>
     </ThemeProvider>
   );

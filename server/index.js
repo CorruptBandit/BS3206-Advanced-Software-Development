@@ -2,11 +2,12 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const MongoDBConnector = require('./mongo');
+require('dotenv').config();
 
 const app = express();
 
 const PORT = 3001;
-const SECRET_KEY = 'your-secret-key'; // Replace with a secure secret key
+const SECRET_KEY = process.env.JWT_SECRET_KEY || 'insecure';
 const mongoDB = new MongoDBConnector();
 const revokedTokens = new Set(); // Set to store revoked tokens
 
@@ -81,6 +82,46 @@ app.post('/api/signout', (req, res) => {
   }
 
   return res.status(200).json({ message: 'Sign-out requested' });
+});
+
+app.post('/api/register', async (req, res) => {
+  const { name, email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
+  }
+
+  try {
+    // Check if the user already exists
+    const existingUser = await mongoDB.queryCollection('users', { email });
+
+    if (existingUser.length !== 0) {
+      return res.status(400).json({ error: 'User with this email already exists' });
+    }
+
+    // Hash and salt the password before storing it
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Create a new user with the hashed password
+    const newUser = {
+      name,
+      email,
+      password: hashedPassword, // Store the hashed password
+    };
+
+    // Save the new user to the database
+    await mongoDB.insertDocument('users', newUser);
+
+    // Generate JWT token with email as payload
+    const user = await mongoDB.queryCollection('users', { email });
+    const token = jwt.sign({ email: user[0].email }, SECRET_KEY, { expiresIn: '1h' });
+
+    return res.status(200).json({ message: 'Registration successful', token });
+  } catch (error) {
+    console.error('Error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));

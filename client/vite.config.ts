@@ -3,6 +3,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react';
 import checker from 'vite-plugin-checker'
 
+dotenv.config();
 
 const CLIENT_PORT = Number(process.env.CLIENT_PORT) || 3000;
 const SERVER_PORT = Number(process.env.SERVER_PORT) || 3001;
@@ -12,7 +13,7 @@ export default defineConfig({
   base: '/',
   plugins: [
     react(),
-    checker({ eslint: { lintCommand: 'eslint "./src/**/*.{js,ts,tsx,jsx}"' }, overlay: false })
+    process.env.NODE_ENV === 'development' ? checker({ eslint: { lintCommand: 'eslint "./src/**/*.{js,ts,tsx,jsx}"' }, overlay: false }) : null
   ],
   server: {
     port: CLIENT_PORT,

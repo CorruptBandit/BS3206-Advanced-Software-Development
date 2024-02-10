@@ -17,6 +17,7 @@
     "dotenv": "^16.4.1",
     "express": "^4.18.2",
     "history": "^5.3.0",
+    "include": "^1.1.0",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
     "mongodb": "^6.1.0",
@@ -33,20 +34,21 @@
     "vite": "^5.0.12",
     "web-vitals": "^3.1.1"
   },
+  "devDependencies": {
+    "vite-plugin-checker": "^0.6.4",
+    "eslint": "^8.56.0",
+    "eslint-plugin-react": "^7.33.2"
+  },
   "name": "advanced-software-dev",
   "description": "BS3206 Advanced Software Development",
   "version": "0.1.0",
   "main": "index.js",
-  "devDependencies": {
-    "eslint": "^8.56.0",
-    "eslint-plugin-react": "^7.33.2",
-    "vite-plugin-checker": "^0.6.4"
-  },
   "scripts": {
     "start:frontend": "cd client && vite --host",
     "start:backend": "nodemon server/index.js",
     "build": "cd client && vite build",
-    "start": "concurrently 'npm run start:frontend' 'npm run start:backend'"
+    "start": "NODE_ENV=production concurrently 'npm run start:frontend' 'npm run start:backend'",
+    "dev": "NODE_ENV=development concurrently 'npm run start:frontend' 'npm run start:backend'"
   },
   "proxy": "http://localhost:3001",
   "keywords": [],
