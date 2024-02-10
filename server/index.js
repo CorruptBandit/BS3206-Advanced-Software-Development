@@ -1,24 +1,17 @@
 const express = require('express');
-const bcrypt = require('bcrypt'); // Add bcrypt for hashing on the server
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const MongoDBConnector = require('./mongo');
+require('dotenv').config();
 
 const app = express();
 
 const PORT = 3001;
+const SECRET_KEY = process.env.JWT_SECRET_KEY || 'insecure';
 const mongoDB = new MongoDBConnector();
+const revokedTokens = new Set(); // Set to store revoked tokens
+
 app.use(express.json());
-
-// DEBUG ENDPOINT
-app.get('/api/users', async (req, res) => {
-  try {
-    const result = await mongoDB.queryCollection('users', {});
-    return res.status(200).json(result);
-  } catch (error) {
-    console.error('Error:', error);
-    return res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
 
 app.get('/api/getUserName', async (req, res) => {
   const { email } = req.query;
@@ -28,6 +21,15 @@ app.get('/api/getUserName', async (req, res) => {
   }
 
   try {
+    // Check if the token has been revoked
+    const { authorization } = req.headers;
+    if (authorization) {
+      const token = authorization.split(' ')[1];
+      if (revokedTokens.has(token)) {
+        return res.status(401).json({ error: 'Token has been revoked' });
+      }
+    }
+
     const user = await mongoDB.queryCollection('users', { email });
 
     if (user.length === 0) {
@@ -43,7 +45,6 @@ app.get('/api/getUserName', async (req, res) => {
   }
 });
 
-
 app.post('/api/signin', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -56,15 +57,16 @@ app.post('/api/signin', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Compare the hashed password with the one in the database using bcrypt.compare
     const isPasswordValid = await bcrypt.compare(password, user[0].password);
 
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Authentication successful
-    return res.status(200).json({ message: 'Login successful', user });
+    // Generate JWT token with email as payload
+    const token = jwt.sign({ email: user[0].email }, SECRET_KEY, { expiresIn: '1h' });
+
+    return res.status(200).json({ message: 'Login successful', token });
   } catch (error) {
     console.error('Error:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
@@ -72,13 +74,15 @@ app.post('/api/signin', async (req, res) => {
 });
 
 app.post('/api/signout', (req, res) => {
-  // This endpoint doesn't actually change anything in the database.
-  // It's a placeholder to potentially perform server-side cleanup actions.
-  // The client will handle the actual "logout" by clearing local storage or cookies.
-  // To-Do JWT TOKENS
+  // You can add the existing token to the set of revoked tokens
+  const { authorization } = req.headers;
+  if (authorization) {
+    const token = authorization.split(' ')[1];
+    revokedTokens.add(token);
+  }
+
   return res.status(200).json({ message: 'Sign-out requested' });
 });
-
 
 app.post('/api/register', async (req, res) => {
   const { name, email, password } = req.body;
@@ -109,8 +113,11 @@ app.post('/api/register', async (req, res) => {
     // Save the new user to the database
     await mongoDB.insertDocument('users', newUser);
 
-    // Registration successful
-    return res.status(201).json({ message: 'Registration successful', user: newUser });
+    // Generate JWT token with email as payload
+    const user = await mongoDB.queryCollection('users', { email });
+    const token = jwt.sign({ email: user[0].email }, SECRET_KEY, { expiresIn: '1h' });
+
+    return res.status(200).json({ message: 'Registration successful', token });
   } catch (error) {
     console.error('Error:', error);
     return res.status(500).json({ error: 'Internal Server Error' });

@@ -11,10 +11,18 @@ MongoDB Database
 1. Copy the [.env.template](./.env.template)
 1. Rename to `.env`
 1. Populate the values in the `.env`
-1. `npm install`
+1. `npm install --production=<true | false>`
 
 ## Run
 
+**Production**:
 ```sh
 npm start
 ```
+
+**Development**:
+```sh
+npm run dev
+```
+
+_Includes ESLint_
