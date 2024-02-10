@@ -35,9 +35,9 @@
     "web-vitals": "^3.1.1"
   },
   "devDependencies": {
-    "vite-plugin-checker": "^0.6.4",
     "eslint": "^8.56.0",
-    "eslint-plugin-react": "^7.33.2"
+    "eslint-plugin-react": "^7.33.2",
+    "vite-plugin-checker": "^0.6.4"
   },
   "name": "advanced-software-dev",
   "description": "BS3206 Advanced Software Development",
