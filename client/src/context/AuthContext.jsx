@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
     // This effect runs whenever the email state changes
   }, [name, email]);
 
-  const login = async (email, name, password) => {
+  const login = async (email, password) => {
     try {
       const response = await fetch('/api/signin', {
         method: 'POST',
@@ -31,16 +31,22 @@ export const AuthProvider = ({ children }) => {
         const data = await response.json();
         throw new Error(data.error || 'Login failed');
       }
-  
+      
       const data = await response.json();
+
+      const usernameReq = await fetch(`/api/getUserName?email=${encodeURIComponent(email)}`);
+      const usernameReqJSON = await usernameReq.json();
+      const name = usernameReqJSON.userName;
+
       setUserEmail(email);
       setUserName(name);
       setIsLoggedIn(true);
       // Save the token in localStorage or secure storage
       localStorage.setItem('token', data.token);
+      return null
     } catch (error) {
       console.error('Error:', error);
-      // Handle login error, e.g., display an error message
+      return error.message || 'Login failed'; 
     }
   };
   
@@ -65,11 +71,15 @@ export const AuthProvider = ({ children }) => {
       setIsLoggedIn(true);
       // Save the token in localStorage or secure storage
       localStorage.setItem('token', data.token);
+  
+      return null; // Registration success, no error message
     } catch (error) {
       console.error('Error:', error);
       // Handle registration error, e.g., display an error message
+      return error.message || 'Registration failed'; // Return the error message
     }
   };
+  
 
   const logout = async () => {
     try {

@@ -49,21 +49,33 @@ export default function SignIn() {
     try {
       if (isRegistering) {
         // Registration
-        await register(name, email, password);
-        navigate('/'); // Redirect to homepage
+        const registrationError = await register(name, email, password);
+        if (!registrationError) {
+          navigate('/'); // Redirect to homepage only if registration is successful
+        } else {
+          // Display the registration error message or handle it accordingly
+          console.error("Registration failed:", registrationError);
+          alert(`Registration failed: ${registrationError}`);
+        }
       } else {
-        // Sign In
-        await login(email, name, password);
-        navigate('/'); // Redirect to homepage
+        const loginError = await login(email, password);
+        if (!loginError) {
+          navigate('/'); // Redirect to homepage
+        }
+        else {
+          console.error("Login failed:", loginError);
+          alert(`Login failed: ${loginError}`);
+        }
       }
     } catch (error) {
       console.error(
         `${isRegistering ? "Registration" : "Sign-in"} failed:`,
         error
       );
-      alert(`${isRegistering ? "Registration" : "Sign-in"} failed: Invalid credentials`);
+      // Display an error message or handle it accordingly
     }
   };
+  
   
 
   return (
