@@ -14,21 +14,91 @@ export const AuthProvider = ({ children }) => {
     // This effect runs whenever the email state changes
   }, [name, email]);
 
-  const login = async (email, name) => {
-    // ADD err checking
-    setUserEmail(email);
-    setUserName(name);
-    setIsLoggedIn(true);
+  const login = async (email, name, password) => {
+    try {
+      const response = await fetch('/api/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password, // Use the provided password for sign-in
+        }),
+      });
+  
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Login failed');
+      }
+  
+      const data = await response.json();
+      setUserEmail(email);
+      setUserName(name);
+      setIsLoggedIn(true);
+      // Save the token in localStorage or secure storage
+      localStorage.setItem('token', data.token);
+    } catch (error) {
+      console.error('Error:', error);
+      // Handle login error, e.g., display an error message
+    }
+  };
+  
+  const register = async (name, email, password) => {
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password }),
+      });
+  
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Registration failed');
+      }
+  
+      const data = await response.json();
+      setUserEmail(email);
+      setUserName(name);
+      setIsLoggedIn(true);
+      // Save the token in localStorage or secure storage
+      localStorage.setItem('token', data.token);
+    } catch (error) {
+      console.error('Error:', error);
+      // Handle registration error, e.g., display an error message
+    }
   };
 
-  const logout = () => {
-    setIsLoggedIn(false);
-    setUserEmail("");
-    setUserName("");
+  const logout = async () => {
+    try {
+      const token = localStorage.getItem('token');
+
+      // Call your backend API to sign out and revoke the token
+      await fetch('/api/signout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Remove the token from localStorage or secure storage
+      localStorage.removeItem('token');
+
+      setIsLoggedIn(false);
+      setUserEmail('');
+      setUserName('');
+    } catch (error) {
+      console.error('Error:', error);
+      // Handle logout error, e.g., display an error message
+    }
   };
+
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, name, email, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, name, email, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );

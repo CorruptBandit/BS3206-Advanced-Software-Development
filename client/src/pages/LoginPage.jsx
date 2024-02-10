@@ -34,7 +34,7 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export default function SignIn() {
-  const { login } = useAuth();
+  const { login, register } = useAuth();
   const navigate = useNavigate();
   const [isRegistering, setIsRegistering] = useState(false);
 
@@ -47,50 +47,14 @@ export default function SignIn() {
     const password = MD5(data.get("password")).toString();
   
     try {
-      let response;
       if (isRegistering) {
         // Registration
-        response = await fetch("/api/register", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name, email, password }),
-        });
-  
-        if (response.ok) {
-          login(email, name); // Update login state
-          navigate('/'); // Redirect to homepage
-        }
+        await register(name, email, password);
+        navigate('/'); // Redirect to homepage
       } else {
         // Sign In
-        response = await fetch("/api/signin", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, password }),
-        });
-  
-        if (response.ok) {
-          const data = await response.json();
-          const token = data.token;
-  
-          // Store the token in localStorage or a secure storage mechanism
-          localStorage.setItem('token', token);
-  
-          // Fetch additional user information if needed
-          const userResponse = await fetch(`/api/getUserName?email=${encodeURIComponent(email)}`);
-          const userData = await userResponse.json();
-  
-          login(email, userData.userName); // Update login state
-          navigate('/'); // Redirect to homepage
-          return;
-        }
-      }
-  
-      if (!response.ok) {
-        throw new Error(`Error: ${response.text}`);
+        await login(email, name, password);
+        navigate('/'); // Redirect to homepage
       }
     } catch (error) {
       console.error(
@@ -100,6 +64,7 @@ export default function SignIn() {
       alert(`${isRegistering ? "Registration" : "Sign-in"} failed: Invalid credentials`);
     }
   };
+  
 
   return (
     <ThemeProvider theme={defaultTheme}>
