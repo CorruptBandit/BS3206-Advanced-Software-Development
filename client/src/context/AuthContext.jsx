@@ -12,7 +12,6 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // This effect runs whenever the email state changes
-    console.log(email, name);
   }, [name, email]);
 
   const login = async (email, name) => {

@@ -26,7 +26,7 @@ export default function DashboardAppPage() {
   return (
     <>
       <Helmet>
-        <title> Dashboard | Minimal UI </title>
+        <title> Gym Fitness </title>
       </Helmet>
 
       <Container maxWidth="xl" sx={{ filter: isLoggedIn ? 'none' : 'grayscale(1)' }}>
