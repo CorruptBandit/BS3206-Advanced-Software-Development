@@ -41,12 +41,11 @@ export default function SignIn() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-
-    const name = data.get("name"); // Added line for name
+  
+    const name = data.get("name");
     const email = data.get("email");
-    // HASHING ON CLIENT-SIDE AS WELL BECAUSE THIS IS HTTP NOT HTTPS (Not required on the latter)
     const password = MD5(data.get("password")).toString();
-
+  
     try {
       let response;
       if (isRegistering) {
@@ -58,7 +57,7 @@ export default function SignIn() {
           },
           body: JSON.stringify({ name, email, password }),
         });
-
+  
         if (response.ok) {
           login(email, name); // Update login state
           navigate('/'); // Redirect to homepage
@@ -70,23 +69,29 @@ export default function SignIn() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email, password}),
+          body: JSON.stringify({ email, password }),
         });
-
+  
         if (response.ok) {
-          const response = await fetch(`/api/getUserName?email=${encodeURIComponent(email)}`);
           const data = await response.json();
-          login(email, data.userName); // Update login state
+          const token = data.token;
+  
+          // Store the token in localStorage or a secure storage mechanism
+          localStorage.setItem('token', token);
+  
+          // Fetch additional user information if needed
+          const userResponse = await fetch(`/api/getUserName?email=${encodeURIComponent(email)}`);
+          const userData = await userResponse.json();
+  
+          login(email, userData.userName); // Update login state
           navigate('/'); // Redirect to homepage
           return;
         }
       }
-
+  
       if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+        throw new Error(`Error: ${response.text}`);
       }
-
-      // Handle navigation or state update here upon successful action
     } catch (error) {
       console.error(
         `${isRegistering ? "Registration" : "Sign-in"} failed:`,
