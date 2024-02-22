@@ -11,7 +11,7 @@ MongoDB Database
 1. Copy the [.env.template](./.env.template)
 1. Rename to `.env`
 1. Populate the values in the `.env`
-1. `npm install --production=<true | false>`
+1. Install Dependencies: `npm install` (in Production add the following flag: `--omit=dev`)
 
 ## Run
 
