@@ -11,10 +11,9 @@ MongoDB Database
 1. Copy the [.env.template](./.env.template)
 1. Rename to `.env`
 1. Populate the values in the `.env`
+1. **Windows ONLY**: `npm config set script-shell powershell`
 1. Install Dependencies: `npm install` (in Production add the following flag: `--omit=dev`)
 
-**Windows ONLY**:
-Run: `npm config set script-shell powershell`
 
 ## Run
 
