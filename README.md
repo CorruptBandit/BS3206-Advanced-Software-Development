@@ -13,6 +13,9 @@ MongoDB Database
 1. Populate the values in the `.env`
 1. Install Dependencies: `npm install` (in Production add the following flag: `--omit=dev`)
 
+**Windows ONLY**:
+Run: `npm config set script-shell powershell`
+
 ## Run
 
 **Production**:
