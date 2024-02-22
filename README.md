@@ -32,6 +32,6 @@ _Includes ESLint_
 
 ## Running in Docker
 
-1. Setup: Create and populate `.env`
+1. Setup: Create and populate `.env` from the template
 1. Build: `docker compose build`
 1. Run: `docker compose up`
