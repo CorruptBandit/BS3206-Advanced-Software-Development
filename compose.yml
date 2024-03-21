@@ -1,9 +1,15 @@
----
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        NODE_ENV: ${NODE_ENV}
     ports:
-      - "3000:3000" # Map your application's port to host
+      - "3000:3000"
       - "3001:3001"
+    volumes:
+      - .:/app # Mount the current directory to /app in the container
+      - /app/node_modules # Use a named volume for node_modules to prevent it from being overwritten by the bind mount
+    environment:
+      - NODE_ENV
