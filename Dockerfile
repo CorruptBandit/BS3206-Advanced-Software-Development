@@ -1,14 +1,26 @@
-# Use an official Node.js runtime as the base image
-FROM node:18-slim
+# Specify the base image
+FROM node:latest
 
-# Set the working directory in the container
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the container
-COPY . /app
+# Copy package.json and possibly package-lock.json
+COPY package*.json ./
 
-# Install application dependencies
-RUN npm install
+# Accept NODE_ENV as an argument; default to production
+ARG NODE_ENV
 
-# Define the command to run your application
-CMD ["npm", "start"]
+# Install dependencies conditionally based on NODE_ENV
+RUN if [ "$NODE_ENV" = "development" ]; \
+    then npm install; \
+    else npm install --omit=dev; \
+    fi
+
+# Copy the rest of the application
+COPY . .
+
+# Default command
+CMD if [ "$NODE_ENV" = "development" ]; \
+    then npm run dev; \
+    else npm start; \
+    fi
