@@ -10,8 +10,6 @@ COPY package*.json ./
 # Accept NODE_ENV as an argument; default to production
 ARG NODE_ENV
 
-RUN apk --no-cache add --virtual builds-deps build-base python
-
 # Install dependencies conditionally based on NODE_ENV
 RUN if [ "$NODE_ENV" = "development" ]; \
     then npm install; \
