@@ -9,9 +9,7 @@ services:
       - "3000:3000"
       - "3001:3001"
     volumes:
-      - './client/src:/app/client/src'
-      - './client/public:/app/client/public'
-      - './server:/app/server'
-      - /app/node_modules # Use a named volume for node_modules to prevent it from being overwritten by the bind mount
+      - .:/opt/node_app/app
+      - /opt/node_app/node_modules
     environment:
       - NODE_ENV

@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react';
-import checker from 'vite-plugin-checker'
+import eslintPlugin from "vite-plugin-eslint";
 
 dotenv.config();
 
@@ -13,7 +13,7 @@ export default defineConfig({
   base: '/',
   plugins: [
     react(),
-    process.env.NODE_ENV === 'development' ? checker({ eslint: { lintCommand: 'eslint "./src/**/*.{js,ts,tsx,jsx}"' }, overlay: false }) : null
+    eslintPlugin({include:  "./src/**/*.{js,ts,tsx,jsx}", cache: false }),
   ],
   server: {
     port: CLIENT_PORT,
