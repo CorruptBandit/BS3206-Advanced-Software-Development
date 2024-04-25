@@ -40,6 +40,7 @@ These instructions will get your project up and running on your local machine fo
      ```
 
 ### Running the Application
+This application supports hot reloading, meaning that changes in the codebase will automatically refresh the application without needing a restart. Docker is the preferred method of running the application as it ensures a consistent environment across different platforms.
 
 #### Docker (Preferred Method)
 - **Build and run the Docker container**
