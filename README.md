@@ -45,7 +45,7 @@ This application supports hot reloading, meaning that changes in the codebase wi
 #### Docker (Preferred Method)
 - **Build and run the Docker container**
   ```bash
-  docker-compose up --build
+  docker compose up --build
   ```
 
 #### Node.js (Alternative Method)
