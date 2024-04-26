@@ -17,6 +17,9 @@ export default defineConfig({
   ],
   server: {
     port: CLIENT_PORT,
+    hmr: {
+      overlay: false
+    },
     proxy: {
       '/api': {
         target: `http://localhost:${SERVER_PORT}`,
