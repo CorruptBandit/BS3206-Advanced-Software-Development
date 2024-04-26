@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react';
-import checker from 'vite-plugin-checker'
 
 dotenv.config();
 
@@ -13,10 +12,24 @@ export default defineConfig({
   base: '/',
   plugins: [
     react(),
-    process.env.NODE_ENV === 'development' ? checker({ eslint: { lintCommand: 'eslint "./src/**/*.{js,ts,tsx,jsx}"' }, overlay: false }) : null
+    process.env.NODE_ENV === 'development'
+      ? (() => {
+          // Dynamically import the ESLint plugin only in development mode
+          return import("vite-plugin-eslint").then(({ default: eslintPlugin }) => eslintPlugin({
+            include: "./src/**/*.{js,ts,tsx,jsx}",
+            cache: false,
+          }));
+        })()
+      : null,
   ],
   server: {
     port: CLIENT_PORT,
+    hmr: {
+      overlay: false
+    },
+    watch: {
+      usePolling: true
+    },
     proxy: {
       '/api': {
         target: `http://localhost:${SERVER_PORT}`,
