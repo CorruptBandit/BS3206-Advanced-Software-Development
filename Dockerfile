@@ -1,7 +1,7 @@
 # Inspired from: https://github.com/BretFisher/node-docker-good-defaults/
 
 # Specify the base image
-FROM node:18-slim
+FROM node:20-slim
 
 # Accept NODE_ENV as an argument; default to production
 ARG NODE_ENV
@@ -20,13 +20,13 @@ USER node
 # in a different location for easier app bind mounting for local development
 # WORKDIR now sets correct permissions if you set USER first
 WORKDIR /opt/node_app
-RUN mkdir -p /opt/node_app/app/node_modules/.vite \
-    && chown -R node:node /opt/node_app/app/node_modules/.vite
+RUN mkdir -p ./app/node_modules/.vite
+RUN chown -R node:node ./app/node_modules/.vite
 COPY --chown=node:node package.json package-lock.json* ./
 # and move the node_modules directory up one level from the app
 RUN if [ "$NODE_ENV" = "development" ]; \
     then npm ci; \
-    else npm install --omit=dev; \
+    else npm ci --omit=dev; \
     fi
 RUN npm cache clean --force
 
@@ -40,6 +40,6 @@ COPY --chown=node:node . .
 
 # Default command to run the application
 CMD if [ "$NODE_ENV" = "development" ]; \
-    then npm run dev; \
-    else npm start; \
+    then FORCE_COLOR=1 npm run dev; \
+    else FORCE_COLOR=1 npm start; \
     fi
