@@ -38,7 +38,12 @@
   "devDependencies": {
     "eslint": "^8.56.0",
     "eslint-plugin-react": "^7.33.2",
-    "vite-plugin-checker": "^0.6.4"
+    "vite-plugin-eslint": "^1.8.1"
+  },
+  "overrides": {
+    "vite": {
+      "rollup": "npm:@rollup/wasm-node@^4.9.2"
+    }
   },
   "name": "advanced-software-dev",
   "description": "BS3206 Advanced Software Development",
