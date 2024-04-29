@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile
       args:
         NODE_ENV: ${NODE_ENV}
+        HOST_UID: ${HOST_UID}
+        HOST_GID: ${HOST_GID}
     ports:
       - "3000:3000"
       - "3001:3001"

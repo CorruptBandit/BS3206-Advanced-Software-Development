@@ -5,6 +5,15 @@ FROM node:20-slim
 
 # Accept NODE_ENV as an argument; default to production
 ARG NODE_ENV
+ARG HOST_UID
+ARG HOST_GID
+
+
+# Fix bind-mount permissions on non-Docker-Deskop environments
+RUN if [ ! -z "$HOST_UID" ] && [ ! -z "$HOST_GID" ]; then \
+        groupmod -g $HOST_GID node && \
+        usermod -u $HOST_UID -g $HOST_GID node; \
+    fi
 
 # you'll likely want the latest npm, regardless of node version, for speed and fixes
 # but pin this version for the best stability

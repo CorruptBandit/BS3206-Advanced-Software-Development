@@ -45,8 +45,18 @@ This application supports hot reloading, meaning that changes in the codebase wi
 _Due to [WSL2 limitations](https://github.com/microsoft/WSL/issues/4739), hot reloading **only** works through polling, meaning the webpage **must** be open for the hot reload to take effect_
 
 #### Docker (Preferred Method)
-- **Build and run the Docker container**
+- **Build and run the Docker container (DOCKER DESKTOP USERS)**
   ```bash
+  docker compose up --build
+  ```
+
+#### Non-Docker Desktop Users
+- Non-Docker Desktop environments, such as Docker running on native Linux, often need to handle user permissions more explicitly to avoid file ownership issues with volumes. This is because Docker on Linux uses the host machine's user and group IDs directly, which can lead to permission denied errors if the container's processes attempt to write to bind mounts owned by a different user. By setting `HOST_UID` and `HOST_GID` to the IDs of the current user, we ensure that any files created by Docker on Linux are owned by the user, not by root or a mismatched user ID.
+- **Important**: Do not use `sudo` to run the below commands as the environment variables will not work, either put the variables in the `.env`  or, see the official [Docker documentation](https://docs.docker.com/engine/install/linux-postinstall/) on how to run as a non-root user.
+
+  ```bash
+  export HOST_UID=$(id -u)
+  export HOST_GID=$(id -g)
   docker compose up --build
   ```
 
