@@ -1,5 +1,7 @@
+---
 services:
   app:
+    init: true  # Handle signals correctly
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,7 +13,9 @@ services:
       - "3000:3000"
       - "3001:3001"
     volumes:
-      - .:/opt/node_app/app
+      # Don't mount whole repo to save space and avoid node_modules being created, if it doesn't already exist.
+      - ./client:/opt/node_app/app/client
+      - ./server:/opt/node_app/app/server
       # bind-mounting these two files in will let you add packages during development without rebuilding
       # for example, to add bower to your app while developing, just install it inside the container
       # and then nodemon will restart. Your changes will last until you "docker compose down" and will
