@@ -18,10 +18,15 @@ RUN if [ ! -z "$HOST_UID" ] && [ ! -z "$HOST_GID" ]; then \
 # but pin this version for the best stability
 RUN npm i npm@latest -g
 
+# the official node image provides an unprivileged user as a security best practice
+# but we have to manually enable it. We put it here so npm installs dependencies as the same
+# user who runs the app.
+# https://github.com/nodejs/docker-node/blob/master/docs/BestPractices.md#non-root-user
+USER node
+
 # install dependencies conditionally based on NODE_ENV first
 # in a different location for easier app bind mounting for local development
 # WORKDIR now sets correct permissions if you set USER first
-USER node
 WORKDIR /opt/node_app
 RUN mkdir -p ./app/node_modules/.vite
 RUN chown -R node:node ./app/node_modules/.vite
