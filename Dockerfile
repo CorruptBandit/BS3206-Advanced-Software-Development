@@ -8,7 +8,6 @@ ARG NODE_ENV
 ARG HOST_UID
 ARG HOST_GID
 
-
 # Fix bind-mount permissions on non-Docker-Deskop environments
 RUN if [ ! -z "$HOST_UID" ] && [ ! -z "$HOST_GID" ]; then \
         groupmod -g $HOST_GID node && \
@@ -32,7 +31,6 @@ WORKDIR /opt/node_app
 RUN mkdir -p ./app/node_modules/.vite
 RUN chown -R node:node ./app/node_modules/.vite
 COPY --chown=node:node package.json package-lock.json* ./
-# and move the node_modules directory up one level from the app
 RUN if [ "$NODE_ENV" = "development" ]; \
     then npm ci; \
     else npm ci --omit=dev; \
@@ -45,6 +43,7 @@ ENV PATH /opt/node_app/node_modules/.bin:$PATH
 # Change the working directory to /opt/node_app/app
 # This will be the directory where the application code resides
 WORKDIR /opt/node_app/app
+RUN chown -R node:node ./node_modules
 COPY --chown=node:node . .
 
 # Default command to run the application
