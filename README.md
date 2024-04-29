@@ -42,6 +42,8 @@ These instructions will get your project up and running on your local machine fo
 ### Running the Application
 This application supports hot reloading, meaning that changes in the codebase will automatically refresh the application without needing a restart. Docker is the preferred method of running the application as it ensures a consistent environment across different platforms.
 
+_Due to [WSL2 limitations](https://github.com/microsoft/WSL/issues/4739), hot reloading **only** works through polling, meaning the webpage **must** be open for the hot reload to take effect_
+
 #### Docker (Preferred Method)
 - **Build and run the Docker container**
   ```bash
