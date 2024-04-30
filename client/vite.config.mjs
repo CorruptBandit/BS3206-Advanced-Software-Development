@@ -15,10 +15,7 @@ export default defineConfig({
     process.env.NODE_ENV === 'development'
       ? (() => {
           // Dynamically import the ESLint plugin only in development mode
-          return import("vite-plugin-eslint").then(({ default: eslintPlugin }) => eslintPlugin({
-            include: "./src/**/*.{js,ts,tsx,jsx}",
-            cache: false,
-          }));
+          return import("vite-plugin-eslint").then(({ default: eslintPlugin }) => eslintPlugin());
         })()
       : null,
   ],
