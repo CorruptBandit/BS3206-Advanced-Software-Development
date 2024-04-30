@@ -77,19 +77,20 @@ class MongoDBConnector {
         throw error;
     }
 }
-  async queryFoodItemsByDate(collectionName, date){
-    if (!this.db){
-      console.error("MongoDB not connected");
-      return;
-    }
-    try{
-      const foodItems = await this.db.collection(collectionName).find({date}).toArray();
-      return foodItems;
-    }catch(error){
-      console.error("Error querying food items by date:", error);
-      throw error;
-    }
+async queryFoodItemsByDate(collectionName, date) {
+  if (!this.db) {
+    console.error("MongoDB not connected");
+    return;
   }
+  try {
+    const foodItems = await this.db.collection(collectionName).find({ date: date }).toArray();
+    return foodItems;
+  } catch (error) {
+    console.error("Error querying food items by date:", error);
+    throw error;
+  }
+}
+
 
 }
 
