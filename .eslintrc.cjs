@@ -1,56 +1,54 @@
 module.exports = {
-  root: true, // Ensure ESLint picks up the config at the root of the directory
+  root: true,
   parserOptions: {
     ecmaVersion: 2021,
     sourceType: 'module',
     ecmaFeatures: {
-      jsx: true, // Allows for parsing JSX
+      jsx: true,
     },
   },
   settings: {
     cache: false,
     react: {
-      version: 'detect', // React version is automatically detected
+      version: 'detect',
     },
   },
   env: {
-    browser: true,
-    es2021: true, // Use modern features
-    node: true, // Applies to server-side code as well
+    es2021: true,
   },
   extends: [
     'eslint:recommended',
-    'plugin:react/recommended',
-    'plugin:react/jsx-runtime' // Ensures rules for the JSX runtime are correctly applied
   ],
   plugins: [
-    'react', // Uses the React plugin
+    'react',
   ],
   rules: {
     'no-unused-vars': 'warn',
-    'react/display-name': 'warn',
-    'react/prop-types': 'warn',
   },
   overrides: [
     {
-      files: ['client/src/**/*.{js,jsx,ts,tsx}'], // Applies only to files in client/src with these extensions
+      files: ['client/src/**/*.{js,jsx}'],
       env: {
-        browser: true, // Enable browser environment for client-side
-        node: false, // Disable node environment for client-side
+        browser: true,
       },
+      extends: [
+        'plugin:react/recommended',
+        'plugin:react/jsx-runtime',
+      ],
       rules: {
-        // Client-specific rules or overrides can be defined here
+        'react/display-name': 'warn',
+        'react/prop-types': 'warn',
       },
     },
     {
-      files: ['server/**/*.{js,ts}'], // Applies only to files in server directory
+      files: ['server/**/*.{js,ts}'],
       env: {
-        node: true, // Enable node environment for server-side
-        browser: false, // Disable browser environment for server-side
+        node: true,
       },
       rules: {
-        // Server-specific rules or overrides can be defined here
+        // Server-specific rules
       },
     }
-  ]
+  ],
+  ignorePatterns: ["**/__tests__/**"]
 };

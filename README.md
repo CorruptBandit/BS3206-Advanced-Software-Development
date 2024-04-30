@@ -12,7 +12,7 @@ This is a gym fitness application designed to track workouts and diets, helping 
 
 Before you begin, ensure you have met the following requirements:
 - **Docker** For Docker users, install Docker by following the guide at [Docker's official site](https://docs.docker.com/get-docker/).
-- **Node.js and npm:** For Node.js users, ensure that Node.js and npm are installed. They can be downloaded from [nodejs.org](https://nodejs.org/).
+- **Node.js and npm:** For Node.js users, ensure that Node.js v20 and npm latest rmare installed. They can be downloaded from [nodejs.org](https://nodejs.org/).
 
 _Docker is the prefered method_
 
