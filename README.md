@@ -61,13 +61,15 @@ _Due to [WSL2 limitations](https://github.com/microsoft/WSL/issues/4739), hot re
 
 - **Test the Application**
   ```bash
-  docker compose run --rm test
+  docker compose run --build --rm test
   ```
 
 - **Lint the Application**
   ```bash
-  docker compose run --rm lint
+  docker compose run --build --rm lint
   ```
+
+_The `--build` flag is used to ensure you have the latest version of the image, remove this if you would rather perform manual builds_
 
 #### Node.js (Alternative Method)
 - **Windows ONLY: Set PowerShell as the script shell**
