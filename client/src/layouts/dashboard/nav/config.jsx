@@ -27,7 +27,7 @@ const navConfig = [
     icon: icon('ic_blog'),
   },
   {
-    title:'record-calories',
+    title:'record calories',
     path:"/dashboard/RecordCalories",
     icon: icon('ic_user'),
   },

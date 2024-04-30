@@ -122,6 +122,40 @@ app.post('/api/register', async (req, res) => {
     console.error('Error:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
+  
 });
+app.post('/api/addFood', async (req, res) => {
+  const { mealType, mealName, calories } = req.body;
+  if (!mealType || !mealName || !calories) {
+    return res.status(400).json({ error: 'Meal type, meal name, and calories are all required' });
+  }
+  try {
+    const food = {
+      mealType,
+      mealName,
+      calories,
+      dateAdded: new Date().toISOString().split('T')[0] // Include dateAdded
+    };
+    await mongoDB.insertFoodItem('food', food);
+    return res.status(200).json({ message: 'Food added successfully' });
+  } catch (error) {
+    console.error('Error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+app.post('/api/foodItemsByDate', async (req, res) => {
+  const { date } = req.query;
+  if (!date) {
+    return res.status(400).json({ error: 'Date is required' });
+  }
+  try {
+    const foodItems = await mongoDB.queryFoodItemsByDate('food', date); // Assuming 'food' is the collection name
+    return res.status(200).json({ foodItems });
+  } catch (error) {
+    console.error('Error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
