@@ -34,7 +34,7 @@ export default defineConfig({
       },
     },
   },
-  cacheDir: ".vite",
+  cacheDir: process.env.VITE_CACHE_DIR ? process.env.VITE_CACHE_DIR : undefined,
   build: {
     outDir: '../dist/',
   },
