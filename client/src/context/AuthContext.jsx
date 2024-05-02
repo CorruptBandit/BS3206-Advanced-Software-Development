@@ -12,29 +12,25 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          const response = await fetch('/api/validateToken', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
-            },
-          });
+      try {
+        const response = await fetch('/api/validateToken', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
 
-          if (!response.ok) {
-            throw new Error('Token validation failed');
-          }
-
-          const data = await response.json();
-          setEmail(data.email);
-          setName(data.name);
-          setIsLoggedIn(true);
-        } catch (error) {
-          console.error('Error:', error);
-          logout();  // Ensure we clear the token if it's not valid
+        if (!response.ok) {
+          throw new Error('Token validation failed');
         }
+
+        const data = await response.json();
+        setEmail(data.email);
+        setName(data.name);
+        setIsLoggedIn(true);
+      } catch (error) {
+        console.error('Error:', error);
+        logout();  // Ensure we clear the session if the token is not valid
       }
     };
 
@@ -53,24 +49,18 @@ export const AuthProvider = ({ children }) => {
           password, // Use the provided password for sign-in
         }),
       });
-  
+
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.error || 'Login failed');
       }
-      
+
       const data = await response.json();
-
-      const usernameReq = await fetch(`/api/getUserName?email=${encodeURIComponent(email)}`);
-      const usernameReqJSON = await usernameReq.json();
-      const name = usernameReqJSON.userName;
-
       setEmail(email);
-      setName(name);
+      setName(data.userName); // Assuming the API returns the userName directly here to reduce calls
       setIsLoggedIn(true);
-      // Save the token in localStorage or secure storage
-      localStorage.setItem('token', data.token);
-      return null
+
+      return null;
     } catch (error) {
       console.error('Error:', error);
       return error.message || 'Login failed'; 
@@ -86,48 +76,39 @@ export const AuthProvider = ({ children }) => {
         },
         body: JSON.stringify({ name, email, password }),
       });
-  
+
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.error || 'Registration failed');
       }
-  
-      const data = await response.json();
+
       setEmail(email);
       setName(name);
       setIsLoggedIn(true);
-      // Save the token in localStorage or secure storage
-      localStorage.setItem('token', data.token);
-  
+
       return null; // Registration success, no error message
     } catch (error) {
       console.error('Error:', error);
-      // Handle registration error, e.g., display an error message
       return error.message || 'Registration failed'; // Return the error message
     }
   };
-  
 
-const logout = async () => {
-  try {
-    const token = localStorage.getItem('token');
+  const logout = async () => {
+    try {
+      await fetch('/api/signout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    await fetch('/api/signout', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    localStorage.removeItem('token');
-    setIsLoggedIn(false);
-    setEmail('');
-    setName('');
-  } catch (error) {
-    console.error('Error:', error);
-  }
-};
+      setIsLoggedIn(false);
+      setEmail('');
+      setName('');
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
 
   return (
     <AuthContext.Provider value={{ isLoggedIn, name, email, login, logout, register }}>

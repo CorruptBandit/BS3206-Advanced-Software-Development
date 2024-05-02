@@ -10,8 +10,10 @@ const PORT = 3001;
 const SECRET_KEY = process.env.JWT_SECRET_KEY || 'insecure';
 const mongoDB = new MongoDBConnector();
 const revokedTokens = new Set(); // Set to store revoked tokens
+const cookieParser = require('cookie-parser');
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.get('/api/getUserName', async (req, res) => {
   const { email } = req.query;
@@ -66,7 +68,14 @@ app.post('/api/signin', async (req, res) => {
     // Generate JWT token with email as payload
     const token = jwt.sign({ email: user[0].email }, SECRET_KEY, { expiresIn: '1h' });
 
-    return res.status(200).json({ message: 'Login successful', token });
+    // Set cookie with HttpOnly
+    // Usually you would set 'secure' but we do not have HTTPS
+    res.cookie('token', token, {
+      httpOnly: true,
+      maxAge: 3600000 // Cookie expires in 1 hour, same as token
+    });
+
+  return res.status(200).json({ message: 'Login successful' });
   } catch (error) {
     console.error('Error:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
@@ -74,23 +83,12 @@ app.post('/api/signin', async (req, res) => {
 });
 
 app.post('/api/signout', (req, res) => {
-  // You can add the existing token to the set of revoked tokens
-  const { authorization } = req.headers;
-  if (authorization) {
-    const token = authorization.split(' ')[1];
-    revokedTokens.add(token);
-  }
-
-  return res.status(200).json({ message: 'Sign-out requested' });
+  res.clearCookie('token');
+  return res.status(200).json({ message: 'Sign-out successful' });
 });
 
 app.post('/api/validateToken', async (req, res) => {
-  const { authorization } = req.headers;
-  if (!authorization) {
-    return res.status(401).json({ error: 'No token provided' });
-  }
-
-  const token = authorization.split(' ')[1];
+  const token = req.cookies.token;
   if (!token) {
     return res.status(401).json({ error: 'No token provided' });
   }
