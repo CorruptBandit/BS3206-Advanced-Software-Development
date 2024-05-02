@@ -13,6 +13,8 @@ import WorkoutsPage from './pages/WorkoutsPage';
 import WorkoutEditorPage from './pages/WorkoutEditorPage';
 import WorkoutTrackerPage from './pages/WorkoutTrackerPage';
 
+// ----------------------------------------------------------------------
+
 export default function Router() {
   const routes = useRoutes([
     {
