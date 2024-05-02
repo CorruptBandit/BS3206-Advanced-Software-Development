@@ -84,6 +84,50 @@ app.post('/api/signout', (req, res) => {
   return res.status(200).json({ message: 'Sign-out requested' });
 });
 
+app.post('/api/validateToken', async (req, res) => {
+  const { authorization } = req.headers;
+  if (!authorization) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+
+  const token = authorization.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+
+  try {
+    // Verify the token
+    const decoded = jwt.verify(token, SECRET_KEY);
+
+    // Optional: Check if the token has been revoked
+    if (revokedTokens.has(token)) {
+      return res.status(401).json({ error: 'Token has been revoked' });
+    }
+
+    // Retrieve user information based on the decoded token
+    const user = await mongoDB.queryCollection('users', { email: decoded.email });
+    if (user.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Return the valid user's details
+    return res.status(200).json({
+      message: 'Token is valid',
+      email: user[0].email,
+      name: user[0].name
+    });
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Token has expired' });
+    } else if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+    console.error('Error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
 app.post('/api/register', async (req, res) => {
   const { name, email, password } = req.body;
 

@@ -7,12 +7,39 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [email, setUserEmail] = useState("");
-  const [name, setUserName] = useState("");
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
 
   useEffect(() => {
-    // This effect runs whenever the email state changes
-  }, [name, email]);
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const response = await fetch('/api/validateToken', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error('Token validation failed');
+          }
+
+          const data = await response.json();
+          setEmail(data.email);
+          setName(data.name);
+          setIsLoggedIn(true);
+        } catch (error) {
+          console.error('Error:', error);
+          logout();  // Ensure we clear the token if it's not valid
+        }
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   const login = async (email, password) => {
     try {
@@ -38,8 +65,8 @@ export const AuthProvider = ({ children }) => {
       const usernameReqJSON = await usernameReq.json();
       const name = usernameReqJSON.userName;
 
-      setUserEmail(email);
-      setUserName(name);
+      setEmail(email);
+      setName(name);
       setIsLoggedIn(true);
       // Save the token in localStorage or secure storage
       localStorage.setItem('token', data.token);
@@ -66,8 +93,8 @@ export const AuthProvider = ({ children }) => {
       }
   
       const data = await response.json();
-      setUserEmail(email);
-      setUserName(name);
+      setEmail(email);
+      setName(name);
       setIsLoggedIn(true);
       // Save the token in localStorage or secure storage
       localStorage.setItem('token', data.token);
@@ -81,31 +108,26 @@ export const AuthProvider = ({ children }) => {
   };
   
 
-  const logout = async () => {
-    try {
-      const token = localStorage.getItem('token');
+const logout = async () => {
+  try {
+    const token = localStorage.getItem('token');
 
-      // Call your backend API to sign out and revoke the token
-      await fetch('/api/signout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    await fetch('/api/signout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-      // Remove the token from localStorage or secure storage
-      localStorage.removeItem('token');
-
-      setIsLoggedIn(false);
-      setUserEmail('');
-      setUserName('');
-    } catch (error) {
-      console.error('Error:', error);
-      // Handle logout error, e.g., display an error message
-    }
-  };
-
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+    setEmail('');
+    setName('');
+  } catch (error) {
+    console.error('Error:', error);
+  }
+};
 
   return (
     <AuthContext.Provider value={{ isLoggedIn, name, email, login, logout, register }}>
