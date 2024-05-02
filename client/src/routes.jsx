@@ -10,6 +10,8 @@ import Page404 from './pages/Page404';
 import ProductsPage from './pages/ProductsPage';
 import DashboardAppPage from './pages/DashboardAppPage';
 import WorkoutsPage from './pages/WorkoutsPage';
+import WorkoutEditorPage from './pages/WorkoutEditorPage';
+import WorkoutTrackerPage from './pages/WorkoutTrackerPage';
 
 export default function Router() {
   const routes = useRoutes([
@@ -23,6 +25,8 @@ export default function Router() {
         { path: 'products', element: <ProductsPage /> },
         { path: 'blog', element: <BlogPage /> },
         { path: 'workouts', element: <WorkoutsPage /> },
+        { path: 'workout-editor', element: <WorkoutEditorPage /> },
+        { path: 'workout-tracker', element: <WorkoutTrackerPage /> },
       ],
     },
     {
