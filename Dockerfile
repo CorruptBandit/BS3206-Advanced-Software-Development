@@ -23,8 +23,6 @@ RUN npm i npm@latest -g
 # WORKDIR now sets correct permissions if you set USER first
 USER node
 WORKDIR /opt/node_app
-RUN mkdir -p ./app/node_modules/.vite
-RUN chown -R node:node ./app/node_modules/.vite
 COPY --chown=node:node package.json package-lock.json* ./
 RUN if [ "$NODE_ENV" = "development" ]; \
     then npm ci; \
@@ -38,6 +36,7 @@ ENV PATH /opt/node_app/node_modules/.bin:$PATH
 # Change the working directory to /opt/node_app/app
 # This will be the directory where the application code resides
 WORKDIR /opt/node_app/app
+RUN mkdir ./node_modules
 RUN chown -R node:node ./node_modules
 COPY --chown=node:node . .
 

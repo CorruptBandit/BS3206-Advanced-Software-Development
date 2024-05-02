@@ -34,6 +34,7 @@ export default defineConfig({
       },
     },
   },
+  cacheDir: ".vite",
   build: {
     outDir: '../dist/',
   },
