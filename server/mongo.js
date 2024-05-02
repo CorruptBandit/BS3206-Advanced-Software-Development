@@ -60,6 +60,21 @@ class MongoDBConnector {
 
     return asyncFunction(collectionName, query)
   }
+
+  getCollection (collectionName) {
+    const asyncFunction = async (collectionName) => {
+      try {
+        const collection = this.db.collection(collectionName)
+
+        return await collection.find({}).toArray()
+      } catch (error) {
+        console.error('Error querying MongoDB:', error)
+        throw error
+      }
+    }
+
+    return asyncFunction(collectionName)
+  }
 }
 
 module.exports = MongoDBConnector

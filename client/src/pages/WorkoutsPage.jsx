@@ -38,6 +38,21 @@ const TABLE_HEAD = [
   { id: '' },
 ];
 
+
+const WORKOUT_DATA2 = fetch(`/api/getWorkouts`);
+
+console.log(WORKOUT_DATA2)
+console.log(fetch(`/api/getWorkouts`))
+
+
+// WORKOUT_DATA2.forEach((workout) => {
+//     console.log(workout)
+
+
+// //   seasonsList.push(<li key={index}>{season}</li>);
+// });
+
+
 const WORKOUT_DATA = [
   {
     "workoutId": 1,
