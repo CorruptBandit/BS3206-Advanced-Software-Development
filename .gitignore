@@ -7,6 +7,8 @@ node_modules/
 # dependencies
 /node_modules
 /.pnp
+.vite
+.env
 .pnp.js
 
 # testing
