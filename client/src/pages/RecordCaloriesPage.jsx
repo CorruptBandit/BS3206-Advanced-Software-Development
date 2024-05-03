@@ -16,7 +16,7 @@ import Iconify from "../components/iconify";
 
 export default function RecordCaloriesPage() {
   const { isLoggedIn, email } = useAuth(); // Retrieve isLoggedIn and email from useAuth hook
-  const [calories, setCalories] = useState({
+  const [ setCalories] = useState({
     breakfast: 0,
     lunch: 0,
     dinner: 0,

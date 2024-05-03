@@ -45,7 +45,7 @@ app.post("/api/signin", async (req, res) => {
       maxAge: 3600000 // Cookie expires in 1 hour, same as token
     });
 
-  return res.status(200).json({ message: 'Login successful', email: user[0].email, name: user[0].name});
+    return res.status(200).json({ message: 'Login successful', email: user[0].email, name: user[0].name});
   } catch (error) {
     console.error("Error:", error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -65,24 +65,18 @@ app.post('/api/validateToken', async (req, res) => {
 
   try {
     // Verify the token
-    const decoded = jwt.verify(token, SECRET_KEY);
+    jwt.verify(token, SECRET_KEY);
 
+    // Check if the token has been revoked
     if (revokedTokens.has(token)) {
       return res.status(401).json({ error: 'Token has been revoked' });
     }
-
-    // Retrieve user information based on the decoded token
-    const user = await mongoDB.queryCollection('users', { email: decoded.email });
-    if (user.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    // Return the valid user's details
+  
+    // If not revoked and valid
     return res.status(200).json({
-      message: 'Token is valid',
-      email: user[0].email,
-      name: user[0].name
+      message: 'Token is valid'
     });
+
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({ error: 'Token has expired' });
@@ -93,6 +87,7 @@ app.post('/api/validateToken', async (req, res) => {
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 
 app.post('/api/register', async (req, res) => {
   const { name, email, password } = req.body;
@@ -125,10 +120,14 @@ app.post('/api/register', async (req, res) => {
     // Save the new user to the database
     await mongoDB.insertDocument("users", newUser);
 
-    // Generate JWT token with email as payload
-    const user = await mongoDB.queryCollection("users", { email });
-    const token = jwt.sign({ email: user[0].email }, SECRET_KEY, {
+    // Generate JWT token with email as payload;
+    const token = jwt.sign({ email: email }, SECRET_KEY, {
       expiresIn: "1h",
+    });
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      maxAge: 3600000 // Cookie expires in 1 hour, same as token
     });
 
     return res.status(200).json({ message: "Registration successful", token });
