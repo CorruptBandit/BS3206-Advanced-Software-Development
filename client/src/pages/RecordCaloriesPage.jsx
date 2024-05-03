@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import { useAuth } from "../context/AuthContext";
 import {
   Button,
   Container,
@@ -14,6 +15,7 @@ import {
 import Iconify from "../components/iconify";
 
 export default function RecordCaloriesPage() {
+  const { isLoggedIn, email } = useAuth(); // Retrieve isLoggedIn and email from useAuth hook
   const [calories, setCalories] = useState({
     breakfast: 0,
     lunch: 0,
@@ -26,26 +28,52 @@ export default function RecordCaloriesPage() {
     foodName: "",
     foodCalories: "",
   });
+  const tableCellStyle = {
+    textAlign: "center",
+    padding: "10px",
+    borderBottom: "1px solid #ddd",
+  };
+
   const [foodAdded, setFoodAdded] = useState(false); // State to track food addition success
   const [dashboardData, setDashboardData] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [loading, setLoading] = useState(true); // State to track loading state
+  const [error, setError] = useState(null); // State to track error
 
   useEffect(() => {
     const fetchFoodItems = async () => {
       try {
-        const today = new Date().toISOString().split("T")[0];
-        const response = await fetch(`/api/foodItemsByDate?date=${today}`);
+        const today = selectedDate.toISOString().split("T")[0];
+        console.log("Fetching food items for date:", today); // Log the date being fetched
+        console.log("User email:", email); // Log the user's email
+        const response = await fetch(`/api/foodItemsByDate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            dateAdded: today,
+            userEmail: email,
+          }),
+        });
         if (response.ok) {
           const data = await response.json();
+          console.log("Retrieved food items:", data.foodItems); // Log the retrieved food items
           setDashboardData(data.foodItems);
+          setLoading(false); // Set loading to false once data is fetched
         } else {
           console.error("Failed to fetch food items:", response.statusText);
+          setError("Failed to fetch food items");
+          setLoading(false); // Set loading to false in case of error
         }
       } catch (error) {
         console.error("Error fetching food items", error);
+        setError("Error fetching food items");
+        setLoading(false); // Set loading to false in case of error
       }
     };
     fetchFoodItems();
-  }, []);
+  }, [selectedDate, email]);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -53,45 +81,80 @@ export default function RecordCaloriesPage() {
       [e.target.name]: e.target.value,
     });
   };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const { meal, foodName, foodCalories } = formData;
-    const calorieToAdd = parseInt(foodCalories);
-    if (!isNaN(calorieToAdd) && calorieToAdd > 0) {
-      try {
-        const response = await fetch("/api/addFood", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            mealType: meal,
-            mealName: foodName,
-            calories: calorieToAdd,
-            dateAdded: new Date().toISOString().split("T")[0], // Add dateAdded field
-          }),
+  const handleAddFood = async () => {
+    try {
+      console.log("Form data:", formData);
+      const response = await fetch("/api/addFood", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          mealType: formData.meal,
+          mealName: formData.foodName, // Access mealName directly from formData
+          calories: parseInt(formData.foodCalories), // Access calories directly from formData
+          dateAdded: new Date().toISOString().split("T")[0],
+          userEmail: email,
+        }),
+      });
+      if (response.ok) {
+        setFoodAdded(true);
+        setCalories((prevCalories) => ({
+          ...prevCalories,
+          [formData.meal]:
+            prevCalories[formData.meal] + parseInt(formData.foodCalories),
+        }));
+        setFormData({
+          meal: "breakfast",
+          foodName: "",
+          foodCalories: "",
         });
-        if (response.ok) {
-          setFoodAdded(true);
-          setCalories((prevCalories) => ({
-            ...prevCalories,
-            [meal]: prevCalories[meal] + calorieToAdd,
-          }));
-          setFormData({
-            meal: "breakfast",
-            foodName: "",
-            foodCalories: "",
-          });
-        }
-      } catch (error) {
-        console.error("Error adding food:", error);
+      } else {
+        console.error("Failed to add food:", response.statusText);
       }
-    } else {
-      alert("Please enter a valid number of calories");
+    } catch (error) {
+      console.error("Error adding food:", error);
     }
   };
+  const handleDateChange = (increment) => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(newDate.getDate() + increment);
+    setSelectedDate(newDate);
+  };
+  const getMealData = (mealType) => {
+    const meals = dashboardData.filter((item) => item.mealType === mealType);
+    if (meals.length === 0) {
+      return "No data"; // Handle case when no data is available for a meal type
+    }
+    // Concatenate food names and calories for the meal type
+    return meals
+      .map((meal) => `${meal.mealName} (${meal.calories} kcal)`)
+      .join(", ");
+  };
 
+  if (!isLoggedIn) {
+    return (
+      <>
+        <Helmet>
+          <title>Log Calories | Minimal UI</title>
+        </Helmet>
+
+        <Container>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="center"
+            mt={10}
+          >
+            <Typography variant="h4" gutterBottom>
+              Please log in to record your calories.
+            </Typography>
+          </Stack>
+        </Container>
+      </>
+    );
+  }
   return (
     <>
       <Helmet>
@@ -100,30 +163,49 @@ export default function RecordCaloriesPage() {
 
       <Container>
         <Stack
-          direction="row"
+          direction="column"
           alignItems="center"
-          justifyContent="space-between"
+          justifyContent="center"
           mb={5}
         >
-          <Typography variant="h4" gutterBottom>
+          <Typography variant="h4" gutterBottom sx={{ marginBottom: "20px" }}>
             Log Calories
           </Typography>
-          <Button
-            variant="contained"
-            startIcon={<Iconify icon="eva:plus-fill" />}
-            onClick={handleSubmit}
-          >
-            Log Calories
-          </Button>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Button variant="contained" onClick={() => handleDateChange(-1)}>
+              {" "}
+              {/* Button to move date backwards */}
+              Previous Day
+            </Button>
+            <Typography variant="h6">
+              {selectedDate.toDateString()}
+            </Typography>{" "}
+            {/* Display the selected date */}
+            <Button variant="contained" onClick={() => handleDateChange(1)}>
+              {" "}
+              {/* Button to move date forwards */}
+              Next Day
+            </Button>
+          </Stack>
         </Stack>
 
         {foodAdded && (
-          <Typography variant="body1" color="success">
+          <Typography
+            variant="h6"
+            color="success"
+            align="center"
+            sx={{ marginTop: 2 }}
+          >
             Food added successfully!
           </Typography>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleAddFood();
+          }}
+        >
           <FormControl fullWidth sx={{ marginBottom: 2 }}>
             <InputLabel id="meal-label">Select Meal</InputLabel>
             <Select
@@ -166,33 +248,89 @@ export default function RecordCaloriesPage() {
             type="submit"
             variant="contained"
             startIcon={<Iconify icon="eva:plus-fill" />}
+            sx={{ marginBottom: 2 }} // Add padding below the button
           >
             Add Food
           </Button>
         </form>
 
-        <Typography variant="h6" gutterBottom mt={4}>
-          Calories Added Today
-        </Typography>
-
-        <Typography>Breakfast: {calories.breakfast} kcal</Typography>
-        <Typography>Lunch: {calories.lunch} kcal</Typography>
-        <Typography>Dinner: {calories.dinner} kcal</Typography>
-        <Typography>Snacks: {calories.snacks} kcal</Typography>
-        <Typography>Drinks: {calories.drinks} kcal</Typography>
-
-        {/* Display food items consumed today */}
-        <Typography variant="h6" gutterBottom mt={4}>
-          Food Consumed Today
-        </Typography>
-        {dashboardData &&
-          dashboardData.map((item, index) => (
-            <div key={index}>
-              <Typography>
-                {item.mealType}: {item.mealName} - {item.calories} kcal
-              </Typography>
-            </div>
-          ))}
+        {/* Placeholder table */}
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th
+                style={{
+                  textAlign: "center",
+                  padding: "10px",
+                  borderBottom: "1px solid #ddd",
+                }}
+              >
+                Breakfast
+              </th>
+              <th
+                style={{
+                  textAlign: "center",
+                  padding: "10px",
+                  borderBottom: "1px solid #ddd",
+                }}
+              >
+                Lunch
+              </th>
+              <th
+                style={{
+                  textAlign: "center",
+                  padding: "10px",
+                  borderBottom: "1px solid #ddd",
+                }}
+              >
+                Dinner
+              </th>
+              <th
+                style={{
+                  textAlign: "center",
+                  padding: "10px",
+                  borderBottom: "1px solid #ddd",
+                }}
+              >
+                Drinks
+              </th>
+              <th
+                style={{
+                  textAlign: "center",
+                  padding: "10px",
+                  borderBottom: "1px solid #ddd",
+                }}
+              >
+                Snacks
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan="5" style={{ textAlign: "center" }}>
+                  Loading...
+                </td>
+              </tr>
+            ) : error ? (
+              <tr>
+                <td colSpan="5" style={{ textAlign: "center", color: "red" }}>
+                  {error}
+                </td>
+              </tr>
+            ) : (
+              <>
+                <tr>
+                  <td style={tableCellStyle}>{getMealData("breakfast")}</td>
+                  <td style={tableCellStyle}>{getMealData("lunch")}</td>
+                  <td style={tableCellStyle}>{getMealData("dinner")}</td>
+                  <td style={tableCellStyle}>{getMealData("drinks")}</td>
+                  <td style={tableCellStyle}>{getMealData("snacks")}</td>
+                </tr>
+              </>
+            )}
+          </tbody>
+        </table>
       </Container>
     </>
   );
