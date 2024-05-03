@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Button,
   Container,
@@ -19,22 +19,20 @@ export default function WorkoutEditor() {
 
   // State variables for form fields
   const [workoutName, setWorkoutName] = useState('');
-  const [exercises, setExercises] = useState(workoutId ? Array(5).fill({ exerciseName: '', sets: '', reps: '', targetWeight: '' }) : [{ exerciseName: '', sets: '', reps: '', targetWeight: '' }]);
-  const [selectedExercise, setSelectedExercise] = useState(''); // Currently selected exercise
+  const [exercises, setExercises] = useState([{ exerciseName: '', sets: '', reps: '', targetWeight: '' }]);
+  const [workoutData, setWorkoutData] = useState([]);
+  const [exerciseData, setExerciseData] = useState([]);
 
-  // Function to add a new exercise
   const handleAddExercise = () => {
     setExercises([...exercises, { exerciseName: '', sets: '', reps: '', targetWeight: '' }]);
   };
 
-  // Function to handle changes in exercise fields
   const handleExerciseChange = (event, index, field) => {
     const newExercises = [...exercises];
     newExercises[index][field] = event.target.value;
     setExercises(newExercises);
   };
 
-  // Function to handle removal of an exercise
   const handleDeleteExercise = (index) => {
     if (index > 0) {
       const newExercises = [...exercises];
@@ -43,10 +41,73 @@ export default function WorkoutEditor() {
     }
   };
 
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const [workoutsResponse, exercisesResponse] = await Promise.all([
+        fetch(`/api/getCollection?collection=workouts`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }),
+        fetch(`/api/getCollection?collection=exercises`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }),
+      ]);
+
+      if (!workoutsResponse.ok || !exercisesResponse.ok) {
+        throw new Error(`Failed to fetch data`);
+      }
+
+      const dataWorkouts = await workoutsResponse.json();
+      const dataExercises = await exercisesResponse.json();
+
+
+      const enhancedWorkouts = dataWorkouts.map(workout => {
+        const enhancedExercises = workout.exercises.map(exercise => {
+          const correspondingExercise = dataExercises.find(ex => ex._id === exercise.exerciseId);
+          if (correspondingExercise) {
+            return {
+              ...exercise,
+              exerciseName: correspondingExercise.exerciseName,
+            };
+          }
+          return exercise;
+        });
+
+        return {
+          ...workout,
+          exercises: enhancedExercises,
+        };
+      });
+
+      setWorkoutData(enhancedWorkouts);
+      setExerciseData(dataExercises);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  fetchData();
+}, []);
+
+useEffect(() => {
+  if (workoutId && workoutData.length > 0) {
+    const foundWorkout = workoutData.find((workout) => workout._id === workoutId);
+    if (foundWorkout) {
+      setWorkoutName(foundWorkout.workoutName);
+      setExercises(foundWorkout.exercises);
+    }
+  }
+}, [workoutId, workoutData]);
+
+
   return (
     <Container>
       <Typography variant="h4" gutterBottom>
-        {workoutId ? `Edit Workout ${workoutId}` : 'New Workout'}
+        {workoutName ? `Edit Workout - ${workoutName}` : 'New Workout'}
       </Typography>
       <Grid container spacing={2}>
         <Grid item xs={12}>
@@ -66,14 +127,17 @@ export default function WorkoutEditor() {
             <Grid key={index} container spacing={2} mt={2}>
               <Grid item xs={4}>
                 <FormControl fullWidth>
-                  <InputLabel id={`exercise-select-label-${index}`}>Exercise</InputLabel>
+                  <InputLabel>Exercise</InputLabel>
                   <Select
-                    labelId={`exercise-select-label-${index}`}
-                    value={selectedExercise}
-                    onChange={(event) => setSelectedExercise(event.target.value)}
+                    value={exercise.exerciseName}
+                    onChange={(event) => handleExerciseChange(event, index, 'exerciseName')}
                   >
                     <MenuItem value="">None</MenuItem>
-                    {/* Add options for existing exercises here */}
+                    {exerciseData.map((exerciseDataItem) => (
+                      <MenuItem key={exerciseDataItem._id} value={exerciseDataItem.exerciseName}>
+                        {exerciseDataItem.exerciseName.toString()}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
               </Grid>

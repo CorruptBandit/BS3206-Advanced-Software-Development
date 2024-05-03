@@ -110,7 +110,6 @@ export default function WorkoutsPage() {
     fetchData('exercises');
   }, []);
 
-
   const handleOpenMenu = (event, workoutId) => {
     setWorkoutId(workoutId);
     setOpen(event.currentTarget);
@@ -166,9 +165,21 @@ export default function WorkoutsPage() {
 
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - workoutData.length) : 0;
 
+  const filteredWorkouts = applySortFilter(workoutData, getComparator(order, orderBy), filterName);
+  const isNotFound = !filteredWorkouts.length && !!filterName;
 
-const filteredWorkouts = applySortFilter(workoutData, getComparator(order, orderBy), filterName);
-const isNotFound = !filteredWorkouts.length && !!filterName;
+  // Updated function to format exercises with exercise names instead of IDs
+  const formatExercises = (exercises) => {
+    return exercises.map((exercise) => {
+      // Find the exercise object with matching _id
+      const foundExercise = exerciseData.find((ex) => ex._id === exercise.exerciseId);
+      return (
+        <div key={exercise.exerciseId}>
+          {foundExercise?.exerciseName}: {exercise.sets} sets x {exercise.reps} reps @ {exercise.targetWeight}kg
+        </div>
+      );
+    });
+  };
 
   return (
     <>
@@ -203,20 +214,8 @@ const isNotFound = !filteredWorkouts.length && !!filterName;
                 />
                 <TableBody>
                   {filteredWorkouts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { workoutId, workoutName, exercises }  = row;
+                    const { workoutId, workoutName, exercises } = row;
                     const selectedWorkout = selected.indexOf(workoutName) !== -1;
-
-                    const formatExercises = (exercises) => {
-                      return exercises.map((exercise) => {
-                        // Find the exercise object with matching _id
-                        const foundExercise = exerciseData.find((ex) => ex._id === exercise.exerciseId);
-                        return (
-                          <div key={exercise.exerciseId}>
-                            {foundExercise.exerciseName}: {exercise.sets} sets x {exercise.reps} reps @ {exercise.targetWeight}kg
-                          </div>
-                        );
-                      });
-                    };
 
                     return (
                       <TableRow hover key={workoutId} tabIndex={-1} role="checkbox" selected={selectedWorkout}>
