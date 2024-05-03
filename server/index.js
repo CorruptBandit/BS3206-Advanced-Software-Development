@@ -15,38 +15,6 @@ const cookieParser = require('cookie-parser');
 app.use(express.json());
 app.use(cookieParser());
 
-app.get("/api/getUserName", async (req, res) => {
-  const { email } = req.query;
-
-  if (!email) {
-    return res.status(400).json({ error: "Email is required" });
-  }
-
-  try {
-    // Check if the token has been revoked
-    const { authorization } = req.headers;
-    if (authorization) {
-      const token = authorization.split(" ")[1];
-      if (revokedTokens.has(token)) {
-        return res.status(401).json({ error: "Token has been revoked" });
-      }
-    }
-
-    const user = await mongoDB.queryCollection("users", { email });
-
-    if (user.length === 0) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    const userName = user[0].name;
-
-    return res.status(200).json({ userName });
-  } catch (error) {
-    console.error("Error:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
 app.post("/api/signin", async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -77,7 +45,7 @@ app.post("/api/signin", async (req, res) => {
       maxAge: 3600000 // Cookie expires in 1 hour, same as token
     });
 
-  return res.status(200).json({ message: 'Login successful' });
+  return res.status(200).json({ message: 'Login successful', email: user[0].email, name: user[0].name});
   } catch (error) {
     console.error("Error:", error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -99,7 +67,6 @@ app.post('/api/validateToken', async (req, res) => {
     // Verify the token
     const decoded = jwt.verify(token, SECRET_KEY);
 
-    // Optional: Check if the token has been revoked
     if (revokedTokens.has(token)) {
       return res.status(401).json({ error: 'Token has been revoked' });
     }
