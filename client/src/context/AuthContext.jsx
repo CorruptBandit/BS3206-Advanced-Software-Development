@@ -6,9 +6,9 @@ const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
+  const [email, setEmail] = useState(localStorage.getItem('email') || "");
+  const [name, setName] = useState(localStorage.getItem('name') || "");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -24,18 +24,16 @@ export const AuthProvider = ({ children }) => {
           throw new Error('Token validation failed');
         }
 
-        const data = await response.json();
-        setEmail(data.email);
-        setName(data.name);
-        setIsLoggedIn(true);
+        setIsLoggedIn(true); // Only set isLoggedIn true if the server confirms the token is valid
       } catch (error) {
         console.error('Error:', error);
-        logout();  // Ensure we clear the session if the token is not valid
+        logout();
       }
     };
 
     checkAuth();
   }, []);
+
 
   const login = async (email, password) => {
     try {
@@ -46,7 +44,7 @@ export const AuthProvider = ({ children }) => {
         },
         body: JSON.stringify({
           email,
-          password, // Use the provided password for sign-in
+          password,
         }),
       });
 
@@ -56,17 +54,19 @@ export const AuthProvider = ({ children }) => {
       }
 
       const data = await response.json();
-      setEmail(email);
-      setName(data.userName); // Assuming the API returns the userName directly here to reduce calls
+      setEmail(data.email);
+      setName(data.name);
       setIsLoggedIn(true);
-
+      // Update local storage
+      localStorage.setItem('email', data.email);
+      localStorage.setItem('name', data.name);
       return null;
     } catch (error) {
       console.error('Error:', error);
       return error.message || 'Login failed'; 
     }
   };
-  
+
   const register = async (name, email, password) => {
     try {
       const response = await fetch('/api/register', {
@@ -85,6 +85,9 @@ export const AuthProvider = ({ children }) => {
       setEmail(email);
       setName(name);
       setIsLoggedIn(true);
+      // Update local storage
+      localStorage.setItem('email', email);
+      localStorage.setItem('name', name);
 
       return null; // Registration success, no error message
     } catch (error) {
@@ -105,6 +108,9 @@ export const AuthProvider = ({ children }) => {
       setIsLoggedIn(false);
       setEmail('');
       setName('');
+      // Clear local storage
+      localStorage.removeItem('email');
+      localStorage.removeItem('name');
     } catch (error) {
       console.error('Error:', error);
     }
