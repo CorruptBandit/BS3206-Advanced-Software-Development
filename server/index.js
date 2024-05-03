@@ -10,8 +10,10 @@ const PORT = 3001;
 const SECRET_KEY = process.env.JWT_SECRET_KEY || "insecure";
 const mongoDB = new MongoDBConnector();
 const revokedTokens = new Set(); // Set to store revoked tokens
+const cookieParser = require('cookie-parser');
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.get("/api/getUserName", async (req, res) => {
   const { email } = req.query;
@@ -68,25 +70,64 @@ app.post("/api/signin", async (req, res) => {
       expiresIn: "1h",
     });
 
-    return res.status(200).json({ message: "Login successful", token });
+    // Set cookie with HttpOnly
+    // Usually you would set 'secure' but we do not have HTTPS
+    res.cookie('token', token, {
+      httpOnly: true,
+      maxAge: 3600000 // Cookie expires in 1 hour, same as token
+    });
+
+  return res.status(200).json({ message: 'Login successful' });
   } catch (error) {
     console.error("Error:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-app.post("/api/signout", (req, res) => {
-  // You can add the existing token to the set of revoked tokens
-  const { authorization } = req.headers;
-  if (authorization) {
-    const token = authorization.split(" ")[1];
-    revokedTokens.add(token);
-  }
-
-  return res.status(200).json({ message: "Sign-out requested" });
+app.post('/api/signout', (req, res) => {
+  res.clearCookie('token');
+  return res.status(200).json({ message: 'Sign-out successful' });
 });
 
-app.post("/api/register", async (req, res) => {
+app.post('/api/validateToken', async (req, res) => {
+  const token = req.cookies.token;
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+
+  try {
+    // Verify the token
+    const decoded = jwt.verify(token, SECRET_KEY);
+
+    // Optional: Check if the token has been revoked
+    if (revokedTokens.has(token)) {
+      return res.status(401).json({ error: 'Token has been revoked' });
+    }
+
+    // Retrieve user information based on the decoded token
+    const user = await mongoDB.queryCollection('users', { email: decoded.email });
+    if (user.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Return the valid user's details
+    return res.status(200).json({
+      message: 'Token is valid',
+      email: user[0].email,
+      name: user[0].name
+    });
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Token has expired' });
+    } else if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+    console.error('Error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.post('/api/register', async (req, res) => {
   const { name, email, password } = req.body;
 
   if (!email || !password) {
