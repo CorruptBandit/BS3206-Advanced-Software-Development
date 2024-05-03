@@ -33,7 +33,7 @@ RUN npm cache clean --force
 # Set the PATH to include the node_modules/.bin from the /opt/node_app directory
 # Set the Vite Cache to use the node_modules/ from the /opt/node_app directory
 ENV PATH /opt/node_app/node_modules/.bin:$PATH
-ENV VITE_CACHE_DIR = "../node_modules/.vite"
+ENV VITE_CACHE_DIR /opt/node_app/node_modules/.vite
 
 # Change the working directory to /opt/node_app/app
 # This will be the directory where the application code resides
