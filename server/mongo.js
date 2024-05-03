@@ -48,6 +48,16 @@ class MongoDBConnector {
     }
   }
 
+  async deleteDocument(collectionName, id) {
+    await this.connect();
+    return this.db.collection(collectionName).deleteOne({ _id: id });
+  }
+
+  async updateDocument(collectionName, id, updateValues) {
+    await this.connect();
+    return this.db.collection(collectionName).updateOne({ _id: id }, { $set: updateValues });
+  }
+
   queryCollection(collectionName, query) {
     const asyncFunction = async (collectionName, query) => {
       try {

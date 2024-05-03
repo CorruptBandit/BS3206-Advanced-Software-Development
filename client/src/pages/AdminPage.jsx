@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Box, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Typography, Box, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Grid } from '@mui/material';
 
 export default function AdminPage() {
   const [users, setUsers] = useState([]);
@@ -20,6 +20,7 @@ export default function AdminPage() {
   const handleDeleteUser = (userId) => {
     fetch(`/api/users/${userId}`, { method: 'DELETE' })
       .then(response => {
+        console.log(response)
         if (response.ok) {
           setUsers(users.filter(user => user.id !== userId));
           alert('User deleted successfully');
@@ -52,17 +53,31 @@ export default function AdminPage() {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" sx={{ mb: 5 }}>
-        Admin Dashboard
-      </Typography>
-      <Button onClick={fetchUsers}>Refresh User List</Button>
-      {users.map(user => (
-        <Box key={user.id}>
-          <Typography>{user.email}</Typography>
-          <Button onClick={() => handleDeleteUser(user.id)}>Delete User</Button>
-          <Button onClick={() => openPasswordDialog(user)}>Change Password</Button>
-        </Box>
-      ))}
+      <Grid container justifyContent="space-between" alignItems="center">
+        <Grid item>
+          <Typography variant="h4" sx={{ mb: 5 }}>
+            Admin Dashboard
+          </Typography>
+        </Grid>
+        <Grid item>
+          <Button variant="contained" onClick={fetchUsers} sx={{ mb: 5 }}>Refresh User List</Button>
+        </Grid>
+      </Grid>
+      <Paper elevation={4} sx={{ width: '100%', overflow: 'hidden' }}>
+        {users.map(user => (
+          <Box key={user.id} sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee' }}>
+            <Typography>{user.email}</Typography>
+            <Box>
+              <Button color="primary" onClick={() => openPasswordDialog(user)} sx={{ marginRight: 1 }}>
+                Change Password
+              </Button>
+              <Button color="error" onClick={() => handleDeleteUser(user.id)}>
+                Delete User
+              </Button>
+            </Box>
+          </Box>
+        ))}
+      </Paper>
       {selectedUser && (
         <Dialog open={Boolean(selectedUser)} onClose={() => setSelectedUser(null)}>
           <DialogTitle>Change Password</DialogTitle>

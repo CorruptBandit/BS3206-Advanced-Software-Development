@@ -187,4 +187,53 @@ app.post("/api/foodItemsByDate", async (req, res) => {
   }
 });
 
+// List all users
+app.get('/api/users', async (req, res) => {
+  try {
+    const users = await mongoDB.queryCollection("users", {});
+    const userDisplay = users.map(user => ({
+      email: user.email,
+      name: user.name,
+      id: user._id // Assuming MongoDB so _id would be used
+    }));
+    res.status(200).json(userDisplay);
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Delete user
+app.delete('/api/users/:userId', async (req, res) => {
+  const userId = req.params.userId;
+  try {
+    await mongoDB.deleteDocument("users", userId);
+    res.status(200).json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Change user password
+app.put('/api/users/:userId/password', async (req, res) => {
+  const userId = req.params.userId;
+  const { newPassword } = req.body;
+  if (!newPassword) {
+    return res.status(400).json({ error: "New password is required" });
+  }
+
+  try {
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    await mongoDB.updateDocument("users", userId, { password: hashedPassword });
+    res.status(200).json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
