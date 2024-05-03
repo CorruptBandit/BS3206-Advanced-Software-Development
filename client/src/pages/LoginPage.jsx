@@ -1,4 +1,5 @@
 import { useState } from "react";
+import validator from 'validator'; // Import validator for email checking
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -22,15 +23,29 @@ export default function SignIn() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-  
+
     const email = data.get("email");
-    const password = MD5(data.get("password")).toString();
-  
+    const password = data.get("password");
+    const passwordHash = MD5(password).toString();
+
+    // Validate email
+    if (!validator.isEmail(email)) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+
+    // Validate password strength
+    const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      alert("Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.");
+      return;
+    }
+
     try {
       if (isRegistering) {
         // Registration
         const name = data.get("name");
-        const registrationError = await register(name, email, password);
+        const registrationError = await register(name, email, passwordHash);
         if (!registrationError) {
           navigate('/'); // Redirect to homepage only if registration is successful
         } else {
@@ -39,7 +54,7 @@ export default function SignIn() {
           alert(`Registration failed: ${registrationError}`);
         }
       } else {
-        const loginError = await login(email, password);
+        const loginError = await login(email, passwordHash);
         if (!loginError) {
           navigate('/'); // Redirect to homepage
         }
@@ -56,8 +71,6 @@ export default function SignIn() {
       // Display an error message or handle it accordingly
     }
   };
-  
-  
 
   return (
     <ThemeProvider theme={defaultTheme}>
