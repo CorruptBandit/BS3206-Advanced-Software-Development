@@ -124,31 +124,33 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-
-app.get('/api/getWorkouts', async (req, res) => {
-    try {
-      // Check if the token has been revoked
-      const { authorization } = req.headers;
-      if (authorization) {
-        const token = authorization.split(' ')[1];
-        if (revokedTokens.has(token)) {
-          return res.status(401).json({ error: 'Token has been revoked' });
-        }
+app.get('/api/getCollection', async (req, res) => {
+  try {
+    // Check if the token has been revoked
+    const { authorization } = req.headers;
+    if (authorization) {
+      const token = authorization.split(' ')[1];
+      if (revokedTokens.has(token)) {
+        return res.status(401).json({ error: 'Token has been revoked' });
       }
-  
-      const workouts = await mongoDB.getCollection('workouts');
-    //   console.log("AHHHHHHHHHHHHH")
-    //   console.log(JSON.stringify(workouts))
-  
-      if (workouts.length === 0) {
-        return res.status(404).json({ error: 'Error getting workouts' });
-      }
-  
-      return res.status(200).json(workouts);
-    } catch (error) {
-      console.error('Error:', error);
-      return res.status(500).json({ error: 'Internal Server Error' });
     }
-  });
+
+    const collectionName = req.query.collection;
+    if (!collectionName) {
+      return res.status(400).json({ error: 'Collection name is required' });
+    }
+
+    const collection = await mongoDB.getCollection(collectionName);
+
+    if (collection.length === 0) {
+      return res.status(404).json({ error: `Error getting ${collectionName}` });
+    }
+
+    return res.status(200).json(collection);
+  } catch (error) {
+    console.error('Error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));

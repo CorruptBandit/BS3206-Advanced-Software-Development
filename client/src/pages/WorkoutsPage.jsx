@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 // @mui
@@ -38,82 +38,6 @@ const TABLE_HEAD = [
   { id: '' },
 ];
 
-
-const WORKOUT_DATA2 = fetch(`/api/getWorkouts`);
-
-console.log(WORKOUT_DATA2)
-console.log(fetch(`/api/getWorkouts`))
-
-
-// WORKOUT_DATA2.forEach((workout) => {
-//     console.log(workout)
-
-
-// //   seasonsList.push(<li key={index}>{season}</li>);
-// });
-
-
-const WORKOUT_DATA = [
-  {
-    "workoutId": 1,
-    "workoutName": "workout 1",
-    "exercises": [
-      { "exerciseId": 1, "sets": 3, "reps": 5, "target_weight": 44 },
-      { "exerciseId": 2, "sets": 4, "reps": 6, "target_weight": 55 }
-    ]
-  },{
-    "workoutId": 2,
-    "workoutName": "workout 2",
-    "exercises": [
-      { "exerciseId": 1, "sets": 3, "reps": 5, "target_weight": 44 },
-      { "exerciseId": 2, "sets": 4, "reps": 6, "target_weight": 55 }
-    ]
-  },
-    {
-    "workoutId": 3,
-    "workoutName": "workout 3",
-    "exercises": [
-      { "exerciseId": 1, "sets": 3, "reps": 5, "target_weight": 44 },
-      { "exerciseId": 2, "sets": 4, "reps": 6, "target_weight": 55 }
-    ]
-  },
-  {
-    "workoutId": 4,
-    "workoutName": "workout 4",
-    "exercises": [
-      { "exerciseId": 2, "sets": 6, "reps": 5, "target_weight": 66 },
-      { "exerciseId": 3, "sets": 4, "reps": 4, "target_weight": 33 },
-      { "exerciseId": 4, "sets": 2, "reps": 2, "target_weight": 22 }
-    ]
-  },
-    {
-    "workoutId": 5,
-    "workoutName": "workout 5",
-    "exercises": [
-      { "exerciseId": 2, "sets": 6, "reps": 5, "target_weight": 66 },
-      { "exerciseId": 3, "sets": 4, "reps": 4, "target_weight": 33 },
-      { "exerciseId": 4, "sets": 2, "reps": 2, "target_weight": 22 }
-    ]
-  },
-    {
-    "workoutId": 6,
-    "workoutName": "workout 6",
-    "exercises": [
-      { "exerciseId": 2, "sets": 6, "reps": 5, "target_weight": 66 },
-      { "exerciseId": 3, "sets": 4, "reps": 4, "target_weight": 33 },
-      { "exerciseId": 4, "sets": 2, "reps": 2, "target_weight": 22 }
-    ]
-  },
-    {
-    "workoutId": 7,
-    "workoutName": "workout 7",
-    "exercises": [
-      { "exerciseId": 2, "sets": 6, "reps": 5, "target_weight": 66 },
-      { "exerciseId": 3, "sets": 4, "reps": 4, "target_weight": 33 },
-      { "exerciseId": 4, "sets": 2, "reps": 2, "target_weight": 22 }
-    ]
-  }
-];
 // ----------------------------------------------------------------------
 
 function descendingComparator(a, b, orderBy) {
@@ -154,6 +78,37 @@ export default function WorkoutsPage() {
   const [filterName, setFilterName] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [workoutId, setWorkoutId] = useState(null);
+  const [workoutData, setWorkoutData] = useState([]);
+  const [exerciseData, setExerciseData] = useState([]);
+
+  const fetchData = async (collection) => {
+    try {
+      const response = await fetch(`/api/getCollection?collection=${collection}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${collection}`);
+      }
+      const data = await response.json();
+
+      // Map _id to workoutId for Workouts data
+      if (collection === 'workouts') {
+        const mappedData = data.map((item) => ({ ...item, workoutId: item._id }));
+        setWorkoutData(mappedData);
+      } else if (collection === 'exercises') {
+        setExerciseData(data);
+      }
+    } catch (error) {
+      console.error(`Error fetching ${collection}:`, error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData('workouts');
+    fetchData('exercises');
+  }, []);
 
 
   const handleOpenMenu = (event, workoutId) => {
@@ -173,7 +128,7 @@ export default function WorkoutsPage() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = WORKOUT_DATA.map((n) => n.workoutName);
+      const newSelecteds = workoutData.map((n) => n.workoutName);
       setSelected(newSelecteds);
       return;
     }
@@ -209,10 +164,10 @@ export default function WorkoutsPage() {
     setFilterName(event.target.value);
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - WORKOUT_DATA.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - workoutData.length) : 0;
 
 
-const filteredWorkouts = applySortFilter(WORKOUT_DATA, getComparator(order, orderBy), filterName);
+const filteredWorkouts = applySortFilter(workoutData, getComparator(order, orderBy), filterName);
 const isNotFound = !filteredWorkouts.length && !!filterName;
 
   return (
@@ -241,7 +196,7 @@ const isNotFound = !filteredWorkouts.length && !!filterName;
                   order={order}
                   orderBy={orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={WORKOUT_DATA.length}
+                  rowCount={workoutData.length}
                   numSelected={selected.length}
                   onRequestSort={handleRequestSort}
                   onSelectAllClick={handleSelectAllClick}
@@ -251,13 +206,16 @@ const isNotFound = !filteredWorkouts.length && !!filterName;
                     const { workoutId, workoutName, exercises }  = row;
                     const selectedWorkout = selected.indexOf(workoutName) !== -1;
 
-                    // Function to format exercise details for display
                     const formatExercises = (exercises) => {
-                      return exercises.map((exercise) => (
-                        <div key={exercise.exerciseId}>
-                          {exercise.exerciseId} ({exercise.sets} sets x {exercise.reps} reps @ {exercise.target_weight} kg)
-                        </div>
-                      ));
+                      return exercises.map((exercise) => {
+                        // Find the exercise object with matching _id
+                        const foundExercise = exerciseData.find((ex) => ex._id === exercise.exerciseId);
+                        return (
+                          <div key={exercise.exerciseId}>
+                            {foundExercise.exerciseName}: {exercise.sets} sets x {exercise.reps} reps @ {exercise.targetWeight}kg
+                          </div>
+                        );
+                      });
                     };
 
                     return (
@@ -316,7 +274,7 @@ const isNotFound = !filteredWorkouts.length && !!filterName;
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={WORKOUT_DATA.length}
+            count={workoutData.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
