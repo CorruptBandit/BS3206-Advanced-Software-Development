@@ -1,5 +1,6 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { fa } from '@faker-js/faker';
 
 const AuthContext = createContext();
 
@@ -9,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [email, setEmail] = useState(localStorage.getItem('email') || "");
   const [name, setName] = useState(localStorage.getItem('name') || "");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -24,7 +26,10 @@ export const AuthProvider = ({ children }) => {
           throw new Error('Token validation failed');
         }
 
+        const data = await response.json();
+
         setIsLoggedIn(true); // Only set isLoggedIn true if the server confirms the token is valid
+        setIsAdmin(data.email === 'admin@admin.admin');
       } catch (error) {
         console.error('Error:', error);
         logout();
@@ -108,6 +113,7 @@ export const AuthProvider = ({ children }) => {
       setIsLoggedIn(false);
       setEmail('');
       setName('');
+      setIsAdmin(false);
       // Clear local storage
       localStorage.removeItem('email');
       localStorage.removeItem('name');
@@ -117,7 +123,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, name, email, login, logout, register }}>
+    <AuthContext.Provider value={{ isLoggedIn, isAdmin, name, email, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );

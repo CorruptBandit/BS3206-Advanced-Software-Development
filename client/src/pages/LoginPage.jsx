@@ -34,15 +34,13 @@ export default function SignIn() {
       return;
     }
 
-    // Validate password strength
-    const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/;
-    if (!passwordRegex.test(password)) {
-      alert("Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.");
-      return;
-    }
-
     try {
       if (isRegistering) {
+        const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/;
+        if (!passwordRegex.test(password)) {
+          alert("Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.");
+          return;
+        }
         // Registration
         const name = data.get("name");
         const registrationError = await register(name, email, passwordHash);

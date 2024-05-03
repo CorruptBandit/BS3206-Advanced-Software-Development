@@ -65,7 +65,7 @@ app.post('/api/validateToken', async (req, res) => {
 
   try {
     // Verify the token
-    jwt.verify(token, SECRET_KEY);
+    const decoded = jwt.verify(token, SECRET_KEY);
 
     // Check if the token has been revoked
     if (revokedTokens.has(token)) {
@@ -74,7 +74,8 @@ app.post('/api/validateToken', async (req, res) => {
   
     // If not revoked and valid
     return res.status(200).json({
-      message: 'Token is valid'
+      message: 'Token is valid',
+      email: decoded.email
     });
 
   } catch (error) {
