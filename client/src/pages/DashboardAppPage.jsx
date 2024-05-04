@@ -23,7 +23,7 @@ import { useAuth } from '../context/AuthContext';
 export default function DashboardAppPage() {
   const theme = useTheme();
   const { isLoggedIn, isAdmin } = useAuth();
-  console.log(isAdmin)
+
   if (isAdmin) {
     return <AdminPage />; // Render AdminPage if the user is admin
   }

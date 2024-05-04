@@ -62,6 +62,7 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
       setEmail(data.email);
       setName(data.name);
+      setIsAdmin(data.email === 'admin@admin.admin');
       setIsLoggedIn(true);
       // Update local storage
       localStorage.setItem('email', data.email);

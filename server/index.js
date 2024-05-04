@@ -4,6 +4,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const MongoDBConnector = require("./mongo");
+const verifyAdmin = require("./middleware/verifyAdmin")
 const { ObjectId } = require('mongodb');
 require("dotenv").config();
 
@@ -14,8 +15,6 @@ const SECRET_KEY = process.env.JWT_SECRET_KEY || "insecure";
 const mongoDB = new MongoDBConnector();
 const revokedTokens = new Set(); // Set to store revoked tokens
 const cookieParser = require('cookie-parser');
-const { teal } = require("@mui/material/colors");
-const { result } = require("lodash");
 
 app.use(express.json());
 app.use(cookieParser());
@@ -191,8 +190,8 @@ app.post("/api/foodItemsByDate", async (req, res) => {
   }
 });
 
-// List all users
-app.get('/api/users', async (req, res) => {
+// ADMIN ENDPOINTS
+app.get('/api/users', verifyAdmin, async (req, res) => {
   try {
     const users = await mongoDB.queryCollection("users", {});
     const userDisplay = users.map(user => ({
@@ -207,7 +206,7 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
-app.delete('/api/users/:userId', async (req, res) => {
+app.delete('/api/users/:userId', verifyAdmin, async (req, res) => {
   const userId = req.params.userId;
   try {
     const result = await mongoDB.deleteDocument("users", new ObjectId(userId));
@@ -223,7 +222,7 @@ app.delete('/api/users/:userId', async (req, res) => {
 });
 
 // Change user password
-app.put('/api/users/:userId/password', async (req, res) => {
+app.put('/api/users/:userId/password', verifyAdmin, async (req, res) => {
   console.log('hi')
   const userId = req.params.userId;
   const newPassword = MD5(req.body.password).toString();
