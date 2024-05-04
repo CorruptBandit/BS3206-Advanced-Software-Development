@@ -5,6 +5,7 @@ import { useTheme } from '@mui/material/styles';
 import { Grid, Container, Typography, Box } from '@mui/material';
 // components
 import Iconify from '../components/iconify';
+import AdminPage from './AdminPage';
 // sections
 import {
   AppTasks,
@@ -21,7 +22,11 @@ import { useAuth } from '../context/AuthContext';
 
 export default function DashboardAppPage() {
   const theme = useTheme();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, isAdmin } = useAuth();
+
+  if (isAdmin) {
+    return <AdminPage />; // Render AdminPage if the user is admin
+  }
 
   return (
     <>

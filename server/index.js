@@ -1,7 +1,11 @@
+const MD5 = require('crypto-js/md5');
+
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const MongoDBConnector = require("./mongo");
+const verifyAdmin = require("./middleware/verifyAdmin")
+const { ObjectId } = require('mongodb');
 require("dotenv").config();
 
 const app = express();
@@ -20,7 +24,6 @@ app.post("/api/signin", async (req, res) => {
   if (!email || !password) {
     return res.status(400).json({ error: "Email and password are required" });
   }
-
   try {
     const user = await mongoDB.queryCollection("users", { email });
     if (user.length === 0) {
@@ -28,7 +31,6 @@ app.post("/api/signin", async (req, res) => {
     }
 
     const isPasswordValid = await bcrypt.compare(password, user[0].password);
-
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
@@ -65,7 +67,7 @@ app.post('/api/validateToken', async (req, res) => {
 
   try {
     // Verify the token
-    jwt.verify(token, SECRET_KEY);
+    const decoded = jwt.verify(token, SECRET_KEY);
 
     // Check if the token has been revoked
     if (revokedTokens.has(token)) {
@@ -74,7 +76,8 @@ app.post('/api/validateToken', async (req, res) => {
   
     // If not revoked and valid
     return res.status(200).json({
-      message: 'Token is valid'
+      message: 'Token is valid',
+      email: decoded.email
     });
 
   } catch (error) {
@@ -109,6 +112,7 @@ app.post('/api/register', async (req, res) => {
     // Hash and salt the password before storing it
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
+    console.log("Register hash ")
 
     // Create a new user with the hashed password
     const newUser = {
@@ -185,5 +189,59 @@ app.post("/api/foodItemsByDate", async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+// ADMIN ENDPOINTS
+app.get('/api/users', verifyAdmin, async (req, res) => {
+  try {
+    const users = await mongoDB.queryCollection("users", {});
+    const userDisplay = users.map(user => ({
+      email: user.email,
+      name: user.name,
+      id: user._id // Assuming MongoDB so _id would be used
+    }));
+    res.status(200).json(userDisplay);
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.delete('/api/users/:userId', verifyAdmin, async (req, res) => {
+  const userId = req.params.userId;
+  try {
+    const result = await mongoDB.deleteDocument("users", new ObjectId(userId));
+    console.log(result)
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.status(200).json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Change user password
+app.put('/api/users/:userId/password', verifyAdmin, async (req, res) => {
+  const userId = req.params.userId;
+  const newPassword = MD5(req.body.password).toString();
+  console.log(newPassword.length)
+  if (!newPassword) {
+    return res.status(400).json({ error: "New password is required" });
+  }
+
+  try {
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    await mongoDB.updateDocument("users", new ObjectId(userId), { password: hashedPassword });
+    
+    res.status(200).json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
