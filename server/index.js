@@ -223,7 +223,6 @@ app.delete('/api/users/:userId', verifyAdmin, async (req, res) => {
 
 // Change user password
 app.put('/api/users/:userId/password', verifyAdmin, async (req, res) => {
-  console.log('hi')
   const userId = req.params.userId;
   const newPassword = MD5(req.body.password).toString();
   console.log(newPassword.length)
@@ -235,7 +234,7 @@ app.put('/api/users/:userId/password', verifyAdmin, async (req, res) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 
-    hi = await mongoDB.updateDocument("users", new ObjectId(userId), { password: hashedPassword });
+    await mongoDB.updateDocument("users", new ObjectId(userId), { password: hashedPassword });
     
     res.status(200).json({ message: 'Password updated successfully' });
   } catch (error) {

@@ -1,22 +1,15 @@
 import PropTypes from 'prop-types';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-// @mui
 import { styled, alpha } from '@mui/material/styles';
 import { Box, Link, Drawer, Typography, Avatar } from '@mui/material';
-// mock
 import account from '../../../_mock/account';
-// hooks
 import useResponsive from '../../../hooks/useResponsive';
-// components
 import Logo from '../../../components/logo';
 import Scrollbar from '../../../components/scrollbar';
 import NavSection from '../../../components/nav-section';
-//
-import navConfig from './config';
+import useNavConfig from '../../../hooks/useNavConfig';
 import { useAuth } from '../../../context/AuthContext';
-
-// ----------------------------------------------------------------------
 
 const NAV_WIDTH = 280;
 
@@ -28,8 +21,6 @@ const StyledAccount = styled('div')(({ theme }) => ({
   backgroundColor: alpha(theme.palette.grey[500], 0.12),
 }));
 
-// ----------------------------------------------------------------------
-
 Nav.propTypes = {
   openNav: PropTypes.bool,
   onCloseNav: PropTypes.func,
@@ -37,15 +28,15 @@ Nav.propTypes = {
 
 export default function Nav({ openNav, onCloseNav }) {
   const { pathname } = useLocation();
-  const { name, email } = useAuth();
-
+  const { name, email, isLoggedIn } = useAuth();
+  const navConfig = useNavConfig(); // Get navigation config based on user role
   const isDesktop = useResponsive('up', 'lg');
 
   useEffect(() => {
-    if (openNav) {
+    if (openNav && !isDesktop) {
       onCloseNav();
     }
-  }, [pathname]);
+  }, [pathname, openNav, onCloseNav, isDesktop]);
 
   const renderContent = (
     <Scrollbar
@@ -57,18 +48,16 @@ export default function Nav({ openNav, onCloseNav }) {
       <Box sx={{ px: 2.5, py: 3, display: 'inline-flex' }}>
         <Logo />
       </Box>
-  
-      {useAuth().isLoggedIn ? ( // Check if the user is logged in
+
+      {isLoggedIn && ( // Only show user info if logged in
         <Box sx={{ mb: 5, mx: 2.5 }}>
           <Link underline="none">
             <StyledAccount>
               <Avatar src={account.photoURL} alt="photoURL" />
-  
               <Box sx={{ ml: 2 }}>
                 <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
                   {name}
                 </Typography>
-  
                 <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                   {email}
                 </Typography>
@@ -76,14 +65,13 @@ export default function Nav({ openNav, onCloseNav }) {
             </StyledAccount>
           </Link>
         </Box>
-      ) : null}
-  
+      )}
+
       <NavSection data={navConfig} />
-  
+
       <Box sx={{ flexGrow: 1 }} />
     </Scrollbar>
   );
-  
 
   return (
     <Box
