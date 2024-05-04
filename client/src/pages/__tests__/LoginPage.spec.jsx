@@ -25,13 +25,12 @@ vi.mock('react-router-dom', async (importOriginal) => {
   };
 });
 
-// Due to an issue with Vitest where `.not` does not work as expected, 
-// we avoid using it to check that navigation has NOT been called. 
-// Instead, we retain the count of navigation calls across tests. For example: 
-// fter submitting the form with valid and invalid credentials, 
-// navigation occurs only once.
 describe('SignIn Component', () => {
-  const mockNavigate = useNavigate();
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+  const mockNavigate = useNavigate()
+
   it('Submitting login form with valid credentials navigates to dashboard', async () => {
     render(
       <BrowserRouter>
@@ -48,10 +47,11 @@ describe('SignIn Component', () => {
 
     // Check if navigate was called with the correct path
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenNthCalledWith(1, "/");
+      expect(mockNavigate).toHaveBeenCalledWith("/");
     });
   });
-  it('Submitting login form with valid credentials navigates to dashboard2', async () => {
+
+  it('Submitting login form with invalid credentials does not navigate to dashboard', async () => {
     render(
       <BrowserRouter>
         <SignIn />
@@ -62,12 +62,11 @@ describe('SignIn Component', () => {
     fireEvent.change(screen.getByLabelText('Email Address', { exact: false }), { target: { value: 'test@test.test' }});
     fireEvent.change(screen.getByLabelText('Password', { exact: false }), { target: { value: 'WrongPassword' } });
 
-    // Submit the form by clicking the sign in button
-    fireEvent.click(screen.getByRole('button', { name: 'Sign In' }));
-
+    await fireEvent.click(screen.getByRole('button', { name: 'Sign In' }));
+    
     // Check if navigate has still only been called once (from previous test)
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenNthCalledWith(1, "/");
+      expect(mockNavigate).not.toHaveBeenCalledWith("/");
     });
-  });
+});
 });
