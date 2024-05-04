@@ -1,7 +1,10 @@
+const MD5 = require('crypto-js/md5');
+
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const MongoDBConnector = require("./mongo");
+const { ObjectId } = require('mongodb');
 require("dotenv").config();
 
 const app = express();
@@ -11,6 +14,8 @@ const SECRET_KEY = process.env.JWT_SECRET_KEY || "insecure";
 const mongoDB = new MongoDBConnector();
 const revokedTokens = new Set(); // Set to store revoked tokens
 const cookieParser = require('cookie-parser');
+const { teal } = require("@mui/material/colors");
+const { result } = require("lodash");
 
 app.use(express.json());
 app.use(cookieParser());
@@ -20,7 +25,6 @@ app.post("/api/signin", async (req, res) => {
   if (!email || !password) {
     return res.status(400).json({ error: "Email and password are required" });
   }
-
   try {
     const user = await mongoDB.queryCollection("users", { email });
     if (user.length === 0) {
@@ -28,7 +32,6 @@ app.post("/api/signin", async (req, res) => {
     }
 
     const isPasswordValid = await bcrypt.compare(password, user[0].password);
-
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
@@ -110,6 +113,7 @@ app.post('/api/register', async (req, res) => {
     // Hash and salt the password before storing it
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
+    console.log("Register hash ")
 
     // Create a new user with the hashed password
     const newUser = {
@@ -203,11 +207,14 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
-// Delete user
 app.delete('/api/users/:userId', async (req, res) => {
   const userId = req.params.userId;
   try {
-    await mongoDB.deleteDocument("users", userId);
+    const result = await mongoDB.deleteDocument("users", new ObjectId(userId));
+    console.log(result)
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
     res.status(200).json({ message: 'User deleted successfully' });
   } catch (error) {
     console.error("Error:", error);
@@ -217,8 +224,10 @@ app.delete('/api/users/:userId', async (req, res) => {
 
 // Change user password
 app.put('/api/users/:userId/password', async (req, res) => {
+  console.log('hi')
   const userId = req.params.userId;
-  const { newPassword } = req.body;
+  const newPassword = MD5(req.body.password).toString();
+  console.log(newPassword.length)
   if (!newPassword) {
     return res.status(400).json({ error: "New password is required" });
   }
@@ -227,7 +236,8 @@ app.put('/api/users/:userId/password', async (req, res) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 
-    await mongoDB.updateDocument("users", userId, { password: hashedPassword });
+    hi = await mongoDB.updateDocument("users", new ObjectId(userId), { password: hashedPassword });
+    
     res.status(200).json({ message: 'Password updated successfully' });
   } catch (error) {
     console.error("Error:", error);

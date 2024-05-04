@@ -29,6 +29,7 @@ export default function SignIn() {
     const passwordHash = MD5(password).toString();
 
     // Validate email
+    // to do check name, after 3 times say contact admin, fix state for admin
     if (!validator.isEmail(email)) {
       alert("Please enter a valid email address.");
       return;

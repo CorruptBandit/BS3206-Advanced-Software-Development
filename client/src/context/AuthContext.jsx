@@ -1,6 +1,6 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { fa } from '@faker-js/faker';
+import { da, fa } from '@faker-js/faker';
 
 const AuthContext = createContext();
 
@@ -55,6 +55,7 @@ export const AuthProvider = ({ children }) => {
 
       if (!response.ok) {
         const data = await response.json();
+        console.log(data)
         throw new Error(data.error || 'Login failed');
       }
 
