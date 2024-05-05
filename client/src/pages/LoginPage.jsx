@@ -33,7 +33,6 @@ export default function SignIn() {
   
     try {
       if (isRegistering) {
-        console.log(email)
         if (!validator.isEmail(email)) {
           alert("Please enter a valid email address.");
           return;

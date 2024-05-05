@@ -41,7 +41,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
 describe('SignIn Component', () => {
   let emailField, passwordField, signinButton, registerButton, alertMock;
   beforeEach(() => {
-    // console.error = vi.fn();
+    console.error = vi.fn();
     vi.clearAllMocks();
     render(
       <BrowserRouter>
@@ -58,100 +58,106 @@ describe('SignIn Component', () => {
   window.alert = alertMock;
   const mockNavigate = useNavigate()
 
-  it('Submitting login form with valid credentials navigates to dashboard', async () => {
-    // Fill out the form fields
-    fireEvent.change(emailField, { target: { value: 'test@test.test' }});
-    fireEvent.change(passwordField, { target: { value: 'Password1!' } });
+  describe('User Login', () => {
+    it('Submitting login form with valid credentials navigates to dashboard', async () => {
+      // Fill out the form fields
+      fireEvent.change(emailField, { target: { value: 'test@test.test' }});
+      fireEvent.change(passwordField, { target: { value: 'Password1!' } });
 
-    // Submit the form by clicking the sign in button
-    fireEvent.click(signinButton);
+      // Submit the form by clicking the sign in button
+      fireEvent.click(signinButton);
 
-    // Check if navigate was called with the correct path
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/");
+      // Check if navigate was called with the correct path
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith("/");
+      });
     });
-  });
 
-  it('Submitting login form with invalid credentials does not navigate to dashboard', async () => {
+    it('Submitting login form with invalid credentials does not navigate to dashboard', async () => {
 
-    // Fill out the form fields
-    fireEvent.change(emailField), { target: { value: 'test@test.test' }};
-    fireEvent.change(passwordField), { target: { value: 'WrongPassword' } };
+      // Fill out the form fields
+      fireEvent.change(emailField), { target: { value: 'test@test.test' }};
+      fireEvent.change(passwordField), { target: { value: 'WrongPassword' } };
 
-    fireEvent.click(signinButton);
-    
-    // Check if navigate has still only been called once (from previous test)
-    await waitFor(() => {
-      expect(alertMock).toHaveBeenCalledWith("An error occurred. Please try again.")
-      expect(mockNavigate).not.toHaveBeenCalledWith("/");
+      fireEvent.click(signinButton);
+      
+      // Check if navigate has still only been called once (from previous test)
+      await waitFor(() => {
+        expect(alertMock).toHaveBeenCalledWith("An error occurred. Please try again.")
+        expect(mockNavigate).not.toHaveBeenCalledWith("/");
+      });
     });
-  });
+  })
+  
+  describe('User Registration', () => {
+    it('Submitting registration form with valid credentials navigates to dashboard', async () => {  
+      // Simulate toggling to the registration view
+      fireEvent.click(registerButton);
 
-  it('Submitting registration form with valid credentials navigates to dashboard', async () => {  
-    // Simulate toggling to the registration view
-    fireEvent.click(registerButton);
+      // Fill out the registration form fields
+      fireEvent.change(screen.getByLabelText('Full Name', { exact: false }), { target: { value: 'New User' }});
 
-    // Fill out the registration form fields
-    fireEvent.change(screen.getByLabelText('Full Name', { exact: false }), { target: { value: 'New User' }});
+      fireEvent.change(emailField, { target: { value: 'newuser@test.test' }});
+      fireEvent.change(passwordField, { target: { value: 'SecurePassword1!' } });
 
-    fireEvent.change(emailField, { target: { value: 'newuser@test.test' }});
-    fireEvent.change(passwordField, { target: { value: 'SecurePassword1!' } });
+      // Submit the form by clicking the sign in button
+      fireEvent.click(signinButton);
 
-    // Submit the form by clicking the sign in button
-    fireEvent.click(signinButton);
-
-    // Check that navigate was not called due to the registration error
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/");
+      // Check that navigate was not called due to the registration error
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith("/");
+      });
     });
-  });
 
-  it('Submitting registration form with already used email does not navigate to dashboard', async () => {  
-    // Simulate toggling to the registration view
-    fireEvent.click(screen.getByText("Don't have an account? Register", { exact: false }));
+    it('Submitting registration form with already used email does not navigate to dashboard', async () => {  
+      // Simulate toggling to the registration view
+      fireEvent.click(screen.getByText("Don't have an account? Register", { exact: false }));
 
-    // Fill out the registration form fields
-    fireEvent.change(screen.getByLabelText('Full Name', { exact: false }), { target: { value: 'New User' }});
-    fireEvent.change(emailField, { target: { value: 'test@test.test' }});
-    fireEvent.change(passwordField, { target: { value: 'Password1!' }});
+      // Fill out the registration form fields
+      fireEvent.change(screen.getByLabelText('Full Name', { exact: false }), { target: { value: 'New User' }});
+      fireEvent.change(emailField, { target: { value: 'test@test.test' }});
+      fireEvent.change(passwordField, { target: { value: 'Password1!' }});
 
-    // Submit the form by clicking the register button
-    fireEvent.submit(screen.getByText('Register'));
+      // Submit the form by clicking the register button
+      fireEvent.submit(screen.getByText('Register'));
 
-    // Check that navigate was not called due to the registration error
-    await waitFor(() => {
-      expect(alertMock).toHaveBeenCalledWith("An error occurred. Please try again.")
-      expect(mockNavigate).not.toHaveBeenCalledWith("/");
+      // Check that navigate was not called due to the registration error
+      await waitFor(() => {
+        expect(alertMock).toHaveBeenCalledWith("An error occurred. Please try again.")
+        expect(mockNavigate).not.toHaveBeenCalledWith("/");
+      });
     });
-  });
+  })
 
-  it('Registering user with no name should fail', async () => {
-    fireEvent.click(registerButton); // Toggle to registration view
+  describe('Field Validation Feedback', () => {
+    it('Registering user with no name should fail', async () => {
+      fireEvent.click(registerButton); // Toggle to registration view
 
-    fireEvent.change(screen.getByLabelText('Full Name', { exact: false }), { target: { value: '' }});
-    fireEvent.change(emailField, { target: { value: 'newuser@test.test' }});
-    fireEvent.change(passwordField, { target: { value: 'Password1!' }});
+      fireEvent.change(screen.getByLabelText('Full Name', { exact: false }), { target: { value: '' }});
+      fireEvent.change(emailField, { target: { value: 'newuser@test.test' }});
+      fireEvent.change(passwordField, { target: { value: 'Password1!' }});
 
-    fireEvent.click(screen.getByRole('button', { name: 'Register' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Register' }));
 
-    await waitFor(() => {
-      expect(alertMock).toHaveBeenCalledWith("Please enter your full name.")
-      expect(mockNavigate).not.toHaveBeenCalledWith("/");
+      await waitFor(() => {
+        expect(alertMock).toHaveBeenCalledWith("Please enter your full name.")
+        expect(mockNavigate).not.toHaveBeenCalledWith("/");
+      });
     });
-  });
 
-  it('Registering with a non-secure password should fail', async () => {
-    fireEvent.click(registerButton); // Toggle to registration view
+    it('Registering with a non-secure password should fail', async () => {
+      fireEvent.click(registerButton); // Toggle to registration view
 
-    fireEvent.change(screen.getByLabelText('Full Name', { exact: false }), { target: { value: 'John Doe' }});
-    fireEvent.change(emailField, { target: { value: 'newuser@test.test' }});
-    fireEvent.change(passwordField, { target: { value: 'pass' }}); // Deliberately weak password
+      fireEvent.change(screen.getByLabelText('Full Name', { exact: false }), { target: { value: 'John Doe' }});
+      fireEvent.change(emailField, { target: { value: 'newuser@test.test' }});
+      fireEvent.change(passwordField, { target: { value: 'pass' }}); // Deliberately weak password
 
-    fireEvent.click(screen.getByRole('button', { name: 'Register' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Register' }));
 
-    await waitFor(() => {
-      expect(alertMock).toHaveBeenCalledWith("Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.");
-      expect(mockNavigate).not.toHaveBeenCalledWith("/");
-    });
+      await waitFor(() => {
+        expect(alertMock).toHaveBeenCalledWith("Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.");
+        expect(mockNavigate).not.toHaveBeenCalledWith("/");
+      });
+    })
   });
 });
