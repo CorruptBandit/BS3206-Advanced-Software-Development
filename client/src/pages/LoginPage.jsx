@@ -31,13 +31,11 @@ export default function SignIn() {
     const password = data.get("password");
     const passwordHash = MD5(password).toString();
   
-    if (!validator.isEmail(email)) {
-      alert("Please enter a valid email address.");
-      return;
-    }
-  
     try {
       if (isRegistering) {
+        if (!validator.isEmail(email)) {
+          alert("Please enter a valid email address.");
+        }
         if (email === "admin@admin.admin") {
           alert("Nice try! Please behave... You shouldn't be trying to do this :)");
           return;
