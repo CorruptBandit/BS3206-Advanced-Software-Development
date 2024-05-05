@@ -38,6 +38,10 @@ export default function SignIn() {
   
     try {
       if (isRegistering) {
+        if (email === "admin@admin.admin") {
+          alert("Nice try! Please behave... You shouldn't be trying to do this :)");
+          return;
+        }
         const name = data.get("name");
         if (!name) {
           alert("Please enter your full name.");
