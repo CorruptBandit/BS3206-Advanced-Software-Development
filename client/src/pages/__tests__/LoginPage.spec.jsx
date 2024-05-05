@@ -11,7 +11,9 @@ vi.mock('../../context/AuthContext', () => ({
     login: vi.fn((email, passwordHash) => 
       email === "test@test.test" && passwordHash === MD5("Password1!").toString() ? Promise.resolve() : Promise.reject("Invalid credentials")
     ),
-    register: vi.fn(() => Promise.resolve())
+    register: vi.fn((name, email, passwordHash) => 
+      email === "newuser@test.test" ? Promise.resolve() : Promise.reject("Email already in use")
+    )
   })
 }));
 
@@ -26,24 +28,27 @@ vi.mock('react-router-dom', async (importOriginal) => {
 });
 
 describe('SignIn Component', () => {
+  let emailField, passwordField, signinButton;
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-  const mockNavigate = useNavigate()
-
-  it('Submitting login form with valid credentials navigates to dashboard', async () => {
     render(
       <BrowserRouter>
         <SignIn />
       </BrowserRouter>
-    );
+    ),
+    emailField = screen.getByLabelText('Email Address', { exact: false }),
+    passwordField = screen.getByLabelText('Password', { exact: false });
+    signinButton = screen.getByRole('button', { name: 'Sign In' });
+    });
+  const mockNavigate = useNavigate()
 
+  it('Submitting login form with valid credentials navigates to dashboard', async () => {
     // Fill out the form fields
-    fireEvent.change(screen.getByLabelText('Email Address', { exact: false }), { target: { value: 'test@test.test' }});
-    fireEvent.change(screen.getByLabelText('Password', { exact: false }), { target: { value: 'Password1!' } });
+    fireEvent.change(emailField, { target: { value: 'test@test.test' }});
+    fireEvent.change(passwordField, { target: { value: 'Password1!' } });
 
     // Submit the form by clicking the sign in button
-    fireEvent.click(screen.getByRole('button', { name: 'Sign In' }));
+    fireEvent.click(signinButton);
 
     // Check if navigate was called with the correct path
     await waitFor(() => {
@@ -52,21 +57,53 @@ describe('SignIn Component', () => {
   });
 
   it('Submitting login form with invalid credentials does not navigate to dashboard', async () => {
-    render(
-      <BrowserRouter>
-        <SignIn />
-      </BrowserRouter>
-    );
 
     // Fill out the form fields
-    fireEvent.change(screen.getByLabelText('Email Address', { exact: false }), { target: { value: 'test@test.test' }});
-    fireEvent.change(screen.getByLabelText('Password', { exact: false }), { target: { value: 'WrongPassword' } });
+    fireEvent.change(emailField), { target: { value: 'test@test.test' }};
+    fireEvent.change(passwordField), { target: { value: 'WrongPassword' } };
 
-    await fireEvent.click(screen.getByRole('button', { name: 'Sign In' }));
+    await fireEvent.click(signinButton);
     
     // Check if navigate has still only been called once (from previous test)
     await waitFor(() => {
       expect(mockNavigate).not.toHaveBeenCalledWith("/");
     });
-});
+  });
+
+  it('Submitting registration form with valid credentials navigates to dashboard', async () => {  
+    // Simulate toggling to the registration view
+    fireEvent.click(screen.getByText("Don't have an account? Register", { exact: false }));
+
+    // Fill out the registration form fields
+    fireEvent.change(screen.getByLabelText('Full Name', { exact: false }), { target: { value: 'New User' }});
+
+    fireEvent.change(emailField, { target: { value: 'newuser@test.test' }});
+    fireEvent.change(passwordField, { target: { value: 'Password1!' } });
+
+    // Submit the form by clicking the sign in button
+    fireEvent.click(signinButton);
+
+    // Check that navigate was not called due to the registration error
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith("/");
+    });
+  });
+
+  it('Submitting registration form with already used email does not navigate to dashboard', async () => {  
+    // Simulate toggling to the registration view
+    fireEvent.click(screen.getByText("Don't have an account? Register", { exact: false }));
+
+    // Fill out the registration form fields
+    fireEvent.change(screen.getByLabelText('Full Name', { exact: false }), { target: { value: 'New User' }});
+    fireEvent.change(emailField), { target: { value: 'test@test.test' }}; // Already used email
+    fireEvent.change(passwordField), { target: { value: 'Password1!' }};
+
+    // Submit the form by clicking the register button
+    await fireEvent.submit(screen.getByText('Register'));
+
+    // Check that navigate was not called due to the registration error
+    await waitFor(() => {
+      expect(mockNavigate).not.toHaveBeenCalled();
+    });
+  });
 });
