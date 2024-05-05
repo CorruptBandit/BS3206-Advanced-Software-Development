@@ -166,12 +166,11 @@ const handleLogWorkout = async () => {
 
     // Update the workout with the new target weight
     const workoutToUpdate = workoutData.find(workout => workout._id === workoutId);
-    const updatedExercisesWithTargetWeight = workoutToUpdate.exercises.map(({...exercise }) => ({
+    const updatedExercisesWithTargetWeight = workoutToUpdate.exercises.map(({ ...exercise }) => ({
       ...exercise,
-      targetWeight: nextTargetWeight,
+      targetWeight: exercise.nextTargetWeight,
     }));
-    const updatedExercises = updatedExercisesWithTargetWeight.map(({ nextTargetWeight, exerciseName, repsDone, weightDone, ...exercise }) => exercise);
-
+    const updatedExercises = updatedExercisesWithTargetWeight.map(({ exerciseName, repsDone, weightDone, ...exercise }) => exercise);
 
     const { _id, ...updatedWorkoutWithoutId } = workoutToUpdate;
     const updatedWorkout = {
