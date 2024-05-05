@@ -31,13 +31,13 @@ export default function SignIn() {
     const password = data.get("password");
     const passwordHash = MD5(password).toString();
   
-    if (!validator.isEmail(email)) {
-      alert("Please enter a valid email address.");
-      return;
-    }
-  
     try {
       if (isRegistering) {
+        console.log(email)
+        if (!validator.isEmail(email)) {
+          alert("Please enter a valid email address.");
+          return;
+        }
         const name = data.get("name");
         if (!name) {
           alert("Please enter your full name.");

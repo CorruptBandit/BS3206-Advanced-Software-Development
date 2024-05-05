@@ -3,8 +3,6 @@ import { render, fireEvent, waitFor, screen } from '@testing-library/react';
 import { BrowserRouter, useNavigate } from 'react-router-dom';
 import SignIn from '../LoginPage';
 import MD5 from 'crypto-js/md5';
-import { register } from 'numeral';
-import { useAuth } from '../../context/AuthContext';
 
 // Mock the useAuth and react-router-dom hooks
 // Mock the useAuth hook with conditional behavior
@@ -13,7 +11,7 @@ vi.mock('../../context/AuthContext', () => ({
     login: vi.fn((email, passwordHash) => 
       email === "test@test.test" && passwordHash === MD5("Password1!").toString() ? Promise.resolve() : Promise.reject()
     ),
-    register: vi.fn((name, email, passwordHash) => { // Use plain password for regex validation
+    register: vi.fn((name, email) => { // Use plain password for regex validation
       const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/;
       if (!name) {
         return Promise.reject();
@@ -84,7 +82,7 @@ describe('SignIn Component', () => {
     
     // Check if navigate has still only been called once (from previous test)
     await waitFor(() => {
-      expect(alertMock).toHaveBeenCalledWith("Please enter a vald email address.")
+      expect(alertMock).toHaveBeenCalledWith("An error occurred. Please try again.")
       expect(mockNavigate).not.toHaveBeenCalledWith("/");
     });
   });
@@ -114,15 +112,15 @@ describe('SignIn Component', () => {
 
     // Fill out the registration form fields
     fireEvent.change(screen.getByLabelText('Full Name', { exact: false }), { target: { value: 'New User' }});
-    fireEvent.change(emailField), { target: { value: 'test@test.test' }}; // Already used email
-    fireEvent.change(passwordField), { target: { value: 'Password1!' }};
+    fireEvent.change(emailField, { target: { value: 'test@test.test' }});
+    fireEvent.change(passwordField, { target: { value: 'Password1!' }});
 
     // Submit the form by clicking the register button
     fireEvent.submit(screen.getByText('Register'));
 
     // Check that navigate was not called due to the registration error
     await waitFor(() => {
-      expect(alertMock).toHaveBeenCalledWith("Please enter a vald email address.")
+      expect(alertMock).toHaveBeenCalledWith("An error occurred. Please try again.")
       expect(mockNavigate).not.toHaveBeenCalledWith("/");
     });
   });
