@@ -75,6 +75,41 @@ class MongoDBConnector {
 
     return asyncFunction(collectionName)
   }
+
+  async updateDocument(collectionName, documentId, document) {
+    if (!this.db) {
+      console.error('MongoDB not connected.');
+      return;
+    }
+
+    try {
+      console.log("HERE")
+      const collection = this.db.collection(collectionName)
+      return await collection.updateOne(
+          {_id: documentId},
+          {$set: document}
+      );
+    } catch (error) {
+      console.error('Error updating document:', error);
+      throw error;
+    }
+  }
+
+  async deleteDocument(collectionName, documentId) {
+    if (!this.db) {
+      console.error('MongoDB not connected.');
+      return;
+    }
+
+    try {
+      return await this.db.collection(collectionName).deleteOne({_id: documentId});
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      throw error;
+    }
+  }
+
+
 }
 
 module.exports = MongoDBConnector

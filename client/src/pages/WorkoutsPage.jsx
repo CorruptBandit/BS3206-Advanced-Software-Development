@@ -11,7 +11,6 @@ import {
   Paper,
   Button,
   Popover,
-  Checkbox,
   TableRow,
   MenuItem,
   TableBody,
@@ -33,7 +32,7 @@ import { WorkoutListHead, WorkoutListToolbar } from '../sections/@dashboard/work
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'workoutName', label: 'Workout Name', alignRight: false },
+  { id: 'workoutName', label: 'Workout Name', alignRight: false},
   { id: 'exercises', label: 'Exercises', alignRight: false },
   { id: '' },
 ];
@@ -119,6 +118,36 @@ export default function WorkoutsPage() {
     setOpen(null);
   };
 
+  const handleDeleteWorkout = async () => {
+    const confirmed = window.confirm('Are you sure you want to delete this workout?');
+
+    if (confirmed) {
+      try {
+        const response = await fetch(`/api/deleteDocument?collection=workouts&docId=${workoutId}`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error('Failed to delete workout');
+        }
+
+        fetchData('workouts');
+      } catch (error) {
+        console.error('Error deleting workout:', error);
+      } finally {
+        handleCloseMenu();
+      }
+    } else {
+      handleCloseMenu();
+    }
+  };
+
+  useEffect(() => {
+    fetchData('workouts');
+  }, [workoutData, workoutId]);
+
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
@@ -132,21 +161,6 @@ export default function WorkoutsPage() {
       return;
     }
     setSelected([]);
-  };
-
-  const handleClick = (event, workoutName) => {
-    const selectedIndex = selected.indexOf(workoutName);
-    let newSelected = [];
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, workoutName);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
-    }
-    setSelected(newSelected);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -184,7 +198,7 @@ export default function WorkoutsPage() {
   return (
     <>
       <Helmet>
-        <title> Workouts</title>
+        <title>Workouts</title>
       </Helmet>
 
       <Container>
@@ -218,15 +232,16 @@ export default function WorkoutsPage() {
                     const selectedWorkout = selected.indexOf(workoutName) !== -1;
 
                     return (
-                      <TableRow hover key={workoutId} tabIndex={-1} role="checkbox" selected={selectedWorkout}>
-                        <TableCell padding="checkbox">
-                          <Checkbox checked={selectedWorkout} onChange={(event) => handleClick(event, workoutName)} />
-                        </TableCell>
+                      <TableRow hover key={workoutId} tabIndex={-1} selected={selectedWorkout}>
                         <TableCell component="th" scope="row">
-                          {workoutName}
+                          <Typography variant="subtitle2" gutterBottom>
+                            {workoutName}
+                          </Typography>
                         </TableCell>
                         <TableCell align="left">
+                          <Typography variant="subtitle2" gutterBottom>
                           {formatExercises(exercises)}
+                          </Typography>
                         </TableCell>
                         <TableCell align="right">
                           <IconButton size="large" color="inherit" onClick={(event) => handleOpenMenu(event, workoutId)}>
@@ -247,11 +262,7 @@ export default function WorkoutsPage() {
                   <TableBody>
                     <TableRow>
                       <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                        <Paper
-                          sx={{
-                            textAlign: 'center',
-                          }}
-                        >
+                        <Paper sx={{ textAlign: 'center' }}>
                           <Typography variant="h6" paragraph>
                             Not found
                           </Typography>
@@ -310,7 +321,7 @@ export default function WorkoutsPage() {
           Edit
         </MenuItem>
 
-        <MenuItem sx={{ color: 'error.main' }}>
+        <MenuItem sx={{ color: 'error.main' }} onClick={handleDeleteWorkout}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
           Delete
         </MenuItem>

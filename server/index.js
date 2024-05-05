@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const MongoDBConnector = require('./mongo');
+const { ObjectId } = require('mongodb');
 require('dotenv').config();
 
 const app = express();
@@ -126,7 +127,6 @@ app.post('/api/register', async (req, res) => {
 
 app.get('/api/getCollection', async (req, res) => {
   try {
-    // Check if the token has been revoked
     const { authorization } = req.headers;
     if (authorization) {
       const token = authorization.split(' ')[1];
@@ -136,12 +136,7 @@ app.get('/api/getCollection', async (req, res) => {
     }
 
     const collectionName = req.query.collection;
-    if (!collectionName) {
-      return res.status(400).json({ error: 'Collection name is required' });
-    }
-
     const collection = await mongoDB.getCollection(collectionName);
-
     if (collection.length === 0) {
       return res.status(404).json({ error: `Error getting ${collectionName}` });
     }
@@ -151,6 +146,57 @@ app.get('/api/getCollection', async (req, res) => {
     console.error('Error:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
+});
+
+app.post('/api/updateDocument', async (req, res) => {
+  const collectionName = req.query.collection;
+  const document = req.body;
+  const documentId = new ObjectId(req.query.docId);
+
+  console.log("Updating document " + documentId + " in " + collectionName)
+  console.log("Updated document: " + JSON.stringify(document))
+
+  try {
+    await mongoDB.updateDocument(collectionName, documentId, document);
+    return res.status(200).json({ message: 'Document updated successfully' });
+  } catch (error) {
+    console.error('Error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.post('/api/deleteDocument', async (req, res) => {
+  const collectionName = req.query.collection;
+  const documentId = new ObjectId(req.query.docId);
+
+  console.log("Deleting document " + documentId + " from " + collectionName)
+
+  try {
+    await mongoDB.deleteDocument(collectionName, documentId);
+    return res.status(200).json({ message: 'Document deleted successfully' });
+  } catch (error) {
+    console.error('Error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+app.post('/api/insertDocument', async (req, res) => {
+
+  const collectionName = req.query.collection;
+  const document = req.body;
+
+  console.log("Inserting document to " + collectionName)
+  console.log("Document: " + JSON.stringify(document))
+
+  try {
+    await mongoDB.insertDocument(collectionName, document);
+    return res.status(200).json({ message: 'Document updated successfully' });
+  } catch (error) {
+    console.error('Error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+
 });
 
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
