@@ -59,7 +59,7 @@ describe('SignIn Component', () => {
   const mockNavigate = useNavigate()
 
   describe('User Login', () => {
-    it('Submitting login form with valid credentials navigates to dashboard', async () => {
+    it('should login with valid credentials and navigate to dashboard', async () => {
       // Fill out the form fields
       fireEvent.change(emailField, { target: { value: 'test@test.test' }});
       fireEvent.change(passwordField, { target: { value: 'Password1!' } });
@@ -73,7 +73,7 @@ describe('SignIn Component', () => {
       });
     });
 
-    it('Submitting login form with invalid credentials does not navigate to dashboard', async () => {
+    it('should not login with invalid credentials and not navigate to dashboard', async () => {
 
       // Fill out the form fields
       fireEvent.change(emailField), { target: { value: 'test@test.test' }};
@@ -90,7 +90,7 @@ describe('SignIn Component', () => {
   })
   
   describe('User Registration', () => {
-    it('Submitting registration form with valid credentials navigates to dashboard', async () => {  
+    it('should register with valid credentials and navigates to dashboard', async () => {  
       // Simulate toggling to the registration view
       fireEvent.click(registerButton);
 
@@ -109,7 +109,7 @@ describe('SignIn Component', () => {
       });
     });
 
-    it('Submitting registration form with already used email does not navigate to dashboard', async () => {  
+    it('should not register with already used email and not navigate to dashboard', async () => {  
       // Simulate toggling to the registration view
       fireEvent.click(screen.getByText("Don't have an account? Register", { exact: false }));
 
@@ -130,7 +130,7 @@ describe('SignIn Component', () => {
   })
 
   describe('Field Validation Feedback', () => {
-    it('Registering user with no name should fail', async () => {
+    it('should not register with no name', async () => {
       fireEvent.click(registerButton); // Toggle to registration view
 
       fireEvent.change(screen.getByLabelText('Full Name', { exact: false }), { target: { value: '' }});
@@ -145,7 +145,7 @@ describe('SignIn Component', () => {
       });
     });
 
-    it('Registering with a non-secure password should fail', async () => {
+    it('should not register with a non-secure password', async () => {
       fireEvent.click(registerButton); // Toggle to registration view
 
       fireEvent.change(screen.getByLabelText('Full Name', { exact: false }), { target: { value: 'John Doe' }});

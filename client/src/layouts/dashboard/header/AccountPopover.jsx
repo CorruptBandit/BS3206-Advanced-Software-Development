@@ -65,6 +65,7 @@ export default function AccountPopover() {
       {isLoggedIn && (
         <>
           <IconButton
+            data-testid="account-popover-button"
             onClick={handleOpen}
             sx={{
               p: 0,
