@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Typography, Box, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Grid } from '@mui/material';
+import { Typography, Box, Button, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Paper, Grid } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 
 export default function AdminPage() {
@@ -7,6 +7,8 @@ export default function AdminPage() {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [newPassword, setNewPassword] = useState('');
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [userIdToDelete, setUserIdToDelete] = useState(null);
 
   useEffect(() => {
     fetchUsers();
@@ -19,14 +21,20 @@ export default function AdminPage() {
       .catch(error => console.error('Error fetching user data:', error));
   };
 
-  const handleDeleteUser = (userId) => {
-    fetch(`/api/users/${userId}`, { method: 'DELETE' })
+  const promptDeleteUser = (userId) => {
+    setUserIdToDelete(userId);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteUser = () => {
+    fetch(`/api/users/${userIdToDelete}`, { method: 'DELETE' })
       .then(response => {
-        console.log(response)
         if (response.ok) {
-          setUsers(users.filter(user => user.id !== userId));
+          setUsers(users.filter(user => user.id !== userIdToDelete));
           alert('User deleted successfully');
         }
+        setDeleteConfirmOpen(false);
+        setUserIdToDelete(null);
       })
       .catch(error => console.error('Error deleting user:', error));
   };
@@ -74,7 +82,7 @@ export default function AdminPage() {
                 <Button color="primary" onClick={() => openPasswordDialog(user)} sx={{ marginRight: 1 }}>
                   Change Password
                 </Button>
-                <Button color="error" onClick={() => handleDeleteUser(user.id)}>
+                <Button color="error" onClick={() => promptDeleteUser(user.id)}>
                   Delete User
                 </Button>
               </Box>
@@ -103,6 +111,18 @@ export default function AdminPage() {
             </DialogActions>
           </Dialog>
         )}
+        <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
+          <DialogTitle>Confirm Deletion</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Are you sure you want to delete this user? This action cannot be undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteConfirmOpen(false)}>Cancel</Button>
+            <Button onClick={handleDeleteUser} color="error">Delete</Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     );
   }
