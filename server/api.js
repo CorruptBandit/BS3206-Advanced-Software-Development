@@ -3,7 +3,7 @@ const MD5 = require('crypto-js/md5');
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const MongoDBConnector = require("./mongo");
+const MongoDBConnector = require("./db");
 const verifyAdmin = require("./middleware/verifyAdmin")
 const { ObjectId } = require('mongodb');
 require("dotenv").config();
@@ -112,7 +112,6 @@ app.post('/api/register', async (req, res) => {
     // Hash and salt the password before storing it
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-    console.log("Register hash ")
 
     // Create a new user with the hashed password
     const newUser = {

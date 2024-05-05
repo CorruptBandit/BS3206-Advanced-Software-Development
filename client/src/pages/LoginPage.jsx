@@ -35,6 +35,9 @@ export default function SignIn() {
       if (isRegistering) {
         if (!validator.isEmail(email)) {
           alert("Please enter a valid email address.");
+        }
+        if (email === "admin@admin.admin") {
+          alert("Nice try! Please behave... You shouldn't be trying to do this :)");
           return;
         }
         const name = data.get("name");
