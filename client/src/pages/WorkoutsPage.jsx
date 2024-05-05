@@ -2,6 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext'
 
 // @mui
 import {
@@ -20,6 +21,7 @@ import {
   IconButton,
   TableContainer,
   TablePagination,
+  Box
 } from '@mui/material';
 
 // components
@@ -69,6 +71,23 @@ function applySortFilter(array, comparator, query) {
 }
 
 export default function WorkoutsPage() {
+  const { email, isLoggedIn } = useAuth();
+
+  if (!isLoggedIn) {
+    return (
+      <Container>
+        <Box sx={{ width: '100%', textAlign: 'center', mt: 5 }}>
+          <Typography variant="h5" sx={{ mb: 2 }}>
+            You are currently logged out
+          </Typography>
+          <Button component={Link} to="/login" variant="contained" size="large">
+            Log In
+          </Button>
+        </Box>
+      </Container>
+    );
+  }
+
   const [open, setOpen] = useState(null);
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('asc');
@@ -82,7 +101,7 @@ export default function WorkoutsPage() {
 
   const fetchData = async (collection) => {
     try {
-      const response = await fetch(`/api/getCollection?collection=${collection}`, {
+       const response = await fetch(`/api/getCollection?collection=${collection}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -92,9 +111,17 @@ export default function WorkoutsPage() {
       }
       const data = await response.json();
 
-      // Map _id to workoutId for Workouts data
       if (collection === 'workouts') {
-        const mappedData = data.map((item) => ({ ...item, workoutId: item._id }));
+        const user_response = await fetch(`/api/getCollection?collection=users`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+        const userData = await user_response.json();
+        const user = userData.find(user => user.email === email);
+        const userId = user ? user._id : null;
+        const userWorkouts = data.filter(workout => workout.userId === userId);
+        const mappedData = userWorkouts.map((item) => ({ ...item, workoutId: item._id }));
         setWorkoutData(mappedData);
       } else if (collection === 'exercises') {
         setExerciseData(data);

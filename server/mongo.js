@@ -83,7 +83,6 @@ class MongoDBConnector {
     }
 
     try {
-      console.log("HERE")
       const collection = this.db.collection(collectionName)
       return await collection.updateOne(
           {_id: documentId},

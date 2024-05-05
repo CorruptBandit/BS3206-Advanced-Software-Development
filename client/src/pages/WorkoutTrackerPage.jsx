@@ -1,4 +1,6 @@
-import { Link, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext'
 import {
   Button,
   Container,
@@ -12,11 +14,28 @@ import {
   TableBody,
   Table,
   Paper,
+  Box
 } from '@mui/material';
-import { useState, useEffect } from 'react';
 
 export default function WorkoutTracker() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { email, isLoggedIn } = useAuth();
+
+  if (!isLoggedIn) {
+    return (
+      <Container>
+        <Box sx={{ width: '100%', textAlign: 'center', mt: 5 }}>
+          <Typography variant="h5" sx={{ mb: 2 }}>
+            You are currently logged out
+          </Typography>
+          <Button component={Link} to="/login" variant="contained" size="large">
+            Log In
+          </Button>
+        </Box>
+      </Container>
+    );
+  }
   const searchParams = new URLSearchParams(location.search);
   const workoutId = searchParams.get('workoutId');
 
@@ -55,6 +74,8 @@ export default function WorkoutTracker() {
               return {
                 ...exercise,
                 exerciseName: correspondingExercise.exerciseName,
+                repsDone: Array.from({ length: Number(exercise.sets) }, () => ''),
+                weightDone: Array.from({ length: Number(exercise.sets) }, () => ''),
               };
             }
             return exercise;
@@ -85,6 +106,101 @@ export default function WorkoutTracker() {
     }
   }, [workoutId, workoutData]);
 
+const handleLogWorkout = async () => {
+  // Check if any field is empty or negative
+  const invalidInput = exercises.some((exercise) => {
+    return exercise.repsDone.some(rep => rep === '') ||
+           exercise.weightDone.some(weight => weight === '') ||
+           exercise.repsDone.some(rep => Number(rep) <= 0) ||
+           exercise.weightDone.some(weight => Number(weight) <= 0) ||
+           exercise.nextTargetWeight === '' ||
+           Number(exercise.nextTargetWeight) <= 0;
+  });
+
+  if (invalidInput) {
+    alert('Please fill out all fields with positive numbers before logging the workout.');
+    return;
+  }
+
+  try {
+    const user_response = await fetch(`/api/getCollection?collection=users`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    const userData = await user_response.json();
+    const user = userData.find(user => user.email === email);
+    const userId = user ? user._id : null;
+
+    const requestBody = {
+      workoutId,
+      workoutName,
+      userId: userId,
+      date: currentDate,
+      logs: exercises.map((exercise) => ({
+        exerciseId: exercise.exerciseId,
+        targetReps: exercise.reps,
+        targetWeight: exercise.targetWeight,
+        nextTargetWeight: exercise.nextTargetWeight,
+        logs: exercise.repsDone.map((reps, index) => ({
+          repsDone: reps,
+          weightDone: exercise.weightDone[index],
+        })),
+      })),
+    };
+    let response;
+
+    // Create new workout
+    response = await fetch(`/api/insertDocument?collection=workoutHistory`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to log workout');
+    }
+
+    // Update the workout with the new target weight
+    const workoutToUpdate = workoutData.find(workout => workout._id === workoutId);
+    const updatedExercisesWithTargetWeight = workoutToUpdate.exercises.map(({...exercise }) => ({
+      ...exercise,
+      targetWeight: nextTargetWeight,
+    }));
+    const updatedExercises = updatedExercisesWithTargetWeight.map(({ nextTargetWeight, exerciseName, repsDone, weightDone, ...exercise }) => exercise);
+
+
+    const { _id, ...updatedWorkoutWithoutId } = workoutToUpdate;
+    const updatedWorkout = {
+      ...updatedWorkoutWithoutId,
+      exercises: updatedExercises,
+    };
+
+    const updateResponse = await fetch(`/api/updateDocument?collection=workouts&docId=${workoutId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify(updatedWorkout),
+    });
+
+    if (!updateResponse.ok) {
+      throw new Error('Failed to update workout');
+    }
+
+    // Alert and redirect after successful logging
+    alert(`Workout '${workoutName}' logged successfully`);
+    navigate('/dashboard/workouts');
+  } catch (error) {
+    console.error('Error logging workout:', error);
+  }
+};
+
+
   // Get current date
   const currentDate = new Date();
   const formattedDate = currentDate.toLocaleDateString('en-GB', {
@@ -107,24 +223,24 @@ export default function WorkoutTracker() {
               <TableHead>
                 <TableRow>
                   <TableCell>
-                      <Typography variant="h6">
-                          Exercise
-                      </Typography>
+                    <Typography variant="h6">
+                      Exercise
+                    </Typography>
                   </TableCell>
                   <TableCell>
-                      <Typography variant="h6">
-                          Targets
-                      </Typography>
+                    <Typography variant="h6">
+                      Targets
+                    </Typography>
                   </TableCell>
                   <TableCell>
-                      <Typography variant="h6">
-                          Sets
-                      </Typography>
+                    <Typography variant="h6">
+                      Sets
+                    </Typography>
                   </TableCell>
                   <TableCell>
-                      <Typography variant="h6">
-                          Next Target Weight (kg)
-                      </Typography>
+                    <Typography variant="h6">
+                      Next Target Weight (kg)
+                    </Typography>
                   </TableCell>
                 </TableRow>
               </TableHead>
@@ -132,18 +248,18 @@ export default function WorkoutTracker() {
                 {exercises.map((exercise, index) => (
                   <TableRow key={index}>
                     <TableCell>
-                        <Typography variant="subtitle1">
-                          {exercise.exerciseName}
-                        </Typography>
+                      <Typography variant="subtitle1">
+                        {exercise.exerciseName}
+                      </Typography>
                     </TableCell>
                     <TableCell>
-                        <Typography variant="subtitle1">
-                            {"Target Reps: " + exercise.reps}
-                        </Typography>
+                      <Typography variant="subtitle1">
+                        {"Target Reps: " + exercise.reps}
+                      </Typography>
 
-                        <Typography variant="subtitle1">
-                            {"Target Weight: " + exercise.targetWeight + "kg"}
-                        </Typography>
+                      <Typography variant="subtitle1">
+                        {"Target Weight: " + exercise.targetWeight + "kg"}
+                      </Typography>
                     </TableCell>
                     <TableCell>
                       {[...Array(Number(exercise.sets))].map((_, setIndex) => (
@@ -151,17 +267,30 @@ export default function WorkoutTracker() {
                           <Typography variant="subtitle1">
                             Set {setIndex + 1}
                           </Typography>
-                          <TextField style={{ marginRight: "10px" }}
+                          <TextField
+                            style={{ marginRight: "10px" }}
                             required
                             label={`Reps Done`}
                             type="number"
                             variant="outlined"
+                            value={exercise.repsDone[setIndex]}
+                            onChange={(e) => {
+                              const updatedExercises = [...exercises];
+                              updatedExercises[index].repsDone[setIndex] = e.target.value;
+                              setExercises(updatedExercises);
+                            }}
                           />
                           <TextField
                             required
                             label={`Weight Done (kg)`}
                             type="number"
                             variant="outlined"
+                            value={exercise.weightDone[setIndex]}
+                            onChange={(e) => {
+                              const updatedExercises = [...exercises];
+                              updatedExercises[index].weightDone[setIndex] = e.target.value;
+                              setExercises(updatedExercises);
+                            }}
                           />
                         </div>
                       ))}
@@ -172,6 +301,12 @@ export default function WorkoutTracker() {
                         label={"Next Target Weight (kg)"}
                         type="number"
                         variant="outlined"
+                        value={exercise.nextTargetWeight}
+                        onChange={(e) => {
+                          const updatedExercises = [...exercises];
+                          updatedExercises[index].nextTargetWeight = e.target.value;
+                          setExercises(updatedExercises);
+                        }}
                       />
                     </TableCell>
                   </TableRow>
@@ -180,17 +315,18 @@ export default function WorkoutTracker() {
             </Table>
           </TableContainer>
         </Grid>
-        <Grid container justifyContent="center" mt={2}>
-          <Grid item>
-            <Button variant="contained" color="primary" size="large">
-              Log Workout
-            </Button>
-          </Grid>
-        </Grid>
       </Grid>
       <Grid container justifyContent="center" mt={2}>
         <Grid item>
-          <Button component={Link} to="/dashboard/workouts" variant="contained" color="primary" size="large">
+          <Button onClick={handleLogWorkout} variant="contained" color="primary" size="large" sx={{ width: '300px' }}>
+            Log Workout
+          </Button>
+        </Grid>
+      </Grid>
+
+      <Grid container justifyContent="center" mt={2}>
+        <Grid item>
+          <Button component={Link} to="/dashboard/workouts" variant="contained" sx={{ width: '300px' }} color="error" size="large">
             Cancel and Return to Workouts
           </Button>
         </Grid>

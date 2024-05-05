@@ -1,5 +1,6 @@
 import {Link, useLocation, useNavigate} from 'react-router-dom';
 import {useEffect, useState} from 'react';
+import { useAuth } from '../context/AuthContext'
 import {
   Button,
   Container,
@@ -10,11 +11,29 @@ import {
   Select,
   TextField,
   Typography,
+  Box
 } from '@mui/material';
 
 export default function WorkoutEditor() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { email, isLoggedIn } = useAuth();
+
+  if (!isLoggedIn) {
+    return (
+      <Container>
+        <Box sx={{ width: '100%', textAlign: 'center', mt: 5 }}>
+          <Typography variant="h5" sx={{ mb: 2 }}>
+            You are currently logged out
+          </Typography>
+          <Button component={Link} to="/login" variant="contained" size="large">
+            Log In
+          </Button>
+        </Box>
+      </Container>
+    );
+  }
+
   const searchParams = new URLSearchParams(location.search);
   const workoutId = searchParams.get('workoutId');
 
@@ -56,27 +75,38 @@ const handleApplyChanges = async () => {
       return;
     }
 
+    const user_response = await fetch(`/api/getCollection?collection=users`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    const userData = await user_response.json();
+    const user = userData.find(user => user.email === email);
+    const userId = user ? user._id : null;
+
     const refinedExercises = await Promise.all(exercises.map(async (exercise) => {
-        if (!exercise.exerciseId) {
-            const matchingExercise = exerciseData.find((ex) => ex.exerciseName === exercise.exerciseName);
-            if (!matchingExercise) {
-                throw new Error(`Exercise with name ${exercise.exerciseName} not found`);
-            }
-            const refinedExercise = { ...exercise };
-            refinedExercise.exerciseId = matchingExercise._id;
-            delete refinedExercise.exerciseName;
-            return refinedExercise;
+      if (!exercise.exerciseId) {
+        const matchingExercise = exerciseData.find((ex) => ex.exerciseName === exercise.exerciseName);
+        if (!matchingExercise) {
+          throw new Error(`Exercise with name ${exercise.exerciseName} not found`);
         }
-        if (exercise.exerciseName){
-          delete exercise.exerciseName
-        }
-        return { ...exercise };
+        const refinedExercise = { ...exercise };
+        refinedExercise.exerciseId = matchingExercise._id;
+        delete refinedExercise.exerciseName;
+        return refinedExercise;
+      }
+      if (exercise.exerciseName) {
+        delete exercise.exerciseName
+      }
+      return { ...exercise };
     }));
 
     const requestBody = {
       workoutName,
       exercises: refinedExercises,
+      userId: userId
     };
+
     let response;
     if (workoutId) {
       // Update workout
