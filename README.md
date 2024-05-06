@@ -42,7 +42,7 @@ These instructions will get your project up and running on your local machine fo
 ### Using the Application
 This application supports hot reloading, meaning that changes in the codebase will automatically refresh the application without needing a restart. Docker is the preferred method of running the application as it ensures a consistent environment across different platforms.
 
-_Due to [WSL2 limitations](https://github.com/microsoft/WSL/issues/4739), hot reloading **only** works through polling, meaning the webpage **must** be open for the hot reload to take effect_
+_Due to [WSL2 limitations](https://github.com/microsoft/WSL/issues/4739), hot reloading **only** works through polling, meaning the webpage **must** be open for the hot reload to take effect, try refreshing page if changes aren't taking place_
 
 #### Docker (Preferred Method)
 - **Non Docker Desktop users ONLY: Set UID and GID**
@@ -110,6 +110,21 @@ _The `--build` flag is used to ensure you have the latest version of the image, 
   ```
     
 _Production should **only** be used when the system is ready for release_
+
+## Features
+
+This gym fitness application offers several features to help users achieve their fitness goals:
+
+- **Dashboard:** Provides users with a sleek dashboard theme for easy navigation and interaction. The dashboard offers an overview of various fitness metrics and activities.
+
+- **Calorie Tracker:** Allows users to track their calorie intake and monitor their nutritional habits. Users can set calorie goals and log their daily food consumption.
+
+- **Workout Tracker:** Enables users to plan and track their workouts effectively. Users can create customised workout routines, log their exercises, and track their progress over time.
+
+- **Admin Panel:** Accessible using the email `admin@admin.admin`, the admin panel provides administrative functionalities for managing users, data, and system settings. This panel is intended for administrative purposes and allows privileged users to perform tasks such as user management, data analytics, and system configuration.
+
+_Ensure that the account with the email `admin@admin.admin` has been manually created in the database to access the admin panel._
+
 
 ## Notes
 - Theme used: [Minimal Dashboard Free](https://mui.com/store/items/minimal-dashboard-free/)
