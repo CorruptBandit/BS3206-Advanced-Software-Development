@@ -3,17 +3,10 @@ import { useNavigate } from 'react-router-dom'; // Make sure to import useNaviga
 // @mui
 import { alpha } from '@mui/material/styles';
 import {
-  Box, Divider, Typography, Stack, MenuItem, Avatar, IconButton, Button, Popover,
+  Box, Divider, Typography, MenuItem, Avatar, IconButton, Button, Popover,
 } from '@mui/material';
-// mocks
-import account from '../../../_mock/account';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-
-const MENU_OPTIONS = [
-  { label: 'Home', icon: 'eva:home-fill' },
-  { label: 'Profile', icon: 'eva:person-fill' },
-  { label: 'Settings', icon: 'eva:settings-2-fill' },
-];
 
 export default function AccountPopover() {
   const [open, setOpen] = useState(null);
@@ -81,7 +74,7 @@ export default function AccountPopover() {
               }),
             }}
           >
-            <Avatar src={account.photoURL} alt="photoURL" />
+            <Avatar src="/assets/avatar_default.jpg" alt="photoURL" />
           </IconButton>
 
           <Popover
@@ -113,17 +106,9 @@ export default function AccountPopover() {
             </Box>
 
             <Divider sx={{ borderStyle: 'dashed' }} />
-
-            <Stack sx={{ p: 1 }}>
-              {MENU_OPTIONS.map((option) => (
-                <MenuItem key={option.label} onClick={handleClose}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Stack>
-
-            <Divider sx={{ borderStyle: 'dashed' }} />
-
+            <MenuItem component={Link} to="/dashboard" sx={{ m: 1 }}>
+              Home
+            </MenuItem>
             <MenuItem onClick={handleLogout} sx={{ m: 1 }}>
               Logout
             </MenuItem>
