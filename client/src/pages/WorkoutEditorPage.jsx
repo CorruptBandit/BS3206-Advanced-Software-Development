@@ -24,11 +24,8 @@ export default function WorkoutEditor() {
       <Container>
         <Box sx={{ width: '100%', textAlign: 'center', mt: 5 }}>
           <Typography variant="h5" sx={{ mb: 2 }}>
-            You are currently logged out
+            You are currently logged out, please log in to edit/create workouts
           </Typography>
-          <Button component={Link} to="/login" variant="contained" size="large">
-            Log In
-          </Button>
         </Box>
       </Container>
     );

@@ -3,7 +3,6 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { styled, alpha } from '@mui/material/styles';
 import { Box, Link, Drawer, Typography, Avatar } from '@mui/material';
-import account from '../../../_mock/account';
 import useResponsive from '../../../hooks/useResponsive';
 import Logo from '../../../components/logo';
 import Scrollbar from '../../../components/scrollbar';
@@ -45,15 +44,16 @@ export default function Nav({ openNav, onCloseNav }) {
         '& .simplebar-content': { height: 1, display: 'flex', flexDirection: 'column' },
       }}
     >
-      <Box sx={{ px: 2.5, py: 3, display: 'inline-flex' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', px: 2.5, py: 3 }}>
         <Logo />
       </Box>
+
 
       {isLoggedIn && ( // Only show user info if logged in
         <Box sx={{ mb: 5, mx: 2.5 }}>
           <Link underline="none">
             <StyledAccount>
-              <Avatar src={account.photoURL} alt="photoURL" />
+              <Avatar src="/assets/avatar_default.jpg" alt="photoURL" />
               <Box sx={{ ml: 2 }}>
                 <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
                   {name}

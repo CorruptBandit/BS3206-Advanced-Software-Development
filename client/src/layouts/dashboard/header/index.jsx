@@ -7,10 +7,7 @@ import { bgBlur } from '../../../utils/cssStyles';
 // components
 import Iconify from '../../../components/iconify';
 //
-import Searchbar from './Searchbar';
 import AccountPopover from './AccountPopover';
-import NotificationsPopover from './NotificationsPopover';
-import { useAuth } from '../../../context/AuthContext'; // Import the AuthContext
 
 // ----------------------------------------------------------------------
 
@@ -43,8 +40,6 @@ Header.propTypes = {
 };
 
 export default function Header({ onOpenNav }) {
-  const { isLoggedIn } = useAuth(); // Get the login status from the context
-
   return (
     <StyledRoot>
       <StyledToolbar>
@@ -59,7 +54,6 @@ export default function Header({ onOpenNav }) {
           <Iconify icon="eva:menu-2-fill" />
         </IconButton>
 
-        <Searchbar />
         <Box sx={{ flexGrow: 1 }} />
 
         <Stack
@@ -70,7 +64,6 @@ export default function Header({ onOpenNav }) {
             sm: 1,
           }}
         >
-          {isLoggedIn && <NotificationsPopover />} {/* Conditionally render NotificationsPopover */}
           <AccountPopover />
         </Stack>
       </StyledToolbar>

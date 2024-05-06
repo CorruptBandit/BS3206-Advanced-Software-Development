@@ -21,23 +21,20 @@ export default function WorkoutTracker() {
   const location = useLocation();
   const navigate = useNavigate();
   const { email, isLoggedIn } = useAuth();
+  const searchParams = new URLSearchParams(location.search);
+  const workoutId = searchParams.get('workoutId')
 
-  if (!isLoggedIn) {
+  if (!isLoggedIn || !workoutId) {
     return (
       <Container>
         <Box sx={{ width: '100%', textAlign: 'center', mt: 5 }}>
           <Typography variant="h5" sx={{ mb: 2 }}>
-            You are currently logged out
+            You are either currently logged out or there is no workout ID, please log in or use the track button next to each workout, to track a workout
           </Typography>
-          <Button component={Link} to="/login" variant="contained" size="large">
-            Log In
-          </Button>
         </Box>
       </Container>
     );
   }
-  const searchParams = new URLSearchParams(location.search);
-  const workoutId = searchParams.get('workoutId');
 
   // State variables for form fields
   const [workoutName, setWorkoutName] = useState('');

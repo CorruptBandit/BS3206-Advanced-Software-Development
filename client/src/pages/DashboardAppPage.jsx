@@ -22,7 +22,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function DashboardAppPage() {
   const theme = useTheme();
-  const { isLoggedIn, isAdmin } = useAuth();
+  const { isLoggedIn, isAdmin, name } = useAuth();
 
   if (isAdmin) {
     return <AdminPage />; // Render AdminPage if the user is admin
@@ -31,13 +31,13 @@ export default function DashboardAppPage() {
   return (
     <>
       <Helmet>
-        <title> Gym Fitness </title>
+        <title> Meals & Movement </title>
       </Helmet>
 
       <Container maxWidth="xl" sx={{ filter: isLoggedIn ? 'none' : 'grayscale(1)' }}>
       {isLoggedIn && (
         <Typography variant="h4" sx={{ mb: 5 }}>
-          Hi, Welcome back
+          Hi, Welcome back {name}
         </Typography>
       )}
 

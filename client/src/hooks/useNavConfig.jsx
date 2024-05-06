@@ -2,7 +2,7 @@ import SvgColor from '../components/svg-color';
 import { useAuth } from '../context/AuthContext';
 
 // Helper function to create an icon component
-const icon = (name) => <SvgColor src={`/assets/icons/navbar/${name}.svg`} sx={{ width: 1, height: 1 }} />;
+const icon = (name) => <SvgColor src={`/assets/icons/${name}.svg`} sx={{ width: 1, height: 1 }} />;
 
 const useNavConfig = () => {
   const { isAdmin } = useAuth();
@@ -13,7 +13,7 @@ const useNavConfig = () => {
       {
         title: 'dashboard',
         path: '/dashboard/app',
-        icon: icon('ic_analytics'),
+        icon: icon('ic_dashboard'),
       },
     ];
   } else {
@@ -22,22 +22,7 @@ const useNavConfig = () => {
       {
         title: 'dashboard',
         path: '/dashboard/app',
-        icon: icon('ic_analytics'),
-      },
-      {
-        title: 'user',
-        path: '/dashboard/user',
-        icon: icon('ic_user'),
-      },
-      {
-        title: 'product',
-        path: '/dashboard/products',
-        icon: icon('ic_cart'),
-      },
-      {
-        title: 'blog',
-        path: '/dashboard/blog',
-        icon: icon('ic_blog'),
+        icon: icon('ic_dashboard'),
       },
       {
         title: 'workouts',
@@ -47,7 +32,7 @@ const useNavConfig = () => {
       {
         title:'record calories',
         path:"/dashboard/RecordCalories",
-        icon: icon('ic_user'),
+        icon: icon('ic_calories'),
       },
     ];
   }
