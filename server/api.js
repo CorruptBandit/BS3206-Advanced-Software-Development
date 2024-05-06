@@ -192,11 +192,12 @@ app.post("/api/foodItemsByDate", async (req, res) => {
 // ADMIN ENDPOINTS
 app.get('/api/users', verifyAdmin, async (req, res) => {
   try {
-    const users = await mongoDB.queryCollection("users", {});
+    // Exclude admin user as this should be handled directly on the DB by admin
+    const users = await mongoDB.queryCollection("users", { email: { $ne: "admin@admin.admin" } });
     const userDisplay = users.map(user => ({
       email: user.email,
       name: user.name,
-      id: user._id // Assuming MongoDB so _id would be used
+      id: user._id // Assuming MongoDB, so _id would be used
     }));
     res.status(200).json(userDisplay);
   } catch (error) {
@@ -204,6 +205,7 @@ app.get('/api/users', verifyAdmin, async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 app.delete('/api/users/:userId', verifyAdmin, async (req, res) => {
   const userId = req.params.userId;
