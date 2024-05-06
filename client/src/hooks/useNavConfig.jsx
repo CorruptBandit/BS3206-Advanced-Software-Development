@@ -40,6 +40,11 @@ const useNavConfig = () => {
         icon: icon('ic_blog'),
       },
       {
+        title: 'workouts',
+        path: '/dashboard/workouts',
+        icon: icon('ic_workout'),
+      },
+      {
         title:'record calories',
         path:"/dashboard/RecordCalories",
         icon: icon('ic_user'),

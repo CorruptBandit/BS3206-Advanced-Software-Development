@@ -50,7 +50,7 @@ class MongoDBConnector {
 
   async deleteDocument(collectionName, id) {
     await this.connect();
-    return this.db.collection(collectionName).deleteOne({ _id: id });
+    return await this.db.collection(collectionName).deleteOne({ _id: id });
   }
 
   async updateDocument(collectionName, id, updateValues) {
@@ -72,6 +72,22 @@ class MongoDBConnector {
 
     return asyncFunction(collectionName, query);
   }
+
+  getCollection (collectionName) {
+    const asyncFunction = async (collectionName) => {
+      try {
+        const collection = this.db.collection(collectionName)
+
+        return await collection.find({}).toArray()
+      } catch (error) {
+        console.error('Error querying MongoDB:', error)
+        throw error
+      }
+    }
+
+    return asyncFunction(collectionName)
+  }
+  
   async insertFoodItem(collectionName, document) {
     if (!this.db) {
       console.error("MongoDB not connected");
