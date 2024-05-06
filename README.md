@@ -1,12 +1,12 @@
-# BS3206-Advanced-Software-Development
+# Meals & Movement
 
 This is a gym fitness application designed to track workouts and diets, helping users maintain and follow through with their fitness goals. The app utilises a sleek dashboard theme for easy navigation and interaction.
 
 ## Tech Stack
 
-- **Frontend:** React.js
-- **Backend:** Express.js
-- **Database:** MongoDB
+- **Frontend:** React.js with Vite
+- **Backend:** Express.js with Nodemon
+- **Database:** MongoDB in the Cloud
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ Before you begin, ensure you have met the following requirements:
 - **Docker** For Docker users, install Docker by following the guide at [Docker's official site](https://docs.docker.com/get-docker/).
 - **Node.js and npm:** For Node.js users, ensure that Node.js v20 and npm latest rmare installed. They can be downloaded from [nodejs.org](https://nodejs.org/).
 
-_Docker is the prefered method_
+_Docker is the preferred method_
 
 ## Getting Started
 
