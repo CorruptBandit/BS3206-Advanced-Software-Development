@@ -170,8 +170,10 @@ const handleLogWorkout = async () => {
       ...exercise,
       targetWeight: exercise.nextTargetWeight,
     }));
+    // eslint-disable-next-line no-unused-vars
     const updatedExercises = updatedExercisesWithTargetWeight.map(({ exerciseName, repsDone, weightDone, ...exercise }) => exercise);
 
+    // eslint-disable-next-line no-unused-vars
     const { _id, ...updatedWorkoutWithoutId } = workoutToUpdate;
     const updatedWorkout = {
       ...updatedWorkoutWithoutId,
