@@ -89,7 +89,7 @@ export default function Nav({ openNav, onCloseNav }) {
             sx: {
               width: NAV_WIDTH,
               bgcolor: 'background.default',
-              borderRightStyle: 'dashed',
+              boxShadow: '4px 0 6px -2px rgba(0,0,0,0.2)', // subtle shadow to the right
             },
           }}
         >
@@ -103,12 +103,15 @@ export default function Nav({ openNav, onCloseNav }) {
             keepMounted: true,
           }}
           PaperProps={{
-            sx: { width: NAV_WIDTH },
+            sx: {
+              width: NAV_WIDTH,
+              boxShadow: '4px 0 6px -2px rgba(0,0,0,0.2)', // adding shadow here as well
+            },
           }}
         >
           {renderContent}
         </Drawer>
       )}
     </Box>
-  );
+  );  
 }
