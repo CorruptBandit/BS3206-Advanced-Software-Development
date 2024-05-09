@@ -137,7 +137,7 @@ export default function RecordCaloriesPage() {
     return (
       <>
         <Helmet>
-          <title>Log Calories | Minimal UI</title>
+          <title>Log Calories</title>
         </Helmet>
 
         <Container>
@@ -158,7 +158,7 @@ export default function RecordCaloriesPage() {
   return (
     <>
       <Helmet>
-        <title>Log Calories | Minimal UI</title>
+        <title>Log Calories</title>
       </Helmet>
 
       <Container>
