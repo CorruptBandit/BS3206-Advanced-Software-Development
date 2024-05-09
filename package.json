@@ -7,6 +7,7 @@
     "@mui/icons-material": "^5.14.11",
     "@mui/lab": "^5.0.0-alpha.103",
     "@mui/material": "^5.14.11",
+    "@mui/x-charts": "^7.3.2",
     "@vitejs/plugin-react": "^4.2.1",
     "apexcharts": "^3.37.0",
     "bcryptjs": "^2.4.3",

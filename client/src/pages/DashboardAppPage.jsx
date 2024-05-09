@@ -8,9 +8,7 @@ import AdminPage from './AdminPage';
 
 // sections
 import {
-    AppWorkoutHistoryTimeline,
-    AppWidgetSummary,
-    AppGoals
+    AppWorkoutHistoryTimeline, AppWidgetSummary, AppGoals, AppBar
 } from '../sections/@dashboard/app';
 
 import {useAuth} from '../context/AuthContext';
@@ -54,6 +52,22 @@ export default function DashboardAppPage() {
                         <AppWidgetSummary title="Goals Completed" data={"3"} color="success"
                                           icon={'ant-design:star-filled'}/>
                     </Grid>
+                    <Grid item xs={12} md={6} lg={9}>
+                        <AppBar
+                            title="Conversion Rates"
+                            subheader="(+43%) than last year"
+                            chartData={[{label: 'Italy', value: 400}, {label: 'Japan', value: 430}, {
+                                label: 'China',
+                                value: 448
+                            }, {label: 'Canada', value: 470}, {label: 'France', value: 540}, {
+                                label: 'Germany',
+                                value: 580
+                            }, {label: 'South Korea', value: 690}, {
+                                label: 'Netherlands',
+                                value: 1100
+                            }, {label: 'United States', value: 1200}, {label: 'United Kingdom', value: 1380},]}
+                        />
+                    </Grid>
                     <Grid item xs={12} md={6} lg={3}>
                         <AppWorkoutHistoryTimeline
                             title="Workout History"
@@ -68,13 +82,11 @@ export default function DashboardAppPage() {
                     <Grid item xs={12} md={6} lg={9}>
                         <AppGoals
                             title="Tasks"
-                            list={[
-                                {id: '1', label: 'Create FireStone Logo'},
-                                {id: '2', label: 'Add SCSS and JS files if required'},
-                                {id: '3', label: 'Stakeholder Meeting'},
-                                {id: '4', label: 'Scoping & Estimations'},
-                                {id: '5', label: 'Sprint Showcase'},
-                            ]}
+                            list={[{id: '1', label: 'Create FireStone Logo'}, {
+                                id: '2', label: 'Add SCSS and JS files if required'
+                            }, {id: '3', label: 'Stakeholder Meeting'}, {
+                                id: '4', label: 'Scoping & Estimations'
+                            }, {id: '5', label: 'Sprint Showcase'},]}
                         />
                     </Grid>
                 </>) : (// Display a message or a login button when logged out
