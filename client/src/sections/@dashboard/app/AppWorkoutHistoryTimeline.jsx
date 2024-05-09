@@ -7,11 +7,11 @@ import {fDateTime} from '../../../utils/formatTime';
 
 // ----------------------------------------------------------------------
 
-WorkoutHistoryTimeline.propTypes = {
+AppWorkoutHistoryTimeline.propTypes = {
     title: PropTypes.string, subheader: PropTypes.string, list: PropTypes.array.isRequired,
 };
 
-export default function WorkoutHistoryTimeline({title, subheader, list, ...other}) {
+export default function AppWorkoutHistoryTimeline({title, subheader, list, ...other}) {
     return (<Card {...other}>
         <CardHeader title={title} subheader={subheader}/>
 

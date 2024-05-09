@@ -1,5 +1,5 @@
 import {Helmet} from 'react-helmet-async';
-import { faker } from '@faker-js/faker';
+import {faker} from '@faker-js/faker';
 // @mui
 import {Grid, Container, Typography, Box} from '@mui/material';
 
@@ -8,8 +8,9 @@ import AdminPage from './AdminPage';
 
 // sections
 import {
-    WorkoutHistoryTimeline,
-    AppWidgetSummary
+    AppWorkoutHistoryTimeline,
+    AppWidgetSummary,
+    AppGoals
 } from '../sections/@dashboard/app';
 
 import {useAuth} from '../context/AuthContext';
@@ -54,7 +55,7 @@ export default function DashboardAppPage() {
                                           icon={'ant-design:star-filled'}/>
                     </Grid>
                     <Grid item xs={12} md={6} lg={3}>
-                        <WorkoutHistoryTimeline
+                        <AppWorkoutHistoryTimeline
                             title="Workout History"
                             list={[...Array(5)].map((_, index) => ({
                                 id: faker.datatype.uuid(),
@@ -62,6 +63,18 @@ export default function DashboardAppPage() {
                                 type: `order${index + 1}`,
                                 time: faker.date.past(),
                             }))}
+                        />
+                    </Grid>
+                    <Grid item xs={12} md={6} lg={9}>
+                        <AppGoals
+                            title="Tasks"
+                            list={[
+                                {id: '1', label: 'Create FireStone Logo'},
+                                {id: '2', label: 'Add SCSS and JS files if required'},
+                                {id: '3', label: 'Stakeholder Meeting'},
+                                {id: '4', label: 'Scoping & Estimations'},
+                                {id: '5', label: 'Sprint Showcase'},
+                            ]}
                         />
                     </Grid>
                 </>) : (// Display a message or a login button when logged out
