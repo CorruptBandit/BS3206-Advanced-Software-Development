@@ -11,7 +11,7 @@ const useNavConfig = () => {
     // Admin users get only the dashboard option
     return [
       {
-        title: 'dashboard',
+        title: 'admin dashboard',
         path: '/dashboard/app',
         icon: icon('ic_dashboard'),
       },
