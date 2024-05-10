@@ -1,6 +1,7 @@
 import {Helmet} from 'react-helmet-async';
 import {faker} from '@faker-js/faker';
 // @mui
+import {useTheme} from '@mui/material/styles';
 import {Grid, Container, Typography, Box} from '@mui/material';
 
 // components
@@ -8,12 +9,13 @@ import AdminPage from './AdminPage';
 
 // sections
 import {
-    AppWorkoutHistoryTimeline, AppWidgetSummary, AppGoals, AppBar
+    AppWorkoutHistoryTimeline, AppWidgetSummary, AppGoals, AppBar, AppBar2, AppPieChart, AppStyledChart
 } from '../sections/@dashboard/app';
 
 import {useAuth} from '../context/AuthContext';
 
 export default function DashboardAppPage() {
+    const theme = useTheme();
     const {isLoggedIn, isAdmin, name} = useAuth();
 
     if (isAdmin) {
@@ -34,8 +36,14 @@ export default function DashboardAppPage() {
                 {/* Conditional rendering based on isLoggedIn state */}
                 {isLoggedIn ? (<>
                     <Grid item xs={12} sm={6} md={3}>
-                        <AppWidgetSummary title="Exercises Completed" data={"12"}
-                                          icon={'ant-design:heart-filled'}/>
+                        <AppPieChart
+                            title="Current Visits"
+                            chartData={[{label: 'America', value: 4344}, {label: 'Asia', value: 5435}, {
+                                label: 'Europe',
+                                value: 1443
+                            }, {label: 'Africa', value: 4443},]}
+                            chartColors={[theme.palette.primary.main, theme.palette.info.main, theme.palette.warning.main, theme.palette.error.main,]}
+                        />
                     </Grid>
 
                     <Grid item xs={12} sm={6} md={3}>
@@ -44,28 +52,42 @@ export default function DashboardAppPage() {
                     </Grid>
 
                     <Grid item xs={12} sm={6} md={3}>
-                        <AppWidgetSummary title="Favourite Workout" data={"Bicep Curl"} color="warning"
+                        <AppWidgetSummary title="Favourite Workout" data={"Bicep Curl"} color="success"
                                           icon={'ant-design:experiment-filled'}/>
                     </Grid>
 
                     <Grid item xs={12} sm={6} md={3}>
-                        <AppWidgetSummary title="Goals Completed" data={"3"} color="success"
-                                          icon={'ant-design:star-filled'}/>
+                        <AppStyledChart
+                            title="Current Subject"
+                            chartLabels={['English', 'History', 'Physics', 'Geography', 'Chinese', 'Math']}
+                            chartData={[
+                                {name: 'Series 1', data: [80, 50, 30, 40, 100, 20]},
+                                {name: 'Series 2', data: [20, 30, 40, 80, 20, 80]},
+                                {name: 'Series 3', data: [44, 76, 78, 13, 43, 10]},
+                            ]}
+                            chartColors={[...Array(6)].map(() => theme.palette.text.secondary)}
+                        />
                     </Grid>
                     <Grid item xs={12} md={6} lg={9}>
-                        <AppBar
-                            title="Conversion Rates"
-                            subheader="(+43%) than last year"
-                            chartData={[{label: 'Italy', value: 400}, {label: 'Japan', value: 430}, {
-                                label: 'China',
-                                value: 448
-                            }, {label: 'Canada', value: 470}, {label: 'France', value: 540}, {
-                                label: 'Germany',
-                                value: 580
-                            }, {label: 'South Korea', value: 690}, {
-                                label: 'Netherlands',
-                                value: 1100
-                            }, {label: 'United States', value: 1200}, {label: 'United Kingdom', value: 1380},]}
+                        <AppBar2
+                            title="Exercise Tracking"
+                            chartLabels={['01/01/2003', '02/01/2003', '03/01/2003', '04/01/2003', '05/01/2003', '06/01/2003', '07/01/2003', '08/01/2003', '09/01/2003', '10/01/2003', '11/01/2003',]}
+                            chartData={[{
+                                name: 'Team A',
+                                type: 'column',
+                                fill: 'solid',
+                                data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30],
+                            }, {
+                                name: 'Team B',
+                                type: 'area',
+                                fill: 'gradient',
+                                data: [44, 55, 41, 67, 22, 43, 21, 41, 56, 27, 43],
+                            }, {
+                                name: 'Team C',
+                                type: 'line',
+                                fill: 'solid',
+                                data: [30, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39],
+                            },]}
                         />
                     </Grid>
                     <Grid item xs={12} md={6} lg={3}>
@@ -80,8 +102,20 @@ export default function DashboardAppPage() {
                         />
                     </Grid>
                     <Grid item xs={12} md={6} lg={9}>
+                        <AppBar
+                            title="Dietary Tracking"
+                            chartData={[{label: 'Italy', value: 400}, {label: 'Japan', value: 430}, {
+                                label: 'China', value: 448
+                            }, {label: 'Canada', value: 470}, {label: 'France', value: 540}, {
+                                label: 'Germany', value: 580
+                            }, {label: 'South Korea', value: 690}, {
+                                label: 'Netherlands', value: 1100
+                            }, {label: 'United States', value: 1200}, {label: 'United Kingdom', value: 1380},]}
+                        />
+                    </Grid>
+                    <Grid item xs={12} md={6} lg={3}>
                         <AppGoals
-                            title="Tasks"
+                            title="Goals"
                             list={[{id: '1', label: 'Create FireStone Logo'}, {
                                 id: '2', label: 'Add SCSS and JS files if required'
                             }, {id: '3', label: 'Stakeholder Meeting'}, {

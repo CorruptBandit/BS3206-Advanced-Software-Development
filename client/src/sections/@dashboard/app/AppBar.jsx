@@ -26,7 +26,7 @@ export default function AppBar({title, subheader, chartData, ...other}) {
                 },
             },
         }, plotOptions: {
-            bar: {vertical: true, barHeight: '35%', borderRadius: 2},
+            bar: {horizontal: true, barHeight: '35%', borderRadius: 2},
         }, xaxis: {
             categories: chartLabels,
         },
