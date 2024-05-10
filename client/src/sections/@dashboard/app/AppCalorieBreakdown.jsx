@@ -10,7 +10,7 @@ import {useChart} from '../../../components/chart';
 
 // ----------------------------------------------------------------------
 
-const CHART_HEIGHT = 225;
+const CHART_HEIGHT = 205;
 const LEGEND_HEIGHT = 48;
 
 const StyledChartWrapper = styled('div')(({theme}) => ({
@@ -60,10 +60,8 @@ export default function AppCalorieBreakdown({title, subheader, chartColors, char
         },
         plotOptions: {
             pie: {
-                donut: { labels: { show: false } },
-                dataLabels: {
-                    offset: -10,
-                    minAngleToShowLabel: 10,
+                donut: {labels: {show: false}}, dataLabels: {
+                    offset: -10, minAngleToShowLabel: 10,
                 },
             },
         },
@@ -73,7 +71,7 @@ export default function AppCalorieBreakdown({title, subheader, chartColors, char
             <CardHeader title={title} subheader={subheader}/>
 
             <StyledChartWrapper dir="ltr">
-                <ReactApexChart type="pie" series={chartSeries} options={chartOptions} height={200}/>
+                <ReactApexChart type="pie" series={chartSeries} options={chartOptions} height={180}/>
             </StyledChartWrapper>
         </Card>);
 }

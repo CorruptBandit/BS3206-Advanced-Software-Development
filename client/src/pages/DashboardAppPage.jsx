@@ -1,5 +1,4 @@
 import {Helmet} from 'react-helmet-async';
-import {faker} from '@faker-js/faker';
 // @mui
 import {useTheme} from '@mui/material/styles';
 import {Grid, Container, Typography, Box} from '@mui/material';
@@ -9,22 +8,143 @@ import AdminPage from './AdminPage';
 
 // sections
 import {
-    AppWorkoutHistoryTimeline,
-    AppWidgetSummary,
-    AppGoals,
-    AppDietaryTracking,
-    AppExerciseTracking,
-    AppCalorieBreakdown
+    AppWorkoutHistoryTimeline, AppWidgetSummary, AppGoals, AppDietaryTracking, AppExerciseTracking, AppCalorieBreakdown
 } from '../sections/@dashboard/app';
 
 import {useAuth} from '../context/AuthContext';
+import {useEffect, useState} from "react";
 
 export default function DashboardAppPage() {
     const theme = useTheme();
-    const {isLoggedIn, isAdmin, name} = useAuth();
+    const {email, name, isLoggedIn, isAdmin} = useAuth();
+    const [filteredData, setDailyIntake] = useState([]);
+    const [mostCommonMealType, setMostCommonMealType] = useState(null);
+    const [calorieBreakdown, setCalorieBreakdown] = useState([]);
+    const [workoutData, setWorkoutData] = useState([]);
+    const [workoutHistoryData, setWorkoutHistoryData] = useState([]);
+
+    useEffect(() => {
+        if (filteredData.length > 0) {
+            const mealCounts = filteredData.reduce((counts, item) => {
+                counts[item.mealType] = (counts[item.mealType] || 0) + 1;
+                return counts;
+            }, {});
+
+            const mostCommonMealType = Object.keys(mealCounts).reduce((a, b) => mealCounts[a] > mealCounts[b] ? a : b, null);
+            setMostCommonMealType(mostCommonMealType ? mostCommonMealType.charAt(0).toUpperCase() + mostCommonMealType.slice(1) : null);
+        }
+    }, [filteredData]);
+
+    useEffect(() => {
+        if (filteredData.length > 0) {
+            const calorieCounts = filteredData.reduce((counts, item) => {
+                counts[item.mealType] = (counts[item.mealType] || 0) + parseInt(item.calories);
+                return counts;
+            }, {});
+
+            const chartData = Object.entries(calorieCounts).map(([label, value]) => ({
+                label, value
+            }));
+            setCalorieBreakdown(chartData);
+        }
+    }, [filteredData]);
+
+    const sumCalories = () => {
+        return calorieBreakdown.reduce((total, item) => total + item.value, 0);
+    };
+
+    const fetchFood = async () => {
+        try {
+            const endDate = new Date();
+            const startDate = new Date(endDate);
+            startDate.setDate(endDate.getDate() - 6);
+
+            const response = await fetch(`/api/getCollection?collection=food`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+            if (!response.ok) {
+                throw new Error(`Failed to fetch food data`);
+            }
+            const data = await response.json();
+
+            const currentDate = new Date().toISOString().slice(0, 10);
+            const getDailyIntake = data.filter(item => item.userEmail === email && item.dateAdded === currentDate);
+
+            setDailyIntake(getDailyIntake);
+        } catch (error) {
+            console.error('Error fetching food data:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchFood().then((response) => {
+            console.log(response);
+        }).catch((error) => {
+            console.error('Error fetching data:', error);
+        });
+    }, [email]);
+
+
+    useEffect(() => {
+        Promise.all([fetchWorkout('workouts'), fetchWorkout('workoutHistory')])
+            .then(() => {
+            })
+            .catch((error) => {
+                console.error('Error fetching data:', error);
+            });
+    }, []);
+
+    const fetchWorkout = async (collection) => {
+        try {
+            const userResponse = await fetch(`/api/getCollection?collection=users`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+            if (!userResponse.ok) {
+                throw new Error('Failed to fetch user data');
+            }
+            const userData = await userResponse.json();
+            const currentUser = userData.find(user => user.email === email);
+
+            if (!currentUser) {
+                console.error('User data not found for email:', email);
+                return [];
+            }
+
+            const userId = currentUser._id;
+
+            const response = await fetch(`/api/getCollection?collection=${collection}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch ${collection}`);
+            }
+
+            const data = await response.json();
+            const filteredData = data.filter(item => item.userId === userId);
+
+            if (collection === 'workouts') {
+                const mappedData = filteredData.map((item) => ({...item, workoutId: item._id}));
+                setWorkoutData(mappedData);
+            } else if (collection === 'workoutHistory') {
+                setWorkoutHistoryData(filteredData);
+            }
+
+            return data;
+        } catch (error) {
+            console.error(`Error fetching ${collection}:`, error);
+            throw error;
+        }
+    };
 
     if (isAdmin) {
-        return <AdminPage/>; // Render AdminPage if the user is admin
+        return <AdminPage/>;
     }
 
     return (<>
@@ -41,28 +161,20 @@ export default function DashboardAppPage() {
                 {/* Conditional rendering based on isLoggedIn state */}
                 {isLoggedIn ? (<>
                     <Grid item xs={12} sm={6} md={4}>
-                        <AppWidgetSummary title="Favourite Meal" data={"Breakfast"} color="info"
-                                          icon={'ant-design:shopping-cart-outlined'}/>
+                        <AppWidgetSummary title="Favourite Meal" data={mostCommonMealType || "N/A"} color="info"
+                                          icon={'fluent-emoji-high-contrast:shallow-pan-of-food'}/>
                     </Grid>
                     <Grid item xs={12} sm={6} md={4}>
                         <AppCalorieBreakdown
                             title="Daily Calorie Breakdown"
-                            chartData={[{label: 'America', value: 4344}, {label: 'Asia', value: 5435}, {
-                                label: 'Europe', value: 1443
-                            }, {label: 'Africa', value: 4443},]}
-                            chartColors={
-                            [
-                                theme.palette.primary.main,
-                                theme.palette.info.main,
-                                theme.palette.warning.main,
-                                theme.palette.error.main,
-                            ]
-                        }
+                            subheader={`Total Calories: ${sumCalories()}`}
+                            chartData={calorieBreakdown}
+                            chartColors={[theme.palette.primary.main, theme.palette.info.main, theme.palette.warning.main, theme.palette.success.main, theme.palette.error.main]}
                         />
                     </Grid>
                     <Grid item xs={12} sm={6} md={4}>
                         <AppWidgetSummary title="Favourite Workout" data={"Bicep Curl"} color="success"
-                                          icon={'ant-design:rocket-filled'}/>
+                                          icon={'cil:weightlifitng'}/>
                     </Grid>
                     <Grid item xs={12} md={6} lg={9}>
                         <AppExerciseTracking
@@ -89,25 +201,13 @@ export default function DashboardAppPage() {
                     <Grid item xs={12} md={6} lg={3}>
                         <AppWorkoutHistoryTimeline
                             title="Workout History"
-                            list={[...Array(5)].map((_, index) => ({
-                                id: faker.datatype.uuid(),
-                                title: ['1983, orders, $4220', '12 Invoices have been paid', 'Order #37745 from September', 'New order placed #XF-2356', 'New order placed #XF-2346',][index],
-                                type: `order${index + 1}`,
-                                time: faker.date.past(),
+                            list={workoutHistoryData.map((item) => ({
+                                id: item._id, title: item.workoutName, type: 'workout', time: new Date(item.date),
                             }))}
                         />
                     </Grid>
                     <Grid item xs={12} md={6} lg={9}>
-                        <AppDietaryTracking
-                            title="Dietary Tracking"
-                            chartData={[{label: 'Italy', value: 400}, {label: 'Japan', value: 430}, {
-                                label: 'China', value: 448
-                            }, {label: 'Canada', value: 470}, {label: 'France', value: 540}, {
-                                label: 'Germany', value: 580
-                            }, {label: 'South Korea', value: 690}, {
-                                label: 'Netherlands', value: 1100
-                            }, {label: 'United States', value: 1200}, {label: 'United Kingdom', value: 1380},]}
-                        />
+
                     </Grid>
                     <Grid item xs={12} md={6} lg={3}>
                         <AppGoals
