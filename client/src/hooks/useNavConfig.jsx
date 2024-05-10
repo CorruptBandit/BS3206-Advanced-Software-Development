@@ -2,7 +2,9 @@ import SvgColor from '../components/svg-color';
 import { useAuth } from '../context/AuthContext';
 
 // Helper function to create an icon component
-const icon = (name) => <SvgColor src={`/assets/icons/${name}.svg`} sx={{ width: 1, height: 1 }} />;
+const icon = (name) => (
+  <SvgColor src={`/assets/icons/${name}.svg`} sx={{ width: 1, height: 1 }} />
+);
 
 const useNavConfig = () => {
   const { isAdmin } = useAuth();
@@ -30,9 +32,14 @@ const useNavConfig = () => {
         icon: icon('ic_workout'),
       },
       {
-        title:'record calories',
-        path:"/dashboard/RecordCalories",
+        title: 'record calories',
+        path: '/dashboard/RecordCalories',
         icon: icon('ic_calories'),
+      },
+      {
+        title: 'record weight',
+        path: '/dashboard/record-weight',
+        icon: icon('ic_weight'),
       },
     ];
   }
