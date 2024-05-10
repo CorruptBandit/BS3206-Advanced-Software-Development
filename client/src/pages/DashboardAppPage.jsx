@@ -1,14 +1,14 @@
 import {Helmet} from 'react-helmet-async';
 // @mui
 import {useTheme} from '@mui/material/styles';
-import {Grid, Container, Typography, Box} from '@mui/material';
+import {Box, Container, Grid, Typography} from '@mui/material';
 
 // components
 import AdminPage from './AdminPage';
 
 // sections
 import {
-    AppWorkoutHistoryTimeline, AppWidgetSummary, AppGoals, AppDietaryTracking, AppExerciseTracking, AppCalorieBreakdown
+    AppCalorieBreakdown, AppExerciseTracking, AppGoals, AppWidgetSummary, AppWorkoutHistoryTimeline
 } from '../sections/@dashboard/app';
 
 import {useAuth} from '../context/AuthContext';
@@ -21,6 +21,7 @@ export default function DashboardAppPage() {
     const [mostCommonMealType, setMostCommonMealType] = useState(null);
     const [calorieBreakdown, setCalorieBreakdown] = useState([]);
     const [workoutData, setWorkoutData] = useState([]);
+    const [mostCommonExerciseName, setMostCommonExerciseName] = useState('');
     const [workoutHistoryData, setWorkoutHistoryData] = useState([]);
 
     useEffect(() => {
@@ -88,7 +89,7 @@ export default function DashboardAppPage() {
 
 
     useEffect(() => {
-        Promise.all([fetchWorkout('workouts'), fetchWorkout('workoutHistory')])
+        Promise.all([fetchWorkout('workouts'), fetchWorkout('workoutHistory'),])
             .then(() => {
             })
             .catch((error) => {
@@ -129,9 +130,39 @@ export default function DashboardAppPage() {
             const data = await response.json();
             const filteredData = data.filter(item => item.userId === userId);
 
+            let mostCommonExercise = null;
+            let maxCount = 0;
+            const exerciseCounts = {};
+
             if (collection === 'workouts') {
+                filteredData.forEach(item => {
+                    item.exercises.forEach(exercise => {
+                        const exerciseId = exercise.exerciseId;
+                        exerciseCounts[exerciseId] = (exerciseCounts[exerciseId] || 0) + 1;
+                        if (exerciseCounts[exerciseId] > maxCount) {
+                            maxCount = exerciseCounts[exerciseId];
+                            mostCommonExercise = exerciseId;
+                        }
+                    });
+                });
                 const mappedData = filteredData.map((item) => ({...item, workoutId: item._id}));
                 setWorkoutData(mappedData);
+
+                const exerciseResponse = await fetch(`/api/getCollection?collection=exercises`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                });
+
+                if (!exerciseResponse.ok) {
+                    throw new Error('Failed to fetch exercise data');
+                }
+
+                const exerciseData = await exerciseResponse.json();
+                const mostCommonExerciseData = exerciseData.find(exercise => exercise._id === mostCommonExercise);
+
+                setMostCommonExerciseName(mostCommonExerciseData.exerciseName);
+
             } else if (collection === 'workoutHistory') {
                 setWorkoutHistoryData(filteredData);
             }
@@ -142,6 +173,7 @@ export default function DashboardAppPage() {
             throw error;
         }
     };
+
 
     if (isAdmin) {
         return <AdminPage/>;
@@ -173,7 +205,8 @@ export default function DashboardAppPage() {
                         />
                     </Grid>
                     <Grid item xs={12} sm={6} md={4}>
-                        <AppWidgetSummary title="Favourite Workout" data={"Bicep Curl"} color="success"
+                        <AppWidgetSummary title="Favourite Workout" data={mostCommonExerciseName || "N/A"}
+                                          color="success"
                                           icon={'cil:weightlifitng'}/>
                     </Grid>
                     <Grid item xs={12} md={6} lg={9}>
