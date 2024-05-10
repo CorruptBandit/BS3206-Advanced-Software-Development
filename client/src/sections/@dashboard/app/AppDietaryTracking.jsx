@@ -9,11 +9,11 @@ import {useChart} from '../../../components/chart';
 
 // ----------------------------------------------------------------------
 
-AppBar.propTypes = {
+AppDietaryTracking.propTypes = {
     title: PropTypes.string, subheader: PropTypes.string, chartData: PropTypes.array.isRequired,
 };
 
-export default function AppBar({title, subheader, chartData, ...other}) {
+export default function AppDietaryTracking({title, subheader, chartData, ...other}) {
     const chartLabels = chartData.map((i) => i.label);
 
     const chartSeries = chartData.map((i) => i.value);

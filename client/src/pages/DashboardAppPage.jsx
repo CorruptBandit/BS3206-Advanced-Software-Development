@@ -9,7 +9,12 @@ import AdminPage from './AdminPage';
 
 // sections
 import {
-    AppWorkoutHistoryTimeline, AppWidgetSummary, AppGoals, AppBar, AppBar2, AppPieChart, AppStyledChart
+    AppWorkoutHistoryTimeline,
+    AppWidgetSummary,
+    AppGoals,
+    AppDietaryTracking,
+    AppExerciseTracking,
+    AppCalorieBreakdown
 } from '../sections/@dashboard/app';
 
 import {useAuth} from '../context/AuthContext';
@@ -35,41 +40,32 @@ export default function DashboardAppPage() {
             <Grid container spacing={3}>
                 {/* Conditional rendering based on isLoggedIn state */}
                 {isLoggedIn ? (<>
-                    <Grid item xs={12} sm={6} md={3}>
-                        <AppPieChart
-                            title="Current Visits"
-                            chartData={[{label: 'America', value: 4344}, {label: 'Asia', value: 5435}, {
-                                label: 'Europe',
-                                value: 1443
-                            }, {label: 'Africa', value: 4443},]}
-                            chartColors={[theme.palette.primary.main, theme.palette.info.main, theme.palette.warning.main, theme.palette.error.main,]}
-                        />
-                    </Grid>
-
-                    <Grid item xs={12} sm={6} md={3}>
+                    <Grid item xs={12} sm={6} md={4}>
                         <AppWidgetSummary title="Favourite Meal" data={"Breakfast"} color="info"
                                           icon={'ant-design:shopping-cart-outlined'}/>
                     </Grid>
-
-                    <Grid item xs={12} sm={6} md={3}>
-                        <AppWidgetSummary title="Favourite Workout" data={"Bicep Curl"} color="success"
-                                          icon={'ant-design:experiment-filled'}/>
-                    </Grid>
-
-                    <Grid item xs={12} sm={6} md={3}>
-                        <AppStyledChart
-                            title="Current Subject"
-                            chartLabels={['English', 'History', 'Physics', 'Geography', 'Chinese', 'Math']}
-                            chartData={[
-                                {name: 'Series 1', data: [80, 50, 30, 40, 100, 20]},
-                                {name: 'Series 2', data: [20, 30, 40, 80, 20, 80]},
-                                {name: 'Series 3', data: [44, 76, 78, 13, 43, 10]},
-                            ]}
-                            chartColors={[...Array(6)].map(() => theme.palette.text.secondary)}
+                    <Grid item xs={12} sm={6} md={4}>
+                        <AppCalorieBreakdown
+                            title="Daily Calorie Breakdown"
+                            chartData={[{label: 'America', value: 4344}, {label: 'Asia', value: 5435}, {
+                                label: 'Europe', value: 1443
+                            }, {label: 'Africa', value: 4443},]}
+                            chartColors={
+                            [
+                                theme.palette.primary.main,
+                                theme.palette.info.main,
+                                theme.palette.warning.main,
+                                theme.palette.error.main,
+                            ]
+                        }
                         />
                     </Grid>
+                    <Grid item xs={12} sm={6} md={4}>
+                        <AppWidgetSummary title="Favourite Workout" data={"Bicep Curl"} color="success"
+                                          icon={'ant-design:rocket-filled'}/>
+                    </Grid>
                     <Grid item xs={12} md={6} lg={9}>
-                        <AppBar2
+                        <AppExerciseTracking
                             title="Exercise Tracking"
                             chartLabels={['01/01/2003', '02/01/2003', '03/01/2003', '04/01/2003', '05/01/2003', '06/01/2003', '07/01/2003', '08/01/2003', '09/01/2003', '10/01/2003', '11/01/2003',]}
                             chartData={[{
@@ -102,7 +98,7 @@ export default function DashboardAppPage() {
                         />
                     </Grid>
                     <Grid item xs={12} md={6} lg={9}>
-                        <AppBar
+                        <AppDietaryTracking
                             title="Dietary Tracking"
                             chartData={[{label: 'Italy', value: 400}, {label: 'Japan', value: 430}, {
                                 label: 'China', value: 448

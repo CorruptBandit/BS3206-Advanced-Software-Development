@@ -31,14 +31,14 @@ const StyledChartWrapper = styled('div')(({theme}) => ({
 
 // ----------------------------------------------------------------------
 
-AppPieChart.propTypes = {
+AppCalorieBreakdown.propTypes = {
     title: PropTypes.string,
     subheader: PropTypes.string,
     chartColors: PropTypes.arrayOf(PropTypes.string),
     chartData: PropTypes.array,
 };
 
-export default function AppPieChart({title, subheader, chartColors, chartData, ...other}) {
+export default function AppCalorieBreakdown({title, subheader, chartColors, chartData, ...other}) {
     const theme = useTheme();
 
     const chartLabels = chartData.map((i) => i.label);

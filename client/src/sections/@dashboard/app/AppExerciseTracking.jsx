@@ -7,14 +7,14 @@ import {useChart} from '../../../components/chart';
 
 // ----------------------------------------------------------------------
 
-AppBar2.propTypes = {
+AppExerciseTracking.propTypes = {
     title: PropTypes.string,
     subheader: PropTypes.string,
     chartData: PropTypes.array.isRequired,
     chartLabels: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
-export default function AppBar2({title, subheader, chartLabels, chartData, ...other}) {
+export default function AppExerciseTracking({title, subheader, chartLabels, chartData, ...other}) {
     const chartOptions = useChart({
         plotOptions: {bar: {columnWidth: '16%'}},
         fill: {type: chartData.map((i) => i.fill)},

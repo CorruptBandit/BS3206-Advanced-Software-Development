@@ -67,9 +67,9 @@ function GoalItem({task, checked, onChange}) {
         console.log('MARK COMPLETE', task.id);
     };
 
-    const handleShare = () => {
+    const handleGoal = () => {
         handleCloseMenu();
-        console.log('SHARE', task.id);
+        console.log('GOAL', task.id);
     };
 
     const handleEdit = () => {
@@ -114,6 +114,10 @@ function GoalItem({task, checked, onChange}) {
                 },
             }}
         >
+            <MenuItem onClick={handleGoal}>
+                <Iconify icon={'eva:plus-circle-fill'} sx={{mr: 2}}/>
+                Add Goal
+            </MenuItem>
             <MenuItem onClick={handleMarkComplete}>
                 <Iconify icon={'eva:checkmark-circle-2-fill'} sx={{mr: 2}}/>
                 Mark Complete
@@ -122,11 +126,6 @@ function GoalItem({task, checked, onChange}) {
             <MenuItem onClick={handleEdit}>
                 <Iconify icon={'eva:edit-fill'} sx={{mr: 2}}/>
                 Edit
-            </MenuItem>
-
-            <MenuItem onClick={handleShare}>
-                <Iconify icon={'eva:share-fill'} sx={{mr: 2}}/>
-                Share
             </MenuItem>
 
             <Divider sx={{borderStyle: 'dashed'}}/>
