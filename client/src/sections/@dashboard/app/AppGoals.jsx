@@ -19,6 +19,7 @@ import {
 } from '@mui/material';
 import Iconify from '../../../components/iconify';
 import {Controller, useForm} from "react-hook-form";
+import {useAuth} from "../../../context/AuthContext";
 
 AppGoals.propTypes = {
     title: PropTypes.string, subheader: PropTypes.string, list: PropTypes.array.isRequired,
@@ -61,9 +62,49 @@ GoalItem.propTypes = {
 function GoalItem({task, checked, onChange}) {
     const [open, setOpen] = useState(null);
     const [goalName, setGoalName] = useState('');
-    const [achieveByDate, setAchieveByDate] = useState('');
+    const [achieveByDate, setAchieveByDate] = useState();
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [addClicked, setAddClicked] = useState(false); // State to track if "Add" button has been clicked
+    const [addClicked, setAddClicked] = useState(false);
+    const {email} = useAuth()
+
+    const addGoal = async (collection, goalName, achieveByDate) => {
+        try {
+            const user_response = await fetch(`/api/getCollection?collection=users`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+            const userData = await user_response.json();
+            const user = userData.find(user => user.email === email);
+            const userId = user ? user._id : null;
+            const completed = false;
+
+            const goalData = {
+                goalName: goalName,
+                achieveByDate: achieveByDate,
+                userId: userId,
+                completed: completed
+            };
+
+            const response = await fetch(`/api/insertDocument?collection=${collection}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+                body: JSON.stringify(goalData),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to add goal to ${collection}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error(`Error adding goal to ${collection}:`, error);
+            throw error;
+        }
+    };
 
     const handleOpenMenu = (event) => {
         setOpen(event.currentTarget);
@@ -93,14 +134,18 @@ function GoalItem({task, checked, onChange}) {
         console.log('DELETE', task.id);
     };
 
-    const handleAddClick = () => {
-        setAddClicked(true);
+    const handleAddClick = async () => {
         const isFutureDate = new Date(achieveByDate) > new Date();
         const isGoalNameValid = !!goalName;
 
         if (isFutureDate && isGoalNameValid) {
-            console.log('New Goal:', goalName);
-            handleDialogClose();
+            try {
+                const addedGoal = await addGoal("goals", {goalName, achieveByDate});
+                console.log("Goal added successfully:", addedGoal);
+                handleDialogClose();
+            } catch (error) {
+                console.error("Failed to add goal:", error);
+            }
         } else {
             if (!isFutureDate) {
                 console.log('Date must be in the future');
@@ -119,94 +164,94 @@ function GoalItem({task, checked, onChange}) {
     };
 
     return (<Stack
-            direction="row"
-            sx={{
-                px: 2, py: 0.75, ...(checked && {
-                    color: 'text.disabled', textDecoration: 'line-through',
-                }),
+        direction="row"
+        sx={{
+            px: 2, py: 0.75, ...(checked && {
+                color: 'text.disabled', textDecoration: 'line-through',
+            }),
+        }}
+    >
+        <FormControlLabel
+            control={<Checkbox checked={checked} onChange={onChange}/>}
+            label={task.label}
+            sx={{flexGrow: 1, m: 0}}
+        />
+
+        <IconButton size="large" color="inherit" sx={{opacity: 0.48}} onClick={handleOpenMenu}>
+            <Iconify icon={'eva:more-vertical-fill'}/>
+        </IconButton>
+
+        <Popover
+            open={Boolean(open)}
+            anchorEl={open}
+            onClose={handleCloseMenu}
+            anchorOrigin={{vertical: 'top', horizontal: 'left'}}
+            transformOrigin={{vertical: 'top', horizontal: 'right'}}
+            PaperProps={{
+                sx: {
+                    p: 1, '& .MuiMenuItem-root': {
+                        px: 1, typography: 'body2', borderRadius: 0.75,
+                    },
+                },
             }}
         >
-            <FormControlLabel
-                control={<Checkbox checked={checked} onChange={onChange}/>}
-                label={task.label}
-                sx={{flexGrow: 1, m: 0}}
-            />
+            <MenuItem onClick={handleGoal}>
+                <Iconify icon={'eva:plus-circle-fill'} sx={{mr: 2}}/>
+                Add Goal
+            </MenuItem>
+            <MenuItem onClick={handleMarkComplete}>
+                <Iconify icon={'eva:checkmark-circle-2-fill'} sx={{mr: 2}}/>
+                Mark Complete
+            </MenuItem>
 
-            <IconButton size="large" color="inherit" sx={{opacity: 0.48}} onClick={handleOpenMenu}>
-                <Iconify icon={'eva:more-vertical-fill'}/>
-            </IconButton>
+            <MenuItem onClick={handleEdit}>
+                <Iconify icon={'eva:edit-fill'} sx={{mr: 2}}/>
+                Edit
+            </MenuItem>
 
-            <Popover
-                open={Boolean(open)}
-                anchorEl={open}
-                onClose={handleCloseMenu}
-                anchorOrigin={{vertical: 'top', horizontal: 'left'}}
-                transformOrigin={{vertical: 'top', horizontal: 'right'}}
-                PaperProps={{
-                    sx: {
-                        p: 1, '& .MuiMenuItem-root': {
-                            px: 1, typography: 'body2', borderRadius: 0.75,
-                        },
-                    },
-                }}
-            >
-                <MenuItem onClick={handleGoal}>
-                    <Iconify icon={'eva:plus-circle-fill'} sx={{mr: 2}}/>
-                    Add Goal
-                </MenuItem>
-                <MenuItem onClick={handleMarkComplete}>
-                    <Iconify icon={'eva:checkmark-circle-2-fill'} sx={{mr: 2}}/>
-                    Mark Complete
-                </MenuItem>
+            <Divider sx={{borderStyle: 'dashed'}}/>
 
-                <MenuItem onClick={handleEdit}>
-                    <Iconify icon={'eva:edit-fill'} sx={{mr: 2}}/>
-                    Edit
-                </MenuItem>
+            <MenuItem onClick={handleDelete} sx={{color: 'error.main'}}>
+                <Iconify icon={'eva:trash-2-outline'} sx={{mr: 2}}/>
+                Delete
+            </MenuItem>
+        </Popover>
 
-                <Divider sx={{borderStyle: 'dashed'}}/>
-
-                <MenuItem onClick={handleDelete} sx={{color: 'error.main'}}>
-                    <Iconify icon={'eva:trash-2-outline'} sx={{mr: 2}}/>
-                    Delete
-                </MenuItem>
-            </Popover>
-
-            <Dialog open={dialogOpen} onClose={handleDialogClose}>
-                <DialogTitle>Add New Goal</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        label="Goal Name"
-                        fullWidth
-                        value={goalName}
-                        onChange={(e) => setGoalName(e.target.value)}
-                        error={!goalName && addClicked} // Show error after add button clicked
-                        helperText={!goalName && addClicked ? "Goal name cannot be empty" : ""}
-                    />
-                    <TextField
-                        margin="dense"
-                        label="Date to be achieved by"
-                        type="date"
-                        fullWidth
-                        InputLabelProps={{
-                            shrink: true,
-                        }}
-                        value={achieveByDate}
-                        onChange={(e) => setAchieveByDate(e.target.value)}
-                        inputProps={{
-                            min: new Date().toISOString().split("T")[0],
-                        }}
-                        error={achieveByDate && new Date(achieveByDate) <= new Date()}
-                        helperText={achieveByDate && new Date(achieveByDate) <= new Date() ? "Date must be in the future" : ""}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleDialogClose}>Cancel</Button>
-                    <Button onClick={handleAddClick}>Add</Button>
-                </DialogActions>
-            </Dialog>
-        </Stack>);
+        <Dialog open={dialogOpen} onClose={handleDialogClose}>
+            <DialogTitle>Add New Goal</DialogTitle>
+            <DialogContent>
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    label="Goal Name"
+                    fullWidth
+                    value={goalName}
+                    onChange={(e) => setGoalName(e.target.value)}
+                    error={addClicked && !goalName.trim()}
+                    helperText={addClicked && !goalName.trim() ? "Goal name cannot be empty" : ""}
+                />
+                <TextField
+                    margin="dense"
+                    label="Date to be achieved by"
+                    type="date"
+                    fullWidth
+                    InputLabelProps={{
+                        shrink: true,
+                    }}
+                    value={achieveByDate}
+                    onChange={(e) => setAchieveByDate(e.target.value)}
+                    inputProps={{
+                        min: new Date().toISOString().split("T")[0],
+                    }}
+                    error={achieveByDate && new Date(achieveByDate) <= new Date()}
+                    helperText={achieveByDate && new Date(achieveByDate) <= new Date() ? "Date must be in the future" : ""}
+                />
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={handleDialogClose}>Cancel</Button>
+                <Button onClick={handleAddClick}>Add</Button>
+            </DialogActions>
+        </Dialog>
+    </Stack>);
 }
 

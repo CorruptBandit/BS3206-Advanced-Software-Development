@@ -174,7 +174,6 @@ export default function DashboardAppPage() {
         }
     };
 
-
     if (isAdmin) {
         return <AdminPage/>;
     }
