@@ -23,6 +23,7 @@ export default function DashboardAppPage() {
     const [workoutData, setWorkoutData] = useState([]);
     const [mostCommonExerciseName, setMostCommonExerciseName] = useState('');
     const [workoutHistoryData, setWorkoutHistoryData] = useState([]);
+    const [goals, setGoals] = useState([]);
 
     useEffect(() => {
         if (filteredData.length > 0) {
@@ -69,6 +70,14 @@ export default function DashboardAppPage() {
                 throw new Error(`Failed to fetch food data`);
             }
             const data = await response.json();
+
+            const allTimeMealCounts = data.reduce((counts, item) => {
+                counts[item.mealType] = (counts[item.mealType] || 0) + 1;
+                return counts;
+            }, {});
+
+            const allTimeMostCommonMealType = Object.keys(allTimeMealCounts).reduce((a, b) => allTimeMealCounts[a] > allTimeMealCounts[b] ? a : b, null);
+            setMostCommonMealType(allTimeMostCommonMealType ? allTimeMostCommonMealType.charAt(0).toUpperCase() + allTimeMostCommonMealType.slice(1) : null);
 
             const currentDate = new Date().toISOString().slice(0, 10);
             const getDailyIntake = data.filter(item => item.userEmail === email && item.dateAdded === currentDate);
@@ -174,6 +183,64 @@ export default function DashboardAppPage() {
         }
     };
 
+    useEffect(() => {
+        const fetchGoals = async () => {
+            try {
+                const fetchedGoals = await fetchGoal("goals");
+                setGoals(fetchedGoals);
+            } catch (error) {
+                console.error("Error fetching goals:", error);
+            }
+        };
+
+        fetchGoals();
+    }, []);
+
+    const fetchGoal = async (collection) => {
+        try {
+            const [userResponse] = await Promise.all([fetch(`/api/getCollection?collection=users`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            })]);
+
+            if (!userResponse.ok) {
+                throw new Error('Failed to fetch user data');
+            }
+
+            const userData = await userResponse.json();
+            const currentUser = userData.find(user => user.email === email);
+
+            if (!currentUser) {
+                console.error('User data not found for email:', email);
+                return [];
+            }
+
+            const userId = currentUser._id;
+
+            const response = await fetch(`/api/getCollection?collection=${collection}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch ${collection}`);
+            }
+
+            const data = await response.json();
+            const filteredData = data.filter(item => item.userId === userId);
+
+            return filteredData.map(item => ({
+                goalName: item.goalName, achieveByDate: item.achieveByDate
+            }));
+        } catch (error) {
+            console.error(`Error fetching ${collection}:`, error);
+            throw error;
+        }
+    };
+
+
     if (isAdmin) {
         return <AdminPage/>;
     }
@@ -244,11 +311,7 @@ export default function DashboardAppPage() {
                     <Grid item xs={12} md={6} lg={3}>
                         <AppGoals
                             title="Goals"
-                            list={[{id: '1', label: 'Create FireStone Logo'}, {
-                                id: '2', label: 'Add SCSS and JS files if required'
-                            }, {id: '3', label: 'Stakeholder Meeting'}, {
-                                id: '4', label: 'Scoping & Estimations'
-                            }, {id: '5', label: 'Sprint Showcase'},]}
+                            list={goals}
                         />
                     </Grid>
                 </>) : (// Display a message or a login button when logged out
