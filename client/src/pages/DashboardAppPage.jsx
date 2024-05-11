@@ -27,18 +27,6 @@ export default function DashboardAppPage() {
 
     useEffect(() => {
         if (filteredData.length > 0) {
-            const mealCounts = filteredData.reduce((counts, item) => {
-                counts[item.mealType] = (counts[item.mealType] || 0) + 1;
-                return counts;
-            }, {});
-
-            const mostCommonMealType = Object.keys(mealCounts).reduce((a, b) => mealCounts[a] > mealCounts[b] ? a : b, null);
-            setMostCommonMealType(mostCommonMealType ? mostCommonMealType.charAt(0).toUpperCase() + mostCommonMealType.slice(1) : null);
-        }
-    }, [filteredData]);
-
-    useEffect(() => {
-        if (filteredData.length > 0) {
             const calorieCounts = filteredData.reduce((counts, item) => {
                 counts[item.mealType] = (counts[item.mealType] || 0) + parseInt(item.calories);
                 return counts;
