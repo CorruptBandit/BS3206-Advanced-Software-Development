@@ -9,7 +9,8 @@ import DashboardAppPage from './pages/DashboardAppPage';
 import WorkoutsPage from './pages/WorkoutsPage';
 import WorkoutEditorPage from './pages/WorkoutEditorPage';
 import WorkoutTrackerPage from './pages/WorkoutTrackerPage';
-import RecordCaloriesPage from './pages/RecordCaloriesPage'
+import RecordCaloriesPage from './pages/RecordCaloriesPage';
+import RecordWeightPage from './pages/RecordWeightPage';
 
 // ----------------------------------------------------------------------
 
@@ -25,6 +26,7 @@ export default function Router() {
         { path: 'workout-editor', element: <WorkoutEditorPage /> },
         { path: 'workout-tracker', element: <WorkoutTrackerPage /> },
         { path: 'recordcalories', element: <RecordCaloriesPage /> },
+        { path: 'record-weight', element: <RecordWeightPage /> },
       ],
     },
     {

@@ -15,6 +15,7 @@ const SECRET_KEY = process.env.JWT_SECRET_KEY || "insecure";
 const mongoDB = new MongoDBConnector();
 const revokedTokens = new Set(); // Set to store revoked tokens
 const cookieParser = require('cookie-parser');
+const { rest } = require('lodash');
 
 app.use(express.json());
 app.use(cookieParser());
@@ -186,6 +187,37 @@ app.post("/api/foodItemsByDate", async (req, res) => {
   } catch (error) {
     console.error("Error:", error);
     return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+app.post('/api/addWeight', async (req, res) =>{
+  const{weight, userEmail} = req.body;
+  if (!weight || !userEmail){
+    return res.status(400).json({error: "Weight is required."});
+  }
+  try{
+    const document = {
+      weight,
+      dateAdded: new Date().toISOString().split("T")[0],
+      userEmail
+    }
+    await mongoDB.insertWeight("weight", document);
+    return res.status(200).json({message:"Weight added successfully"});
+  }catch(error){
+    console.error("Error adding weight", error);
+    return res.status(500).json({error:'Internal Server Error'});
+  }
+});
+app.post('/api/weightHistory', async (req, res) => {
+  const { userEmail, dateAdded } = req.body; // Retrieve userEmail and dateAdded from request body
+  if (!userEmail) {
+    return res.status(400).json({ error: "User email is required" });
+  }
+  try {
+    const weightHistory = await mongoDB.getWeightHistory("weight", userEmail, dateAdded);
+    return res.status(200).json({ weightHistory });
+  } catch (error) {
+    console.error('Error fetching weight history', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 
