@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {
     Stack,
     Checkbox,
@@ -15,10 +15,11 @@ import {
     TextField,
     Button,
     CardHeader,
-    Card
+    Card,
+    Typography
 } from '@mui/material';
+
 import Iconify from '../../../components/iconify';
-import {Controller, useForm} from "react-hook-form";
 import {useAuth} from "../../../context/AuthContext";
 
 AppGoals.propTypes = {
@@ -28,15 +29,9 @@ AppGoals.propTypes = {
 export default function AppGoals({title, subheader, list, ...other}) {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [goalName, setGoalName] = useState('');
-    const [achieveByDate, setAchieveByDate] = useState('');
+    const [achieveByDate, setAchieveByDate] = useState(null); // Initialize to null
     const [addClicked, setAddClicked] = useState(false);
-    const {email} = useAuth()
-    const {control} = useForm({
-        defaultValues: {
-            taskCompleted: ['2'],
-        },
-    });
-
+    const {email} = useAuth();
 
     const addGoal = async (collection, goalName, achieveByDate) => {
         try {
@@ -78,18 +73,17 @@ export default function AppGoals({title, subheader, list, ...other}) {
     const handleDialogClose = () => {
         setDialogOpen(false);
         setGoalName('');
-        setAchieveByDate();
+        setAchieveByDate(null);
         setAddClicked(false);
     };
 
     const handleAddClick = async () => {
-        const isFutureDate = new Date(achieveByDate) > new Date();
+        const isFutureDate = achieveByDate && new Date(achieveByDate) > new Date();
         const isGoalNameValid = !!goalName;
 
         if (isFutureDate && isGoalNameValid) {
             try {
-                const addedGoal = await addGoal("goals", {goalName, achieveByDate});
-                console.log("Goal added successfully:", addedGoal);
+                await addGoal("goals", goalName, achieveByDate);
                 handleDialogClose();
             } catch (error) {
                 console.error("Failed to add goal:", error);
@@ -107,34 +101,27 @@ export default function AppGoals({title, subheader, list, ...other}) {
 
     return (<Card {...other}>
         <CardHeader title={title} subheader={subheader}/>
+        <Button
+            variant="outlined"
+            color="primary"
+            size="medium"
+            startIcon={<Iconify icon={'eva:plus-circle-fill'}/>}
+            onClick={handleGoal}
+        >
+            Add Goal
+        </Button>
         <Stack direction="column">
-            <Stack direction="row" alignItems="center" sx={{px: 2}}>
-                <Button
-                    variant="outlined"
-                    color="primary"
-                    size="medium"
-                    startIcon={<Iconify icon={'eva:plus-circle-fill'}/>}
-                    onClick={handleGoal}
-                >
-                    Add Goal
-                </Button>
-            </Stack>
-            <Controller
-                name="taskCompleted"
-                control={control}
-                render={({field}) => {
-                    const onSelected = (task) => field.value.includes(task) ? field.value.filter((value) => value !== task) : [...field.value, task];
-
-                    return (<>
-                        {list.map((task, index) => (<GoalItem
-                                key={index}
-                                task={task}
-                                checked={field.value.includes(task.id)}
-                                onChange={() => field.onChange(onSelected(task.id))}
-                            />))}
-                    </>);
-                }}
-            />
+            {list.map((goal, index) => {
+                return (<GoalItem
+                    key={index}
+                    task={{
+                        id: index.toString(), label: goal.goalName, achieveByDate: goal.achieveByDate
+                    }}
+                    checked={false}
+                    onChange={() => {
+                    }}
+                />);
+            })}
         </Stack>
         <Dialog open={dialogOpen} onClose={handleDialogClose}>
             <DialogTitle>Add New Goal</DialogTitle>
@@ -157,7 +144,7 @@ export default function AppGoals({title, subheader, list, ...other}) {
                     InputLabelProps={{
                         shrink: true,
                     }}
-                    value={achieveByDate}
+                    value={achieveByDate || ''}
                     onChange={(e) => setAchieveByDate(e.target.value)}
                     inputProps={{
                         min: new Date().toISOString().split("T")[0],
@@ -171,15 +158,21 @@ export default function AppGoals({title, subheader, list, ...other}) {
         </Dialog>
     </Card>);
 }
-GoalItem.propTypes = {
-    checked: PropTypes.bool, onChange: PropTypes.func, task: PropTypes.shape({
-        id: PropTypes.string, label: PropTypes.string,
-    }),
+
+AppGoals.propTypes = {
+    title: PropTypes.string, subheader: PropTypes.string, list: PropTypes.array.isRequired,
 };
 
-function GoalItem({task, checked, onChange}) {
+function GoalItem({task, onChange}) {
     const [open, setOpen] = useState(null);
+    const [checked, setChecked] = useState(task.completed || false);
 
+    useEffect(() => {
+        const storedCompletedStatus = localStorage.getItem(`goal_${task.id}_completed`);
+        if (storedCompletedStatus !== null) {
+            setChecked(storedCompletedStatus === 'true');
+        }
+    }, [task.id]);
 
     const handleOpenMenu = (event) => {
         setOpen(event.currentTarget);
@@ -189,10 +182,52 @@ function GoalItem({task, checked, onChange}) {
         setOpen(null);
     };
 
-    const handleMarkComplete = () => {
-        handleCloseMenu();
-        console.log('MARK COMPLETE', task.id);
+    const handleCheckboxChange = (event) => {
+        const isChecked = event.target.checked;
+        setChecked(isChecked);
+        onChange(isChecked);
+        handleMarkComplete()
+        localStorage.setItem(`goal_${task.id}_completed`, isChecked.toString());
     };
+
+    const handleMarkComplete = async () => {
+        handleCloseMenu();
+        try {
+            const goal_response = await fetch(`/api/getCollection?collection=goals`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+
+            if (!goal_response.ok) {
+                throw new Error(`Failed to fetch goals`);
+            }
+
+            const goals = await goal_response.json();
+            const goal = goals.find((g) => g.goalName === task.label);
+
+            if (!goal) {
+                throw new Error(`Goal not found`);
+            }
+
+            const newCompletedStatus = !goal.completed;
+
+            const updateGoalResponse = await fetch(`/api/updateDocument?collection=goals&docId=${goal._id}`, {
+                method: 'POST', headers: {
+                    'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}`,
+                }, body: JSON.stringify({completed: newCompletedStatus}),
+            });
+
+            if (!updateGoalResponse.ok) {
+                throw new Error(`Failed to update goal status`);
+            }
+
+            onChange();
+        } catch (error) {
+            console.error('Error toggling goal status:', error);
+        }
+    };
+
 
     const handleEdit = () => {
         handleCloseMenu();
@@ -204,57 +239,66 @@ function GoalItem({task, checked, onChange}) {
         console.log('DELETE', task.id);
     };
 
-
     return (<Stack
-        direction="row"
+        direction="column"
         sx={{
             px: 2, py: 0.75, ...(checked && {
                 color: 'text.disabled', textDecoration: 'line-through',
             }),
         }}
     >
-        <FormControlLabel
-            control={<Checkbox checked={checked} onChange={onChange}/>}
-            label={task.label}
-            sx={{flexGrow: 1, m: 0}}
-        />
+        <Stack direction="row" alignItems="center">
+            <FormControlLabel
+                control={<Checkbox checked={checked} onChange={handleCheckboxChange}/>}
+                label={task.label}
+                sx={{flexGrow: 1, m: 0}}
+            />
 
-        <IconButton size="large" color="inherit" sx={{opacity: 0.48}} onClick={handleOpenMenu}>
-            <Iconify icon={'eva:more-vertical-fill'}/>
-        </IconButton>
+            <IconButton size="large" color="inherit" sx={{opacity: 0.48}} onClick={handleOpenMenu}>
+                <Iconify icon={'eva:more-vertical-fill'}/>
+            </IconButton>
 
-        <Popover
-            open={Boolean(open)}
-            anchorEl={open}
-            onClose={handleCloseMenu}
-            anchorOrigin={{vertical: 'top', horizontal: 'left'}}
-            transformOrigin={{vertical: 'top', horizontal: 'right'}}
-            PaperProps={{
-                sx: {
-                    p: 1, '& .MuiMenuItem-root': {
-                        px: 1, typography: 'body2', borderRadius: 0.75,
+            <Popover
+                open={Boolean(open)}
+                anchorEl={open}
+                onClose={handleCloseMenu}
+                anchorOrigin={{vertical: 'top', horizontal: 'left'}}
+                transformOrigin={{vertical: 'top', horizontal: 'right'}}
+                PaperProps={{
+                    sx: {
+                        p: 1, '& .MuiMenuItem-root': {
+                            px: 1, typography: 'body2', borderRadius: 0.75,
+                        },
                     },
-                },
-            }}
-        >
-            <MenuItem onClick={handleMarkComplete}>
-                <Iconify icon={'eva:checkmark-circle-2-fill'} sx={{mr: 2}}/>
-                Mark Complete
-            </MenuItem>
+                }}
+            >
+                <MenuItem onClick={handleMarkComplete}>
+                    <Iconify icon={'eva:checkmark-circle-2-fill'} sx={{mr: 2}}/>
+                    Mark Complete
+                </MenuItem>
 
-            <MenuItem onClick={handleEdit}>
-                <Iconify icon={'eva:edit-fill'} sx={{mr: 2}}/>
-                Edit
-            </MenuItem>
+                <MenuItem onClick={handleEdit}>
+                    <Iconify icon={'eva:edit-fill'} sx={{mr: 2}}/>
+                    Edit
+                </MenuItem>
 
-            <Divider sx={{borderStyle: 'dashed'}}/>
+                <Divider sx={{borderStyle: 'dashed'}}/>
 
-            <MenuItem onClick={handleDelete} sx={{color: 'error.main'}}>
-                <Iconify icon={'eva:trash-2-outline'} sx={{mr: 2}}/>
-                Delete
-            </MenuItem>
-        </Popover>
+                <MenuItem onClick={handleDelete} sx={{color: 'error.main'}}>
+                    <Iconify icon={'eva:trash-2-outline'} sx={{mr: 2}}/>
+                    Delete
+                </MenuItem>
+            </Popover>
+        </Stack>
 
+        <Typography variant="body2" color="text.secondary">
+            Achieve by Date: {task.achieveByDate}
+        </Typography>
     </Stack>);
 }
 
+GoalItem.propTypes = {
+    checked: PropTypes.bool, onChange: PropTypes.func, task: PropTypes.shape({
+        id: PropTypes.string, label: PropTypes.string, achieveByDate: PropTypes.string,
+    }),
+};

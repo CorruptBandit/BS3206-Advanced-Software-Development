@@ -283,11 +283,11 @@ export default function DashboardAppPage() {
 
     const fetchGoal = async (collection) => {
         try {
-            const [userResponse] = await Promise.all([fetch(`/api/getCollection?collection=users`, {
+            const userResponse = await fetch(`/api/getCollection?collection=users`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
-            })]);
+            });
 
             if (!userResponse.ok) {
                 throw new Error('Failed to fetch user data');
@@ -342,18 +342,17 @@ export default function DashboardAppPage() {
                 const userWeightData = data.filter(item => item.userEmail === email);
 
                 const aggregatedWeightData = userWeightData.reduce((accumulator, currentItem) => {
-                    const { dateAdded, weight } = currentItem;
+                    const {dateAdded, weight} = currentItem;
                     if (!accumulator[dateAdded]) {
-                        accumulator[dateAdded] = { sum: 0, count: 0 };
+                        accumulator[dateAdded] = {sum: 0, count: 0};
                     }
                     accumulator[dateAdded].sum += parseFloat(weight);
                     accumulator[dateAdded].count++;
                     return accumulator;
                 }, {});
 
-                const formattedWeightData = Object.entries(aggregatedWeightData).map(([date, { sum, count }]) => ({
-                    label: date,
-                    value: (sum / count).toFixed(2)
+                const formattedWeightData = Object.entries(aggregatedWeightData).map(([date, {sum, count}]) => ({
+                    label: date, value: (sum / count).toFixed(2)
                 }));
 
                 setWeightData(formattedWeightData);
