@@ -20,7 +20,8 @@ export default function DashboardAppPage() {
     const [filteredData, setDailyIntake] = useState([]);
     const [mostCommonMealType, setMostCommonMealType] = useState(null);
     const [calorieBreakdown, setCalorieBreakdown] = useState([]);
-    const [workoutData, setWorkoutData] = useState([]);
+    const [exerciseTrackingLabels, setExerciseTrackingDataLabels] = useState([]);
+    const [exerciseTrackingData, setExerciseTrackingData] = useState([]);
     const [mostCommonExerciseName, setMostCommonExerciseName] = useState('');
     const [workoutHistoryData, setWorkoutHistoryData] = useState([]);
     const [goals, setGoals] = useState([]);
@@ -142,8 +143,6 @@ export default function DashboardAppPage() {
                         }
                     });
                 });
-                const mappedData = filteredData.map((item) => ({...item, workoutId: item._id}));
-                setWorkoutData(mappedData);
 
                 const exerciseResponse = await fetch(`/api/getCollection?collection=exercises`, {
                     headers: {
@@ -170,6 +169,103 @@ export default function DashboardAppPage() {
             throw error;
         }
     };
+
+    const fetchWorkoutHistory = async (collection) => {
+        try {
+            const userResponse = await fetch(`/api/getCollection?collection=users`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+            if (!userResponse.ok) {
+                throw new Error('Failed to fetch user data');
+            }
+            const userData = await userResponse.json();
+            const currentUser = userData.find(user => user.email === email);
+
+            if (!currentUser) {
+                console.error('User data not found for email:', email);
+                return [];
+            }
+
+            const userId = currentUser._id;
+
+            const response = await fetch(`/api/getCollection?collection=${collection}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch ${collection}`);
+            }
+
+            const data = await response.json();
+            const filteredData = data.filter(item => item.userId === userId);
+
+            return filteredData;
+
+        } catch (error) {
+            console.error(`Error fetching ${collection}:`, error);
+            throw error;
+        }
+    };
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await fetchWorkoutHistory('workoutHistory');
+                const exercisesMap = {};
+
+                response.forEach(workout => {
+                    workout.logs.forEach(log => {
+                        const exerciseId = log.exerciseId;
+                        const date = new Date(workout.date).getTime();
+                        const targetWeight = parseInt(log.targetWeight);
+
+                        if (!exercisesMap[exerciseId]) {
+                            exercisesMap[exerciseId] = {
+                                exerciseName: exerciseId, data: [],
+                            };
+                        }
+                        exercisesMap[exerciseId].data.push({x: date, y: targetWeight});
+                    });
+                });
+
+                const exerciseIds = Object.keys(exercisesMap);
+                const exerciseResponse = await fetch(`/api/getCollection?collection=exercises`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                });
+
+                if (!exerciseResponse.ok) {
+                    throw new Error('Failed to fetch exercise data');
+                }
+
+                const exerciseData = await exerciseResponse.json();
+
+                exerciseData.forEach(exercise => {
+                    if (exerciseIds.includes(exercise._id)) {
+                        exercisesMap[exercise._id].exerciseName = exercise.exerciseName;
+                    }
+                });
+
+                const chartData = Object.values(exercisesMap).map(exercise => ({
+                    name: exercise.exerciseName, data: exercise.data,
+                }));
+                const chartLabels = Object.keys(exercisesMap).map(exerciseId => exercisesMap[exerciseId].exerciseName);
+
+                setExerciseTrackingData(chartData);
+                setExerciseTrackingDataLabels(chartLabels);
+            } catch (error) {
+                console.error('Error fetching workout data:', error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
 
     useEffect(() => {
         const fetchGoals = async () => {
@@ -265,29 +361,16 @@ export default function DashboardAppPage() {
                     </Grid>
                     <Grid item xs={12} md={6} lg={9}>
                         <AppExerciseTracking
-                            title="Exercise Tracking"
-                            chartLabels={['01/01/2003', '02/01/2003', '03/01/2003', '04/01/2003', '05/01/2003', '06/01/2003', '07/01/2003', '08/01/2003', '09/01/2003', '10/01/2003', '11/01/2003',]}
-                            chartData={[{
-                                name: 'Team A',
-                                type: 'column',
-                                fill: 'solid',
-                                data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30],
-                            }, {
-                                name: 'Team B',
-                                type: 'area',
-                                fill: 'gradient',
-                                data: [44, 55, 41, 67, 22, 43, 21, 41, 56, 27, 43],
-                            }, {
-                                name: 'Team C',
-                                type: 'line',
-                                fill: 'solid',
-                                data: [30, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39],
-                            },]}
+                            title="Exercise Weight Progression Timeline"
+                            subheader="Target Weight Timeline for Different Exercises"
+                            chartData={exerciseTrackingData}
+                            chartLabels={exerciseTrackingLabels}
                         />
                     </Grid>
                     <Grid item xs={12} md={6} lg={3}>
                         <AppWorkoutHistoryTimeline
                             title="Workout History"
+                            subheader="Timeline of Workouts Completed"
                             list={workoutHistoryData.map((item) => ({
                                 id: item._id, title: item.workoutName, type: 'workout', time: new Date(item.date),
                             }))}
