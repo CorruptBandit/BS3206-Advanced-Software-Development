@@ -166,6 +166,9 @@ AppGoals.propTypes = {
 function GoalItem({task, onChange}) {
     const [open, setOpen] = useState(null);
     const [checked, setChecked] = useState(task.completed || false);
+    const [newGoalName, setNewGoalName] = useState(task.label);
+    const [newAchieveByDate, setNewAchieveByDate] = useState(task.achieveByDate);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
     const {email} = useAuth();
 
     const fetchUserIdByEmail = async (email) => {
@@ -299,12 +302,61 @@ function GoalItem({task, onChange}) {
         }
     };
 
-
-    const handleEdit = () => {
+    const handleEdit = async () => {
         handleCloseMenu();
-        console.log('EDIT', task.id);
+        setEditDialogOpen(true);
     };
 
+    const handleSaveChanges = async () => {
+        try {
+            const userId = await fetchUserIdByEmail(email);
+            if (!userId) return;
+
+            const goalResponse = await fetch(`/api/getCollection?collection=goals&userId=${userId}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+            if (!goalResponse.ok) {
+                throw new Error(`Failed to fetch goals`);
+            }
+
+            const goals = await goalResponse.json();
+            const goal = goals.find((g) => g.goalName === task.label);
+
+            if (!goal) {
+                throw new Error(`Goal not found`);
+            }
+
+            const updatedGoal = {
+                goalName: newGoalName, achieveByDate: newAchieveByDate,
+            };
+
+            console.log(updatedGoal);
+
+            const updateGoalResponse = await fetch(`/api/updateDocument?collection=goals&docId=${goal._id}`, {
+                method: 'POST', headers: {
+                    'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}`,
+                }, body: JSON.stringify(updatedGoal),
+            });
+
+            if (!updateGoalResponse.ok) {
+                throw new Error(`Failed to update goal`);
+            }
+
+            // Close the edit dialog
+            setEditDialogOpen(false);
+
+            // Trigger a refresh of the goal list if needed
+            onChange();
+        } catch (error) {
+            console.error('Error updating goal:', error);
+        }
+    };
+
+    const handleCloseEditDialog = () => {
+        setEditDialogOpen(false);
+    };
 
     return (<Stack
         direction="column"
@@ -361,6 +413,34 @@ function GoalItem({task, onChange}) {
         <Typography variant="body2" color="text.secondary">
             Achieve by Date: {task.achieveByDate}
         </Typography>
+
+        <Dialog open={editDialogOpen} onClose={handleCloseEditDialog}>
+            <DialogTitle>Edit Goal</DialogTitle>
+            <DialogContent>
+                <TextField
+                    fullWidth
+                    margin="dense"
+                    label="Goal Name"
+                    value={newGoalName}
+                    onChange={(e) => setNewGoalName(e.target.value)}
+                />
+                <TextField
+                    fullWidth
+                    margin="dense"
+                    label="Achieve by Date"
+                    type="date"
+                    value={newAchieveByDate}
+                    onChange={(e) => setNewAchieveByDate(e.target.value)}
+                    InputLabelProps={{
+                        shrink: true,
+                    }}
+                />
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={handleCloseEditDialog}>Cancel</Button>
+                <Button onClick={handleSaveChanges} variant="contained" color="primary">Save</Button>
+            </DialogActions>
+        </Dialog>
     </Stack>);
 }
 
