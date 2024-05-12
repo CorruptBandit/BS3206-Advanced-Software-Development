@@ -353,7 +353,7 @@ export default function DashboardAppPage() {
 
                 const formattedWeightData = Object.entries(aggregatedWeightData).map(([date, { sum, count }]) => ({
                     label: date,
-                    value: sum / count
+                    value: (sum / count).toFixed(2)
                 }));
 
                 setWeightData(formattedWeightData);
