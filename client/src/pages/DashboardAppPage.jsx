@@ -426,6 +426,7 @@ export default function DashboardAppPage() {
                     <Grid item xs={12} md={6} lg={3}>
                         <AppGoals
                             title="Goals"
+                            subheader="Your Goals Journey"
                             list={goals}
                         />
                     </Grid>

@@ -99,64 +99,66 @@ export default function AppGoals({title, subheader, list, ...other}) {
     };
 
 
-    return (<Card {...other}>
-        <CardHeader title={title} subheader={subheader}/>
-        <Button
-            variant="outlined"
-            color="primary"
-            size="medium"
-            startIcon={<Iconify icon={'eva:plus-circle-fill'}/>}
-            onClick={handleGoal}
-        >
-            Add Goal
-        </Button>
-        <Stack direction="column">
-            {list.map((goal, index) => {
-                return (<GoalItem
-                    key={index}
-                    task={{
-                        id: index.toString(), label: goal.goalName, achieveByDate: goal.achieveByDate
-                    }}
-                    checked={false}
-                    onChange={() => {
-                    }}
-                />);
-            })}
-        </Stack>
-        <Dialog open={dialogOpen} onClose={handleDialogClose}>
-            <DialogTitle>Add a New Goal</DialogTitle>
-            <DialogContent>
-                <TextField
-                    autoFocus
-                    margin="dense"
-                    label="Goal Name"
-                    fullWidth
-                    value={goalName}
-                    onChange={(e) => setGoalName(e.target.value)}
-                    error={addClicked && !goalName.trim()}
-                    helperText={addClicked && !goalName.trim() ? "Goal name cannot be empty" : ""}
-                />
-                <TextField
-                    margin="dense"
-                    label="Date to be achieved by"
-                    type="date"
-                    fullWidth
-                    InputLabelProps={{
-                        shrink: true,
-                    }}
-                    value={achieveByDate || ''}
-                    onChange={(e) => setAchieveByDate(e.target.value)}
-                    inputProps={{
-                        min: new Date().toISOString().split("T")[0],
-                    }}
-                />
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={handleDialogClose}>Cancel</Button>
-                <Button onClick={handleAddClick}>Add</Button>
-            </DialogActions>
-        </Dialog>
-    </Card>);
+    return (<Card {...other} sx={{height: '450px', overflow: 'auto'}}>
+            <CardHeader title={title} subheader={subheader}/>
+            <br/>
+            <Button
+                variant="outlined"
+                color="primary"
+                size="medium"
+                fullWidth
+                startIcon={<Iconify icon={'eva:plus-circle-fill'}/>}
+                onClick={handleGoal}
+            >
+                Add Goal
+            </Button>
+            <Stack direction="column">
+                {list.map((goal, index) => {
+                    return (<GoalItem
+                        key={index}
+                        task={{
+                            id: index.toString(), label: goal.goalName, achieveByDate: goal.achieveByDate
+                        }}
+                        checked={false}
+                        onChange={() => {
+                        }}
+                    />);
+                })}
+            </Stack>
+            <Dialog open={dialogOpen} onClose={handleDialogClose}>
+                <DialogTitle>Add a New Goal</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        label="Goal Name"
+                        fullWidth
+                        value={goalName}
+                        onChange={(e) => setGoalName(e.target.value)}
+                        error={addClicked && !goalName.trim()}
+                        helperText={addClicked && !goalName.trim() ? "Goal name cannot be empty" : ""}
+                    />
+                    <TextField
+                        margin="dense"
+                        label="Date to be achieved by"
+                        type="date"
+                        fullWidth
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                        value={achieveByDate || ''}
+                        onChange={(e) => setAchieveByDate(e.target.value)}
+                        inputProps={{
+                            min: new Date().toISOString().split("T")[0],
+                        }}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleDialogClose}>Cancel</Button>
+                    <Button onClick={handleAddClick}>Add</Button>
+                </DialogActions>
+            </Dialog>
+        </Card>);
 }
 
 AppGoals.propTypes = {
@@ -344,10 +346,8 @@ function GoalItem({task, onChange}) {
                 throw new Error(`Failed to update goal`);
             }
 
-            // Close the edit dialog
             setEditDialogOpen(false);
 
-            // Trigger a refresh of the goal list if needed
             onChange();
         } catch (error) {
             console.error('Error updating goal:', error);
