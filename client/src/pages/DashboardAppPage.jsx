@@ -8,7 +8,7 @@ import AdminPage from './AdminPage';
 
 // sections
 import {
-    AppCalorieBreakdown, AppExerciseTracking, AppGoals, AppWidgetSummary, AppWorkoutHistoryTimeline
+    AppCalorieBreakdown, AppDietaryTracking, AppExerciseTracking, AppGoals, AppWidgetSummary, AppWorkoutHistoryTimeline
 } from '../sections/@dashboard/app';
 
 import {useAuth} from '../context/AuthContext';
@@ -25,6 +25,7 @@ export default function DashboardAppPage() {
     const [mostCommonExerciseName, setMostCommonExerciseName] = useState('');
     const [workoutHistoryData, setWorkoutHistoryData] = useState([]);
     const [goals, setGoals] = useState([]);
+    const [weightData, setWeightData] = useState([]);
 
     useEffect(() => {
         if (filteredData.length > 0) {
@@ -325,6 +326,46 @@ export default function DashboardAppPage() {
     };
 
 
+    useEffect(() => {
+        const fetchWeight = async () => {
+            try {
+                const response = await fetch(`/api/getCollection?collection=weight`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                });
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch food data`);
+                }
+                const data = await response.json();
+
+                const userWeightData = data.filter(item => item.userEmail === email);
+
+                const aggregatedWeightData = userWeightData.reduce((accumulator, currentItem) => {
+                    const { dateAdded, weight } = currentItem;
+                    if (!accumulator[dateAdded]) {
+                        accumulator[dateAdded] = { sum: 0, count: 0 };
+                    }
+                    accumulator[dateAdded].sum += parseFloat(weight);
+                    accumulator[dateAdded].count++;
+                    return accumulator;
+                }, {});
+
+                const formattedWeightData = Object.entries(aggregatedWeightData).map(([date, { sum, count }]) => ({
+                    label: date,
+                    value: sum / count
+                }));
+
+                setWeightData(formattedWeightData);
+            } catch (error) {
+                console.error('Error fetching food data:', error);
+            }
+        };
+
+        fetchWeight();
+    }, []);
+
+
     if (isAdmin) {
         return <AdminPage/>;
     }
@@ -377,7 +418,11 @@ export default function DashboardAppPage() {
                         />
                     </Grid>
                     <Grid item xs={12} md={6} lg={9}>
-
+                        <AppDietaryTracking
+                            title="Weight History"
+                            subheader={`Timeline of ${name}'s Weight`}
+                            chartData={weightData}
+                        />
                     </Grid>
                     <Grid item xs={12} md={6} lg={3}>
                         <AppGoals
