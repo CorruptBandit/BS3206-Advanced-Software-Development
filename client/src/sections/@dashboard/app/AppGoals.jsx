@@ -124,7 +124,7 @@ export default function AppGoals({title, subheader, list, ...other}) {
             })}
         </Stack>
         <Dialog open={dialogOpen} onClose={handleDialogClose}>
-            <DialogTitle>Add New Goal</DialogTitle>
+            <DialogTitle>Add a New Goal</DialogTitle>
             <DialogContent>
                 <TextField
                     autoFocus
@@ -166,6 +166,35 @@ AppGoals.propTypes = {
 function GoalItem({task, onChange}) {
     const [open, setOpen] = useState(null);
     const [checked, setChecked] = useState(task.completed || false);
+    const {email} = useAuth();
+
+    const fetchUserIdByEmail = async (email) => {
+        try {
+            const userResponse = await fetch(`/api/getCollection?collection=users`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+
+            if (!userResponse.ok) {
+                throw new Error('Failed to fetch user data');
+            }
+
+            const userData = await userResponse.json();
+            const currentUser = userData.find(user => user.email === email);
+
+            if (!currentUser) {
+                console.error('User data not found for email:', email);
+                return null;
+            }
+
+            return currentUser._id;
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            throw error;
+        }
+    };
+
 
     useEffect(() => {
         const storedCompletedStatus = localStorage.getItem(`goal_${task.id}_completed`);
@@ -193,17 +222,19 @@ function GoalItem({task, onChange}) {
     const handleMarkComplete = async () => {
         handleCloseMenu();
         try {
-            const goal_response = await fetch(`/api/getCollection?collection=goals`, {
+            const userId = await fetchUserIdByEmail(email);
+            if (!userId) return;
+
+            const goalResponse = await fetch(`/api/getCollection?collection=goals&userId=${userId}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
             });
-
-            if (!goal_response.ok) {
+            if (!goalResponse.ok) {
                 throw new Error(`Failed to fetch goals`);
             }
 
-            const goals = await goal_response.json();
+            const goals = await goalResponse.json();
             const goal = goals.find((g) => g.goalName === task.label);
 
             if (!goal) {
@@ -228,16 +259,52 @@ function GoalItem({task, onChange}) {
         }
     };
 
+    const handleDelete = async () => {
+        const confirmed = window.confirm('Are you sure you want to delete this goal?');
+        try {
+            if (confirmed) {
+                const userId = await fetchUserIdByEmail(email);
+                if (!userId) return;
+
+                const goalResponse = await fetch(`/api/getCollection?collection=goals&userId=${userId}`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                });
+                if (!goalResponse.ok) {
+                    throw new Error(`Failed to fetch goals`);
+                }
+
+                const goals = await goalResponse.json();
+                const goal = goals.find((g) => g.goalName === task.label);
+
+                if (!goal) {
+                    throw new Error(`Goal not found`);
+                }
+
+                const response = await fetch(`/api/deleteDocument?collection=goals&docId=${goal._id}`, {
+                    method: 'POST', headers: {
+                        'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to delete goal`);
+                }
+            } else {
+                handleCloseMenu();
+            }
+        } catch (error) {
+            console.error('Error deleting goal:', error);
+        }
+    };
+
 
     const handleEdit = () => {
         handleCloseMenu();
         console.log('EDIT', task.id);
     };
 
-    const handleDelete = () => {
-        handleCloseMenu();
-        console.log('DELETE', task.id);
-    };
 
     return (<Stack
         direction="column"
