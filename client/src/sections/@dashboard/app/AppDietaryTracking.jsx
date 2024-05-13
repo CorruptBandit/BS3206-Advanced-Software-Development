@@ -1,8 +1,9 @@
 import PropTypes from 'prop-types';
+import { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
-import {Box, Card, CardHeader} from '@mui/material';
-import {fNumber} from '../../../utils/formatNumber';
-import {useChart} from '../../../components/chart';
+import { Box, Card, CardHeader, CircularProgress } from '@mui/material';
+import { fNumber } from '../../../utils/formatNumber';
+import { useChart } from '../../../components/chart';
 
 AppDietaryTracking.propTypes = {
     title: PropTypes.string,
@@ -10,7 +11,17 @@ AppDietaryTracking.propTypes = {
     chartData: PropTypes.array.isRequired,
 };
 
-export default function AppDietaryTracking({title, subheader, chartData, ...other}) {
+export default function AppDietaryTracking({ title, subheader, chartData, ...other }) {
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setLoading(false);
+        }, 750);
+
+        return () => clearTimeout(timer);
+    }, []);
+
     const sortedChartData = chartData.slice().sort((a, b) => new Date(a.label) - new Date(b.label));
 
     const chartLabels = sortedChartData.map((i) => i.label);
@@ -18,7 +29,7 @@ export default function AppDietaryTracking({title, subheader, chartData, ...othe
 
     const chartOptions = useChart({
         tooltip: {
-            marker: {show: false},
+            marker: { show: false },
             y: {
                 formatter: (seriesName) => fNumber(seriesName),
                 title: {
@@ -27,7 +38,7 @@ export default function AppDietaryTracking({title, subheader, chartData, ...othe
             },
         },
         plotOptions: {
-            bar: {vertical: true, barHeight: '35%', borderRadius: 2},
+            bar: { vertical: true, barHeight: '35%', borderRadius: 2 },
         },
         xaxis: {
             categories: chartLabels,
@@ -36,10 +47,16 @@ export default function AppDietaryTracking({title, subheader, chartData, ...othe
 
     return (
         <Card {...other}>
-            <CardHeader title={title} subheader={subheader}/>
-            <Box sx={{mx: 3}} dir="ltr">
-                <ReactApexChart type="line" series={[{data: chartSeries}]} options={chartOptions} height={364}/>
-            </Box>
+            <CardHeader title={title} subheader={subheader} />
+            {loading ? ( // Conditionally render loading indicator
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 364 }}>
+                    <CircularProgress />
+                </Box>
+            ) : (
+                <Box sx={{ mx: 3 }} dir="ltr">
+                    <ReactApexChart type="line" series={[{ data: chartSeries }]} options={chartOptions} height={364} />
+                </Box>
+            )}
         </Card>
     );
 }

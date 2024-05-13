@@ -16,7 +16,8 @@ import {
     Button,
     CardHeader,
     Card,
-    Typography
+    Typography,
+    CircularProgress // Import CircularProgress for loading indicator
 } from '@mui/material';
 
 import Iconify from '../../../components/iconify';
@@ -33,6 +34,15 @@ export default function AppGoals({title, subheader, list, ...other}) {
     const [achieveByDate, setAchieveByDate] = useState(null);
     const [addClicked, setAddClicked] = useState(false);
     const {email} = useAuth();
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setLoading(false);
+        }, 750);
+
+        return () => clearTimeout(timer);
+    }, []);
 
     const addGoal = async (collection, goalName, achieveByDate) => {
         try {
@@ -92,68 +102,73 @@ export default function AppGoals({title, subheader, list, ...other}) {
         }
     };
 
-
     return (<Card {...other} sx={{height: '450px', overflow: 'auto'}}>
-        <CardHeader title={title} subheader={subheader}/>
-        <br/>
-        <Button
-            variant="outlined"
-            color="primary"
-            size="medium"
-            fullWidth
-            startIcon={<Iconify icon={'eva:plus-circle-fill'}/>}
-            onClick={handleGoal}
-        >
-            Add Goal
-        </Button>
-        <Stack direction="column">
-            {list.map((goal, index) => {
-                return (<GoalItem
-                    key={index}
-                    task={{
-                        id: index.toString(), label: goal.goalName, achieveByDate: goal.achieveByDate
-                    }}
-                    checked={false}
-                    onChange={() => {
-                    }}
-                />);
-            })}
-        </Stack>
-        <Dialog open={dialogOpen} onClose={handleDialogClose}>
-            <DialogTitle>Add a New Goal</DialogTitle>
-            <DialogContent>
-                <TextField
-                    autoFocus
-                    margin="dense"
-                    label="Goal Name"
-                    fullWidth
-                    value={goalName}
-                    onChange={(e) => setGoalName(e.target.value)}
-                    error={addClicked && !goalName.trim()}
-                    helperText={addClicked && !goalName.trim() ? "Goal name cannot be empty" : ""}
-                />
-                <TextField
-                    margin="dense"
-                    label="Date to be achieved by"
-                    type="date"
-                    fullWidth
-                    InputLabelProps={{
-                        shrink: true,
-                    }}
-                    value={achieveByDate || ''}
-                    onChange={(e) => setAchieveByDate(e.target.value)}
-                    inputProps={{
-                        min: new Date().toISOString().split("T")[0],
-                    }}
-                />
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={handleDialogClose}>Cancel</Button>
-                <Button onClick={handleAddClick}>Add</Button>
-            </DialogActions>
-        </Dialog>
-    </Card>);
+            <CardHeader title={title} subheader={subheader}/>
+            <br/>
+            {loading ? ( // Conditionally render loading indicator
+                <Stack direction="column" alignItems="center">
+                    <CircularProgress color="primary"/>
+                </Stack>) : (<>
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        size="medium"
+                        fullWidth
+                        startIcon={<Iconify icon={'eva:plus-circle-fill'}/>}
+                        onClick={handleGoal}
+                    >
+                        Add Goal
+                    </Button>
+                    <Stack direction="column">
+                        {list.map((goal, index) => {
+                            return (<GoalItem
+                                key={index}
+                                task={{
+                                    id: index.toString(), label: goal.goalName, achieveByDate: goal.achieveByDate
+                                }}
+                                checked={false}
+                                onChange={() => {
+                                }}
+                            />);
+                        })}
+                    </Stack>
+                    <Dialog open={dialogOpen} onClose={handleDialogClose}>
+                        <DialogTitle>Add a New Goal</DialogTitle>
+                        <DialogContent>
+                            <TextField
+                                autoFocus
+                                margin="dense"
+                                label="Goal Name"
+                                fullWidth
+                                value={goalName}
+                                onChange={(e) => setGoalName(e.target.value)}
+                                error={addClicked && !goalName.trim()}
+                                helperText={addClicked && !goalName.trim() ? "Goal name cannot be empty" : ""}
+                            />
+                            <TextField
+                                margin="dense"
+                                label="Date to be achieved by"
+                                type="date"
+                                fullWidth
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                                value={achieveByDate || ''}
+                                onChange={(e) => setAchieveByDate(e.target.value)}
+                                inputProps={{
+                                    min: new Date().toISOString().split("T")[0],
+                                }}
+                            />
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleDialogClose}>Cancel</Button>
+                            <Button onClick={handleAddClick}>Add</Button>
+                        </DialogActions>
+                    </Dialog>
+                </>)}
+        </Card>);
 }
+
 
 AppGoals.propTypes = {
     title: PropTypes.string, subheader: PropTypes.string, list: PropTypes.array.isRequired,

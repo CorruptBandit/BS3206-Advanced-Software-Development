@@ -27,6 +27,7 @@ export default function DashboardAppPage() {
     const [workoutHistoryData, setWorkoutHistoryData] = useState([]);
     const [goals, setGoals] = useState([]);
     const [weightData, setWeightData] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     const filterDataByUserId = async (collection) => {
         try {
@@ -153,11 +154,12 @@ export default function DashboardAppPage() {
     const fetchGoals = async () => {
         try {
             const filteredData = await filterDataByUserId("goals");
+
             const fetchedGoals = filteredData.map(item => ({
                 goalName: item.goalName, achieveByDate: item.achieveByDate
             }));
+
             setGoals(fetchedGoals);
-            console.log(fetchedGoals);
         } catch (error) {
             console.error("Error fetching goals:", error);
         }
@@ -208,12 +210,12 @@ export default function DashboardAppPage() {
     useEffect(() => {
         Promise.all([fetchWorkout('workouts'), fetchWorkout('workoutHistory'), fetchFood(), fetchWeight(), fetchGoals(), fetchWorkoutHistory()])
             .then(() => {
-                console.log("Data Fetched")
+                setIsLoading(false);
             })
             .catch((error) => {
                 console.error('Error fetching data:', error);
             });
-    }, [email]);
+    }, [email, goals,]);
 
     if (isAdmin) {
         return <AdminPage/>;
@@ -233,7 +235,8 @@ export default function DashboardAppPage() {
                 {/* Conditional rendering based on isLoggedIn state */}
                 {isLoggedIn ? (<>
                     <Grid item xs={12} sm={6} md={4}>
-                        <AppWidgetSummary title="Favourite Meal" data={mostCommonMealType || "N/A"} color="info"
+                        <AppWidgetSummary title="Favourite Meal"
+                                          data={isLoading ? "Loading..." : mostCommonMealType || "N/A"} color="info"
                                           icon={'fluent-emoji-high-contrast:shallow-pan-of-food'}/>
                     </Grid>
                     <Grid item xs={12} sm={6} md={4}>
@@ -245,14 +248,15 @@ export default function DashboardAppPage() {
                         />
                     </Grid>
                     <Grid item xs={12} sm={6} md={4}>
-                        <AppWidgetSummary title="Favourite Workout" data={mostCommonExerciseName || "N/A"}
+                        <AppWidgetSummary title="Favourite Workout"
+                                          data={isLoading ? "Loading..." : mostCommonExerciseName || "N/A"}
                                           color="success"
                                           icon={'icon-park-solid:weightlifting'}/>
                     </Grid>
                     <Grid item xs={12} md={6} lg={9}>
                         <AppExerciseTracking
                             title="Exercise Weight Progression Timeline"
-                            subheader="Target Weight Timeline for Different Exercises"
+                            subheader={`Timeline of ${name}'s Different Exercises`}
                             chartData={exerciseTrackingData}
                             chartLabels={exerciseTrackingLabels}
                         />
