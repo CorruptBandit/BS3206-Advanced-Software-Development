@@ -17,7 +17,7 @@ export default function AppDietaryTracking({ title, subheader, chartData, ...oth
     useEffect(() => {
         const timer = setTimeout(() => {
             setLoading(false);
-        }, 750);
+        }, 500);
 
         return () => clearTimeout(timer);
     }, []);

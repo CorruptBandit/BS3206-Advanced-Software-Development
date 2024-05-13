@@ -1,4 +1,6 @@
 import PropTypes from 'prop-types';
+import React, {useState, useEffect} from 'react';
+import CircularProgress from '@mui/material/CircularProgress';
 import ReactApexChart from 'react-apexcharts';
 // @mui
 import {useTheme, styled} from '@mui/material/styles';
@@ -28,8 +30,6 @@ const StyledChartWrapper = styled('div')(({theme}) => ({
     },
 }));
 
-// ----------------------------------------------------------------------
-
 AppCalorieBreakdown.propTypes = {
     title: PropTypes.string,
     subheader: PropTypes.string,
@@ -39,9 +39,17 @@ AppCalorieBreakdown.propTypes = {
 
 export default function AppCalorieBreakdown({title, subheader, chartColors, chartData, ...other}) {
     const theme = useTheme();
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setLoading(false);
+        }, 500);
+
+        return () => clearTimeout(timeout);
+    }, []);
 
     const chartLabels = chartData.map((i) => i.label);
-
     const chartSeries = chartData.map((i) => i.value);
 
     const chartOptions = useChart({
@@ -66,11 +74,18 @@ export default function AppCalorieBreakdown({title, subheader, chartColors, char
         },
     });
 
-    return (<Card {...other}>
-        <CardHeader title={title} subheader={subheader}/>
-
-        <StyledChartWrapper dir="ltr">
-            <ReactApexChart type="pie" series={chartSeries} options={chartOptions} height={180}/>
-        </StyledChartWrapper>
-    </Card>);
+    return (
+        <Card {...other}>
+            <CardHeader title={title} subheader={subheader}/>
+            {loading ? ( // Conditional rendering based on loading state
+                <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: CHART_HEIGHT}}>
+                    <CircularProgress />
+                </div>
+            ) : (
+                <StyledChartWrapper dir="ltr">
+                    <ReactApexChart type="pie" series={chartSeries} options={chartOptions} height={180}/>
+                </StyledChartWrapper>
+            )}
+        </Card>
+    );
 }

@@ -15,7 +15,7 @@ export default function AppWorkoutHistoryTimeline({title, subheader, list, ...ot
     useEffect(() => {
         const timer = setTimeout(() => {
             setLoading(false);
-        }, 750);
+        }, 500);
 
         return () => clearTimeout(timer);
     }, []);
@@ -30,7 +30,7 @@ export default function AppWorkoutHistoryTimeline({title, subheader, list, ...ot
                 }}
             >
                 {loading ? ( // Conditionally render loading indicator
-                    <div style={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)'}}>
+                    <div style={{position: 'absolute', top: '75%', left: '50%', transform: 'translate(-50%, -50%)'}}>
                         <CircularProgress color="primary"/>
                     </div>) : (<Timeline>
                         {sortedList.map((item, index) => (

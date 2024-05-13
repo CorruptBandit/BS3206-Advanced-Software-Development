@@ -39,7 +39,7 @@ export default function AppGoals({title, subheader, list, ...other}) {
     useEffect(() => {
         const timer = setTimeout(() => {
             setLoading(false);
-        }, 750);
+        }, 500);
 
         return () => clearTimeout(timer);
     }, []);
