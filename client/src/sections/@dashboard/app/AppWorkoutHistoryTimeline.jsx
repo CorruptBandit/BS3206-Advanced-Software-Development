@@ -31,7 +31,7 @@ export default function AppWorkoutHistoryTimeline({title, subheader, list, ...ot
             >
                 {loading ? ( // Conditionally render loading indicator
                     <div style={{position: 'absolute', top: '75%', left: '50%', transform: 'translate(-50%, -50%)'}}>
-                        <CircularProgress color="primary"/>
+                        <CircularProgress color="primary" data-testid="loading-indicator"/>
                     </div>) : (<Timeline>
                         {sortedList.map((item, index) => (
                             <WorkoutItem key={item.id} item={item} isLast={index === sortedList.length - 1}/>))}
