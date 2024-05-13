@@ -1,15 +1,14 @@
 import PropTypes from 'prop-types';
-import React, {useState, useEffect} from 'react';
+import {useState, useEffect} from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import ReactApexChart from 'react-apexcharts';
 // @mui
-import {useTheme, styled} from '@mui/material/styles';
+import {useTheme, styled, Button} from '@mui/material';
 import {Card, CardHeader} from '@mui/material';
 // utils
 import {fNumber} from '../../../utils/formatNumber';
 // components
 import {useChart} from '../../../components/chart';
-
 
 const CHART_HEIGHT = 205;
 const LEGEND_HEIGHT = 48;
@@ -74,18 +73,27 @@ export default function AppCalorieBreakdown({title, subheader, chartColors, char
         },
     });
 
-    return (
-        <Card {...other}>
-            <CardHeader title={title} subheader={subheader}/>
-            {loading ? ( // Conditional rendering based on loading state
-                <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: CHART_HEIGHT}}>
-                    <CircularProgress />
-                </div>
-            ) : (
-                <StyledChartWrapper dir="ltr">
-                    <ReactApexChart type="pie" series={chartSeries} options={chartOptions} height={180}/>
-                </StyledChartWrapper>
-            )}
-        </Card>
-    );
+    const exportToCSV = () => {
+        const csvContent = 'data:text/csv;charset=utf-8,' + chartLabels.map((label, index) => `"${label}",${chartSeries[index]}`).join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', 'daily_calorie_intake_data.csv');
+        document.body.appendChild(link);
+        link.click();
+    };
+
+    return (<Card {...other}>
+        <CardHeader
+            title={title}
+            subheader={subheader}
+            action={<Button onClick={exportToCSV} variant="contained" color="primary">Export to CSV</Button>}
+        />
+        {loading ? ( // Conditional rendering based on loading state
+            <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: CHART_HEIGHT}}>
+                <CircularProgress/>
+            </div>) : (<StyledChartWrapper dir="ltr">
+            <ReactApexChart type="pie" series={chartSeries} options={chartOptions} height={180}/>
+        </StyledChartWrapper>)}
+    </Card>);
 }

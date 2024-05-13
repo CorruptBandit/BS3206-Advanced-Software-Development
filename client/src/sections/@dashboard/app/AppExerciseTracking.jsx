@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react';
+import {useState, useEffect} from 'react';
 import ReactApexChart from 'react-apexcharts';
-import { Card, CardHeader, Box, Tab, Tabs, CircularProgress } from '@mui/material'; // Import CircularProgress for loading indicator
-import { useChart } from '../../../components/chart';
+import {Card, CardHeader, Box, Tab, Tabs, CircularProgress, Button} from '@mui/material';
+import {useChart} from '../../../components/chart';
 
 AppExerciseTracking.propTypes = {
     title: PropTypes.string,
@@ -11,14 +11,14 @@ AppExerciseTracking.propTypes = {
     chartLabels: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
-export default function AppExerciseTracking({ title, subheader, chartLabels, chartData, ...other }) {
+export default function AppExerciseTracking({title, subheader, chartLabels, chartData, ...other}) {
     const [tabIndex, setTabIndex] = useState(0);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const timer = setTimeout(() => {
             setLoading(false);
-        }, 750);
+        }, 1000);
 
         return () => clearTimeout(timer);
     }, []);
@@ -28,11 +28,7 @@ export default function AppExerciseTracking({ title, subheader, chartLabels, cha
     };
 
     const chartOptions = useChart({
-        plotOptions: { bar: { columnWidth: '16%' } },
-        fill: { type: 'solid' },
-        labels: chartLabels,
-        xaxis: { type: 'datetime' },
-        tooltip: {
+        plotOptions: {bar: {columnWidth: '16%'}}, fill: {type: 'solid'}, xaxis: {type: 'datetime'}, tooltip: {
             shared: true, intersect: false, y: {
                 formatter: (y) => {
                     if (typeof y !== 'undefined') {
@@ -40,39 +36,49 @@ export default function AppExerciseTracking({ title, subheader, chartLabels, cha
                     }
                     return y;
                 },
-            }, "custom": ({ series, seriesIndex, dataPointIndex }) => {
+            }, "custom": ({series, seriesIndex, dataPointIndex}) => {
                 const weight = series[seriesIndex][dataPointIndex];
                 return `<div>${weight}kg</div>`;
             },
         },
     });
 
-    return (
-        <Card {...other}>
-            <CardHeader title={title} subheader={subheader} />
-            <Box sx={{ p: 3, pb: 1 }} dir="ltr">
-                <Tabs value={tabIndex} onChange={handleChangeTab}>
-                    {chartLabels.map((label, index) => (<Tab key={index} label={label} />))}
-                </Tabs>
-                {loading ? ( // Conditionally render loading indicator
-                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}>
-                        <CircularProgress />
-                    </Box>
-                ) : (
-                    chartData.map((data, index) => (
-                        <Box key={index} hidden={tabIndex !== index}>
-                            {tabIndex === index && (
-                                <ReactApexChart
-                                    type="bar"
-                                    series={[{ data: data.data }]}
-                                    options={chartOptions}
-                                    height={300}
-                                />
-                            )}
-                        </Box>
-                    ))
-                )}
-            </Box>
-        </Card>
-    );
+    const exportToCSV = () => {
+        const csvContent = 'data:text/csv;charset=utf-8,' + chartData.map((data, index) => {
+            const label = chartLabels[index];
+            const csvData = data.data.map((point) => `"${label}",${point.y}`);
+            return csvData.join('\n');
+        }).join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement('a');
+        link.setAttribute('href', encodedUri);
+        link.setAttribute('download', 'exercise_progression.csv');
+        document.body.appendChild(link);
+        link.click();
+    };
+
+
+    return (<Card {...other}>
+        <CardHeader title={title}
+                    subheader={subheader}
+                    action={<Button onClick={exportToCSV} variant="contained" color="primary">Export to CSV</Button>}
+        />
+        <Box sx={{p: 3, pb: 1}} dir="ltr">
+            <Tabs value={tabIndex} onChange={handleChangeTab}>
+                {chartLabels.map((label, index) => (<Tab key={index} label={label}/>))}
+            </Tabs>
+            {loading ? (<Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300}}>
+                <CircularProgress/>
+            </Box>) : (<>
+                {chartData.map((data, index) => (<Box key={index} hidden={tabIndex !== index}>
+                    {tabIndex === index && (<ReactApexChart
+                        type="bar"
+                        series={[{data: data.data}]}
+                        options={chartOptions}
+                        height={300}
+                    />)}
+                </Box>))}
+            </>)}
+        </Box>
+    </Card>);
 }
