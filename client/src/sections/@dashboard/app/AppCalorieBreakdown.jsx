@@ -8,7 +8,6 @@ import {fNumber} from '../../../utils/formatNumber';
 // components
 import {useChart} from '../../../components/chart';
 
-// ----------------------------------------------------------------------
 
 const CHART_HEIGHT = 205;
 const LEGEND_HEIGHT = 48;
@@ -68,10 +67,10 @@ export default function AppCalorieBreakdown({title, subheader, chartColors, char
     });
 
     return (<Card {...other}>
-            <CardHeader title={title} subheader={subheader}/>
+        <CardHeader title={title} subheader={subheader}/>
 
-            <StyledChartWrapper dir="ltr">
-                <ReactApexChart type="pie" series={chartSeries} options={chartOptions} height={180}/>
-            </StyledChartWrapper>
-        </Card>);
+        <StyledChartWrapper dir="ltr">
+            <ReactApexChart type="pie" series={chartSeries} options={chartOptions} height={180}/>
+        </StyledChartWrapper>
+    </Card>);
 }

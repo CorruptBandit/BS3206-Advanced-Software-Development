@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, {useState} from 'react';
+import {useState} from 'react';
 import ReactApexChart from 'react-apexcharts';
 import {Card, CardHeader, Box, Tab, Tabs} from '@mui/material';
 import {useChart} from '../../../components/chart';
@@ -11,6 +11,7 @@ AppExerciseTracking.propTypes = {
     chartLabels: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
+
 export default function AppExerciseTracking({title, subheader, chartLabels, chartData, ...other}) {
     const [tabIndex, setTabIndex] = useState(0);
 
@@ -19,22 +20,19 @@ export default function AppExerciseTracking({title, subheader, chartLabels, char
     };
 
     const chartOptions = useChart({
-        plotOptions: { bar: { columnWidth: '16%' } },
-        fill: { type: 'solid' },
+        plotOptions: {bar: {columnWidth: '16%'}},
+        fill: {type: 'solid'},
         labels: chartLabels,
-        xaxis: { type: 'datetime' },
+        xaxis: {type: 'datetime'},
         tooltip: {
-            shared: true,
-            intersect: false,
-            y: {
+            shared: true, intersect: false, y: {
                 formatter: (y) => {
                     if (typeof y !== 'undefined') {
                         return `${y.toFixed(0)}kg`;
                     }
                     return y;
                 },
-            },
-            "custom": ({ series, seriesIndex, dataPointIndex }) => {
+            }, "custom": ({series, seriesIndex, dataPointIndex}) => {
                 const weight = series[seriesIndex][dataPointIndex];
                 return `<div>${weight}kg</div>`;
             },

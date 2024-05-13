@@ -21,6 +21,7 @@ import {
 
 import Iconify from '../../../components/iconify';
 import {useAuth} from "../../../context/AuthContext";
+import {FetchUserId, FetchGoals} from './utils/index';
 
 AppGoals.propTypes = {
     title: PropTypes.string, subheader: PropTypes.string, list: PropTypes.array.isRequired,
@@ -29,20 +30,13 @@ AppGoals.propTypes = {
 export default function AppGoals({title, subheader, list, ...other}) {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [goalName, setGoalName] = useState('');
-    const [achieveByDate, setAchieveByDate] = useState(null); // Initialize to null
+    const [achieveByDate, setAchieveByDate] = useState(null);
     const [addClicked, setAddClicked] = useState(false);
     const {email} = useAuth();
 
     const addGoal = async (collection, goalName, achieveByDate) => {
         try {
-            const user_response = await fetch(`/api/getCollection?collection=users`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-            });
-            const userData = await user_response.json();
-            const user = userData.find(user => user.email === email);
-            const userId = user ? user._id : null;
+            const userId = await FetchUserId(email);
             const completed = false;
 
             const goalData = {
@@ -56,7 +50,7 @@ export default function AppGoals({title, subheader, list, ...other}) {
             });
 
             if (!response.ok) {
-                throw new Error(`Failed to add goal to ${collection}`);
+                console.log(`Failed to add goal to ${collection}`);
             }
 
             return await response.json();
@@ -100,65 +94,65 @@ export default function AppGoals({title, subheader, list, ...other}) {
 
 
     return (<Card {...other} sx={{height: '450px', overflow: 'auto'}}>
-            <CardHeader title={title} subheader={subheader}/>
-            <br/>
-            <Button
-                variant="outlined"
-                color="primary"
-                size="medium"
-                fullWidth
-                startIcon={<Iconify icon={'eva:plus-circle-fill'}/>}
-                onClick={handleGoal}
-            >
-                Add Goal
-            </Button>
-            <Stack direction="column">
-                {list.map((goal, index) => {
-                    return (<GoalItem
-                        key={index}
-                        task={{
-                            id: index.toString(), label: goal.goalName, achieveByDate: goal.achieveByDate
-                        }}
-                        checked={false}
-                        onChange={() => {
-                        }}
-                    />);
-                })}
-            </Stack>
-            <Dialog open={dialogOpen} onClose={handleDialogClose}>
-                <DialogTitle>Add a New Goal</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        label="Goal Name"
-                        fullWidth
-                        value={goalName}
-                        onChange={(e) => setGoalName(e.target.value)}
-                        error={addClicked && !goalName.trim()}
-                        helperText={addClicked && !goalName.trim() ? "Goal name cannot be empty" : ""}
-                    />
-                    <TextField
-                        margin="dense"
-                        label="Date to be achieved by"
-                        type="date"
-                        fullWidth
-                        InputLabelProps={{
-                            shrink: true,
-                        }}
-                        value={achieveByDate || ''}
-                        onChange={(e) => setAchieveByDate(e.target.value)}
-                        inputProps={{
-                            min: new Date().toISOString().split("T")[0],
-                        }}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleDialogClose}>Cancel</Button>
-                    <Button onClick={handleAddClick}>Add</Button>
-                </DialogActions>
-            </Dialog>
-        </Card>);
+        <CardHeader title={title} subheader={subheader}/>
+        <br/>
+        <Button
+            variant="outlined"
+            color="primary"
+            size="medium"
+            fullWidth
+            startIcon={<Iconify icon={'eva:plus-circle-fill'}/>}
+            onClick={handleGoal}
+        >
+            Add Goal
+        </Button>
+        <Stack direction="column">
+            {list.map((goal, index) => {
+                return (<GoalItem
+                    key={index}
+                    task={{
+                        id: index.toString(), label: goal.goalName, achieveByDate: goal.achieveByDate
+                    }}
+                    checked={false}
+                    onChange={() => {
+                    }}
+                />);
+            })}
+        </Stack>
+        <Dialog open={dialogOpen} onClose={handleDialogClose}>
+            <DialogTitle>Add a New Goal</DialogTitle>
+            <DialogContent>
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    label="Goal Name"
+                    fullWidth
+                    value={goalName}
+                    onChange={(e) => setGoalName(e.target.value)}
+                    error={addClicked && !goalName.trim()}
+                    helperText={addClicked && !goalName.trim() ? "Goal name cannot be empty" : ""}
+                />
+                <TextField
+                    margin="dense"
+                    label="Date to be achieved by"
+                    type="date"
+                    fullWidth
+                    InputLabelProps={{
+                        shrink: true,
+                    }}
+                    value={achieveByDate || ''}
+                    onChange={(e) => setAchieveByDate(e.target.value)}
+                    inputProps={{
+                        min: new Date().toISOString().split("T")[0],
+                    }}
+                />
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={handleDialogClose}>Cancel</Button>
+                <Button onClick={handleAddClick}>Add</Button>
+            </DialogActions>
+        </Dialog>
+    </Card>);
 }
 
 AppGoals.propTypes = {
@@ -167,38 +161,12 @@ AppGoals.propTypes = {
 
 function GoalItem({task, onChange}) {
     const [open, setOpen] = useState(null);
+    // eslint-disable-next-line react/prop-types
     const [checked, setChecked] = useState(task.completed || false);
     const [newGoalName, setNewGoalName] = useState(task.label);
     const [newAchieveByDate, setNewAchieveByDate] = useState(task.achieveByDate);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const {email} = useAuth();
-
-    const fetchUserIdByEmail = async (email) => {
-        try {
-            const userResponse = await fetch(`/api/getCollection?collection=users`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-            });
-
-            if (!userResponse.ok) {
-                throw new Error('Failed to fetch user data');
-            }
-
-            const userData = await userResponse.json();
-            const currentUser = userData.find(user => user.email === email);
-
-            if (!currentUser) {
-                console.error('User data not found for email:', email);
-                return null;
-            }
-
-            return currentUser._id;
-        } catch (error) {
-            console.error('Error fetching user data:', error);
-            throw error;
-        }
-    };
 
 
     useEffect(() => {
@@ -221,30 +189,23 @@ function GoalItem({task, onChange}) {
         setChecked(isChecked);
         onChange(isChecked);
         handleMarkComplete()
+            .then(() => {
+                console.log("Task marked");
+            })
+            .catch((error) => {
+                console.error("Error marking task as complete:", error);
+            });
         localStorage.setItem(`goal_${task.id}_completed`, isChecked.toString());
     };
 
     const handleMarkComplete = async () => {
         handleCloseMenu();
         try {
-            const userId = await fetchUserIdByEmail(email);
+            const userId = await FetchUserId(email);
             if (!userId) return;
 
-            const goalResponse = await fetch(`/api/getCollection?collection=goals&userId=${userId}`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-            });
-            if (!goalResponse.ok) {
-                throw new Error(`Failed to fetch goals`);
-            }
-
-            const goals = await goalResponse.json();
-            const goal = goals.find((g) => g.goalName === task.label);
-
-            if (!goal) {
-                throw new Error(`Goal not found`);
-            }
+            const goal = await FetchGoals(userId, task);
+            if (!goal) return;
 
             const newCompletedStatus = !goal.completed;
 
@@ -255,7 +216,7 @@ function GoalItem({task, onChange}) {
             });
 
             if (!updateGoalResponse.ok) {
-                throw new Error(`Failed to update goal status`);
+                console.log(`Failed to update goal status`);
             }
 
             onChange();
@@ -268,24 +229,11 @@ function GoalItem({task, onChange}) {
         const confirmed = window.confirm('Are you sure you want to delete this goal?');
         try {
             if (confirmed) {
-                const userId = await fetchUserIdByEmail(email);
+                const userId = await FetchUserId(email);
                 if (!userId) return;
 
-                const goalResponse = await fetch(`/api/getCollection?collection=goals&userId=${userId}`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    },
-                });
-                if (!goalResponse.ok) {
-                    throw new Error(`Failed to fetch goals`);
-                }
-
-                const goals = await goalResponse.json();
-                const goal = goals.find((g) => g.goalName === task.label);
-
-                if (!goal) {
-                    throw new Error(`Goal not found`);
-                }
+                const goal = await FetchGoals(userId, task);
+                if (!goal) return;
 
                 const response = await fetch(`/api/deleteDocument?collection=goals&docId=${goal._id}`, {
                     method: 'POST', headers: {
@@ -294,7 +242,7 @@ function GoalItem({task, onChange}) {
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Failed to delete goal`);
+                    console.log(`Failed to delete goal`);
                 }
             } else {
                 handleCloseMenu();
@@ -311,30 +259,15 @@ function GoalItem({task, onChange}) {
 
     const handleSaveChanges = async () => {
         try {
-            const userId = await fetchUserIdByEmail(email);
+            const userId = await FetchUserId(email);
             if (!userId) return;
 
-            const goalResponse = await fetch(`/api/getCollection?collection=goals&userId=${userId}`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-            });
-            if (!goalResponse.ok) {
-                throw new Error(`Failed to fetch goals`);
-            }
-
-            const goals = await goalResponse.json();
-            const goal = goals.find((g) => g.goalName === task.label);
-
-            if (!goal) {
-                throw new Error(`Goal not found`);
-            }
+            const goal = await FetchGoals(userId, task);
+            if (!goal) return;
 
             const updatedGoal = {
                 goalName: newGoalName, achieveByDate: newAchieveByDate,
             };
-
-            console.log(updatedGoal);
 
             const updateGoalResponse = await fetch(`/api/updateDocument?collection=goals&docId=${goal._id}`, {
                 method: 'POST', headers: {
@@ -343,7 +276,7 @@ function GoalItem({task, onChange}) {
             });
 
             if (!updateGoalResponse.ok) {
-                throw new Error(`Failed to update goal`);
+                console.log(`Failed to update goal`);
             }
 
             setEditDialogOpen(false);

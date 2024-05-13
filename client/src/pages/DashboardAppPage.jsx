@@ -13,11 +13,12 @@ import {
 
 import {useAuth} from '../context/AuthContext';
 import {useEffect, useState} from "react";
+import {FetchUserId, FetchCollection} from '../../src/sections/@dashboard/app/utils/index';
 
 export default function DashboardAppPage() {
     const theme = useTheme();
     const {email, name, isLoggedIn, isAdmin} = useAuth();
-    const [filteredData, setDailyIntake] = useState([]);
+    const [dailyIntakeData, setDailyIntake] = useState([]);
     const [mostCommonMealType, setMostCommonMealType] = useState(null);
     const [calorieBreakdown, setCalorieBreakdown] = useState([]);
     const [exerciseTrackingLabels, setExerciseTrackingDataLabels] = useState([]);
@@ -27,19 +28,18 @@ export default function DashboardAppPage() {
     const [goals, setGoals] = useState([]);
     const [weightData, setWeightData] = useState([]);
 
-    useEffect(() => {
-        if (filteredData.length > 0) {
-            const calorieCounts = filteredData.reduce((counts, item) => {
-                counts[item.mealType] = (counts[item.mealType] || 0) + parseInt(item.calories);
-                return counts;
-            }, {});
+    const filterDataByUserId = async (collection) => {
+        try {
+            const userId = await FetchUserId(email);
+            const data = await FetchCollection(collection);
 
-            const chartData = Object.entries(calorieCounts).map(([label, value]) => ({
-                label, value
-            }));
-            setCalorieBreakdown(chartData);
+            return data.filter(item => item.userId === userId);
+
+        } catch (error) {
+            console.error(`Error fetching ${collection}:`, error);
+            throw error;
         }
-    }, [filteredData]);
+    };
 
     const sumCalories = () => {
         return calorieBreakdown.reduce((total, item) => total + item.value, 0);
@@ -51,15 +51,7 @@ export default function DashboardAppPage() {
             const startDate = new Date(endDate);
             startDate.setDate(endDate.getDate() - 6);
 
-            const response = await fetch(`/api/getCollection?collection=food`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-            });
-            if (!response.ok) {
-                throw new Error(`Failed to fetch food data`);
-            }
-            const data = await response.json();
+            const data = await FetchCollection("food");
 
             const allTimeMealCounts = data.reduce((counts, item) => {
                 counts[item.mealType] = (counts[item.mealType] || 0) + 1;
@@ -78,55 +70,11 @@ export default function DashboardAppPage() {
         }
     };
 
-    useEffect(() => {
-        fetchFood().then((response) => {
-            console.log(response);
-        }).catch((error) => {
-            console.error('Error fetching data:', error);
-        });
-    }, [email]);
-
-
-    useEffect(() => {
-        Promise.all([fetchWorkout('workouts'), fetchWorkout('workoutHistory'),])
-            .then(() => {
-            })
-            .catch((error) => {
-                console.error('Error fetching data:', error);
-            });
-    }, []);
-
     const fetchWorkout = async (collection) => {
         try {
-            const userResponse = await fetch(`/api/getCollection?collection=users`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-            });
-            if (!userResponse.ok) {
-                throw new Error('Failed to fetch user data');
-            }
-            const userData = await userResponse.json();
-            const currentUser = userData.find(user => user.email === email);
+            const userId = await FetchUserId(email);
 
-            if (!currentUser) {
-                console.error('User data not found for email:', email);
-                return [];
-            }
-
-            const userId = currentUser._id;
-
-            const response = await fetch(`/api/getCollection?collection=${collection}`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error(`Failed to fetch ${collection}`);
-            }
-
-            const data = await response.json();
+            const data = await FetchCollection(collection);
             const filteredData = data.filter(item => item.userId === userId);
 
             let mostCommonExercise = null;
@@ -145,17 +93,7 @@ export default function DashboardAppPage() {
                     });
                 });
 
-                const exerciseResponse = await fetch(`/api/getCollection?collection=exercises`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    },
-                });
-
-                if (!exerciseResponse.ok) {
-                    throw new Error('Failed to fetch exercise data');
-                }
-
-                const exerciseData = await exerciseResponse.json();
+                const exerciseData = await FetchCollection("exercises");
                 const mostCommonExerciseData = exerciseData.find(exercise => exercise._id === mostCommonExercise);
 
                 setMostCommonExerciseName(mostCommonExerciseData.exerciseName);
@@ -171,199 +109,111 @@ export default function DashboardAppPage() {
         }
     };
 
-    const fetchWorkoutHistory = async (collection) => {
+    const fetchWorkoutHistory = async () => {
         try {
-            const userResponse = await fetch(`/api/getCollection?collection=users`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-            });
-            if (!userResponse.ok) {
-                throw new Error('Failed to fetch user data');
-            }
-            const userData = await userResponse.json();
-            const currentUser = userData.find(user => user.email === email);
+            const response = await filterDataByUserId('workoutHistory');
+            const exercisesMap = {};
 
-            if (!currentUser) {
-                console.error('User data not found for email:', email);
-                return [];
-            }
+            response.forEach(workout => {
+                workout.logs.forEach(log => {
+                    const exerciseId = log.exerciseId;
+                    const date = new Date(workout.date).getTime();
+                    const targetWeight = parseInt(log.targetWeight);
 
-            const userId = currentUser._id;
-
-            const response = await fetch(`/api/getCollection?collection=${collection}`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
+                    if (!exercisesMap[exerciseId]) {
+                        exercisesMap[exerciseId] = {
+                            exerciseName: exerciseId, data: [],
+                        };
+                    }
+                    exercisesMap[exerciseId].data.push({x: date, y: targetWeight});
+                });
             });
 
-            if (!response.ok) {
-                throw new Error(`Failed to fetch ${collection}`);
-            }
+            const exerciseIds = Object.keys(exercisesMap);
+            const exerciseData = await FetchCollection("exercises");
 
-            const data = await response.json();
-            const filteredData = data.filter(item => item.userId === userId);
+            exerciseData.forEach(exercise => {
+                if (exerciseIds.includes(exercise._id)) {
+                    exercisesMap[exercise._id].exerciseName = exercise.exerciseName;
+                }
+            });
 
-            return filteredData;
+            const chartData = Object.values(exercisesMap).map(exercise => ({
+                name: exercise.exerciseName, data: exercise.data,
+            }));
+            const chartLabels = Object.keys(exercisesMap).map(exerciseId => exercisesMap[exerciseId].exerciseName);
 
+            setExerciseTrackingData(chartData);
+            setExerciseTrackingDataLabels(chartLabels);
         } catch (error) {
-            console.error(`Error fetching ${collection}:`, error);
-            throw error;
+            console.error('Error fetching workout data:', error);
         }
     };
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await fetchWorkoutHistory('workoutHistory');
-                const exercisesMap = {};
-
-                response.forEach(workout => {
-                    workout.logs.forEach(log => {
-                        const exerciseId = log.exerciseId;
-                        const date = new Date(workout.date).getTime();
-                        const targetWeight = parseInt(log.targetWeight);
-
-                        if (!exercisesMap[exerciseId]) {
-                            exercisesMap[exerciseId] = {
-                                exerciseName: exerciseId, data: [],
-                            };
-                        }
-                        exercisesMap[exerciseId].data.push({x: date, y: targetWeight});
-                    });
-                });
-
-                const exerciseIds = Object.keys(exercisesMap);
-                const exerciseResponse = await fetch(`/api/getCollection?collection=exercises`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    },
-                });
-
-                if (!exerciseResponse.ok) {
-                    throw new Error('Failed to fetch exercise data');
-                }
-
-                const exerciseData = await exerciseResponse.json();
-
-                exerciseData.forEach(exercise => {
-                    if (exerciseIds.includes(exercise._id)) {
-                        exercisesMap[exercise._id].exerciseName = exercise.exerciseName;
-                    }
-                });
-
-                const chartData = Object.values(exercisesMap).map(exercise => ({
-                    name: exercise.exerciseName, data: exercise.data,
-                }));
-                const chartLabels = Object.keys(exercisesMap).map(exerciseId => exercisesMap[exerciseId].exerciseName);
-
-                setExerciseTrackingData(chartData);
-                setExerciseTrackingDataLabels(chartLabels);
-            } catch (error) {
-                console.error('Error fetching workout data:', error);
-            }
-        };
-
-        fetchData();
-    }, []);
-
-
-    useEffect(() => {
-        const fetchGoals = async () => {
-            try {
-                const fetchedGoals = await fetchGoal("goals");
-                setGoals(fetchedGoals);
-            } catch (error) {
-                console.error("Error fetching goals:", error);
-            }
-        };
-
-        fetchGoals();
-    }, []);
-
-    const fetchGoal = async (collection) => {
+    const fetchGoals = async () => {
         try {
-            const userResponse = await fetch(`/api/getCollection?collection=users`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-            });
-
-            if (!userResponse.ok) {
-                throw new Error('Failed to fetch user data');
-            }
-
-            const userData = await userResponse.json();
-            const currentUser = userData.find(user => user.email === email);
-
-            if (!currentUser) {
-                console.error('User data not found for email:', email);
-                return [];
-            }
-
-            const userId = currentUser._id;
-
-            const response = await fetch(`/api/getCollection?collection=${collection}`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error(`Failed to fetch ${collection}`);
-            }
-
-            const data = await response.json();
-            const filteredData = data.filter(item => item.userId === userId);
-
-            return filteredData.map(item => ({
+            const filteredData = await filterDataByUserId("goals");
+            const fetchedGoals = filteredData.map(item => ({
                 goalName: item.goalName, achieveByDate: item.achieveByDate
             }));
+            setGoals(fetchedGoals);
+            console.log(fetchedGoals);
         } catch (error) {
-            console.error(`Error fetching ${collection}:`, error);
-            throw error;
+            console.error("Error fetching goals:", error);
+        }
+    };
+
+    const fetchWeight = async () => {
+        try {
+            const data = await FetchCollection("weight");
+
+            const userWeightData = data.filter(item => item.userEmail === email);
+
+            const aggregatedWeightData = userWeightData.reduce((accumulator, currentItem) => {
+                const {dateAdded, weight} = currentItem;
+                if (!accumulator[dateAdded]) {
+                    accumulator[dateAdded] = {sum: 0, count: 0};
+                }
+                accumulator[dateAdded].sum += parseFloat(weight);
+                accumulator[dateAdded].count++;
+                return accumulator;
+            }, {});
+
+            const formattedWeightData = Object.entries(aggregatedWeightData).map(([date, {sum, count}]) => ({
+                label: date, value: (sum / count).toFixed(2)
+            }));
+
+            setWeightData(formattedWeightData);
+        } catch (error) {
+            console.error('Error fetching food data:', error);
         }
     };
 
 
     useEffect(() => {
-        const fetchWeight = async () => {
-            try {
-                const response = await fetch(`/api/getCollection?collection=weight`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    },
-                });
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch food data`);
-                }
-                const data = await response.json();
+        if (dailyIntakeData.length > 0) {
+            const calorieCounts = dailyIntakeData.reduce((counts, item) => {
+                counts[item.mealType] = (counts[item.mealType] || 0) + parseInt(item.calories);
+                return counts;
+            }, {});
 
-                const userWeightData = data.filter(item => item.userEmail === email);
+            const chartData = Object.entries(calorieCounts).map(([label, value]) => ({
+                label, value
+            }));
+            setCalorieBreakdown(chartData);
+        }
+    }, [dailyIntakeData]);
 
-                const aggregatedWeightData = userWeightData.reduce((accumulator, currentItem) => {
-                    const {dateAdded, weight} = currentItem;
-                    if (!accumulator[dateAdded]) {
-                        accumulator[dateAdded] = {sum: 0, count: 0};
-                    }
-                    accumulator[dateAdded].sum += parseFloat(weight);
-                    accumulator[dateAdded].count++;
-                    return accumulator;
-                }, {});
 
-                const formattedWeightData = Object.entries(aggregatedWeightData).map(([date, {sum, count}]) => ({
-                    label: date, value: (sum / count).toFixed(2)
-                }));
-
-                setWeightData(formattedWeightData);
-            } catch (error) {
-                console.error('Error fetching food data:', error);
-            }
-        };
-
-        fetchWeight();
-    }, []);
-
+    useEffect(() => {
+        Promise.all([fetchWorkout('workouts'), fetchWorkout('workoutHistory'), fetchFood(), fetchWeight(), fetchGoals(), fetchWorkoutHistory()])
+            .then(() => {
+                console.log("Data Fetched")
+            })
+            .catch((error) => {
+                console.error('Error fetching data:', error);
+            });
+    }, [email]);
 
     if (isAdmin) {
         return <AdminPage/>;
@@ -397,7 +247,7 @@ export default function DashboardAppPage() {
                     <Grid item xs={12} sm={6} md={4}>
                         <AppWidgetSummary title="Favourite Workout" data={mostCommonExerciseName || "N/A"}
                                           color="success"
-                                          icon={'cil:weightlifitng'}/>
+                                          icon={'icon-park-solid:weightlifting'}/>
                     </Grid>
                     <Grid item xs={12} md={6} lg={9}>
                         <AppExerciseTracking
