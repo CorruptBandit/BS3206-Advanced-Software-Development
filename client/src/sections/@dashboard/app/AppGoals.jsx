@@ -17,7 +17,7 @@ import {
     CardHeader,
     Card,
     Typography,
-    CircularProgress // Import CircularProgress for loading indicator
+    CircularProgress
 } from '@mui/material';
 
 import Iconify from '../../../components/iconify';
@@ -107,7 +107,7 @@ export default function AppGoals({title, subheader, list, ...other}) {
             <br/>
             {loading ? ( // Conditionally render loading indicator
                 <Stack direction="column" alignItems="center">
-                    <CircularProgress color="primary"/>
+                    <CircularProgress color="primary" data-testid="loading-indicator"/>
                 </Stack>) : (<>
                     <Button
                         variant="outlined"
@@ -116,6 +116,7 @@ export default function AppGoals({title, subheader, list, ...other}) {
                         fullWidth
                         startIcon={<Iconify icon={'eva:plus-circle-fill'}/>}
                         onClick={handleGoal}
+                        data-testid="add-goal-button"
                     >
                         Add Goal
                     </Button>
