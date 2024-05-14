@@ -91,9 +91,9 @@ export default function AppCalorieBreakdown({title, subheader, chartColors, char
         />
         {loading ? ( // Conditional rendering based on loading state
             <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: CHART_HEIGHT}}>
-                <CircularProgress/>
+                <CircularProgress data-testid="loading-indicator"/>
             </div>) : (<StyledChartWrapper dir="ltr">
-            <ReactApexChart type="pie" series={chartSeries} options={chartOptions} height={180}/>
+            <ReactApexChart type="pie" data-testid="chart" series={chartSeries} options={chartOptions} height={180}/>
         </StyledChartWrapper>)}
     </Card>);
 }

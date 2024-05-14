@@ -64,11 +64,11 @@ export default function AppExerciseTracking({title, subheader, chartLabels, char
                     action={<Button onClick={exportToCSV} variant="contained" color="primary">Export to CSV</Button>}
         />
         <Box sx={{p: 3, pb: 1}} dir="ltr">
-            <Tabs value={tabIndex} onChange={handleChangeTab}>
+            <Tabs value={tabIndex} onChange={handleChangeTab} data-testid="chart-tab">
                 {chartLabels.map((label, index) => (<Tab key={index} label={label}/>))}
             </Tabs>
             {loading ? (<Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300}}>
-                <CircularProgress/>
+                <CircularProgress data-testid="loading-indicator"/>
             </Box>) : (<>
                 {chartData.map((data, index) => (<Box key={index} hidden={tabIndex !== index}>
                     {tabIndex === index && (<ReactApexChart
@@ -76,6 +76,7 @@ export default function AppExerciseTracking({title, subheader, chartLabels, char
                         series={[{data: data.data}]}
                         options={chartOptions}
                         height={300}
+                        data-testid="bar-chart"
                     />)}
                 </Box>))}
             </>)}

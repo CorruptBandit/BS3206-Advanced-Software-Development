@@ -19,10 +19,9 @@ describe('AppWorkoutHistoryTimeline Component', () => {
         isLoggedIn: true, email: 'dave@gmail.com'
     }));
 
-    const mockList = [
-        { id: 1, time: new Date('2024-05-12T09:00:00'), title: 'Workout 1' },
-        { id: 2, time: new Date('2024-05-11T08:00:00'), title: 'Workout 2' },
-    ];
+    const mockList = [{id: 1, time: new Date('2024-05-12T09:00:00'), title: 'Workout 1'}, {
+        id: 2, time: new Date('2024-05-11T08:00:00'), title: 'Workout 2'
+    },];
 
     it('renders loading indicator when loading', () => {
         const {getByTestId} = render(<AppWorkoutHistoryTimeline list={[]}/>);

@@ -56,9 +56,9 @@ export default function AppDietaryTracking({title, subheader, chartData, ...othe
             action={<Button onClick={exportToCSV} variant="contained" color="primary">Export to CSV</Button>}
         />
         {loading ? (<Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: 364}}>
-            <CircularProgress/>
+            <CircularProgress data-testid="loading-indicator"/>
         </Box>) : (<Box sx={{mx: 3}} dir="ltr">
-            <ReactApexChart type="line" series={[{data: chartSeries}]} options={chartOptions} height={364}/>
+            <ReactApexChart type="line" data-testid="chart" series={[{data: chartSeries}]} options={chartOptions} height={364}/>
         </Box>)}
     </Card>);
 }

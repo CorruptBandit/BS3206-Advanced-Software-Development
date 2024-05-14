@@ -30,6 +30,11 @@ describe('AppGoals Component', () => {
         expect(getByTestId('loading-indicator')).to.exist;
     });
 
+    it('renders without crashing', () => {
+        const {container} = render(<AppGoals list={mockList}/>);
+        expect(container).toBeInTheDocument();
+    });
+
     it('renders list of goals when loaded', async () => {
         const {findByText} = render(<AppGoals list={mockList}/>);
         await waitFor(() => {

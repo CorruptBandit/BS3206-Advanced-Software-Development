@@ -1,22 +1,32 @@
-import {describe, it, expect, vi, beforeEach} from 'vitest';
-import {render, fireEvent, waitFor, findByText} from '@testing-library/react';
-import {useAuth} from '../../../../context/AuthContext';
-import {AppWidgetSummary} from "../index";
+// noinspection JSCheckFunctionSignatures
+
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render } from '@testing-library/react';
+import { AppWidgetSummary } from '../index';
 import '@testing-library/jest-dom';
 
 vi.mock('../../../../context/AuthContext', () => ({
     useAuth: vi.fn()
 }));
 
-
-describe('AppGoals Component', () => {
+describe('AppWidgetSummary Component', () => {
     beforeEach(() => {
         console.error = vi.fn();
         vi.clearAllMocks();
     });
 
-    useAuth.mockImplementation(() => ({
-        isLoggedIn: true, email: 'dave@gmail.com'
-    }));
+    it('renders the component with provided props', () => {
+        const title = 'Widget Title';
+        const data = 'Widget Data';
+        const icon = 'test-icon';
+        const color = 'secondary';
 
-})
+        const { getByText } = render(
+            <AppWidgetSummary title={title} data={data} icon={icon} color={color} />
+        );
+
+        expect(getByText(title)).toBeInTheDocument();
+        expect(getByText(data)).toBeInTheDocument();
+        expect(getByText('Widget Title')).toBeInTheDocument();
+    });
+});
