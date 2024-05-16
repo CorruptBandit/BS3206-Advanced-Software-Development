@@ -24,6 +24,7 @@ export default function WorkoutTracker() {
   const searchParams = new URLSearchParams(location.search);
   const workoutId = searchParams.get('workoutId')
 
+  // Returning early if the user is not logged in or workout ID is missing
   if (!isLoggedIn || !workoutId) {
     return (
       <Container>
@@ -41,6 +42,7 @@ export default function WorkoutTracker() {
   const [exercises, setExercises] = useState([]);
   const [workoutData, setWorkoutData] = useState([]);
 
+  // Effect hook to fetch data on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -93,6 +95,7 @@ export default function WorkoutTracker() {
     fetchData();
   }, []);
 
+  // Effect hook to update workout details when workoutId or workoutData changes
   useEffect(() => {
     if (workoutId && workoutData.length > 0) {
       const foundWorkout = workoutData.find((workout) => workout._id === workoutId);
@@ -272,6 +275,7 @@ const handleLogWorkout = async () => {
                             type="number"
                             variant="outlined"
                             value={exercise.repsDone[setIndex]}
+                            inputProps={{ "data-testid": "reps-input-" + index + "-" + setIndex}}
                             onChange={(e) => {
                               const updatedExercises = [...exercises];
                               updatedExercises[index].repsDone[setIndex] = e.target.value;
@@ -284,6 +288,7 @@ const handleLogWorkout = async () => {
                             type="number"
                             variant="outlined"
                             value={exercise.weightDone[setIndex]}
+                            inputProps={{ "data-testid": "weight-input-" + index + "-" + setIndex}}
                             onChange={(e) => {
                               const updatedExercises = [...exercises];
                               updatedExercises[index].weightDone[setIndex] = e.target.value;
@@ -300,6 +305,7 @@ const handleLogWorkout = async () => {
                         type="number"
                         variant="outlined"
                         value={exercise.nextTargetWeight}
+                        inputProps={{ "data-testid": "target-input-" + index}}
                         onChange={(e) => {
                           const updatedExercises = [...exercises];
                           updatedExercises[index].nextTargetWeight = e.target.value;
