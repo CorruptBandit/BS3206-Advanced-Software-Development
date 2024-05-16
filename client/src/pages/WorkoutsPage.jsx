@@ -41,6 +41,7 @@ const TABLE_HEAD = [
 
 // ----------------------------------------------------------------------
 
+// Helper function for sorting in descending order
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
     return -1;
@@ -51,12 +52,14 @@ function descendingComparator(a, b, orderBy) {
   return 0;
 }
 
+// Returns a comparison function based on the order and orderBy values
 function getComparator(order, orderBy) {
   return order === 'desc'
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
+// Sorts the array, applies the search filter if provided, and returns the result
 function applySortFilter(array, comparator, query) {
   const stabilizedThis = array.map((el, index) => [el, index]);
   stabilizedThis.sort((a, b) => {
@@ -73,6 +76,7 @@ function applySortFilter(array, comparator, query) {
 export default function WorkoutsPage() {
   const { email, isLoggedIn } = useAuth();
 
+  // If user is not logged in, display a message prompting to log in
   if (!isLoggedIn) {
     return (
       <Container>
@@ -96,6 +100,7 @@ export default function WorkoutsPage() {
   const [workoutData, setWorkoutData] = useState([]);
   const [exerciseData, setExerciseData] = useState([]);
 
+  // Fetches workout and exercise data from the API
   const fetchData = async (collection) => {
     try {
        const response = await fetch(`/api/getCollection?collection=${collection}`, {
@@ -128,20 +133,24 @@ export default function WorkoutsPage() {
     }
   };
 
+  // Fetch workout and exercise data when component mounts
   useEffect(() => {
     fetchData('workouts');
     fetchData('exercises');
   }, []);
 
+  // Opens the menu for a specific workout
   const handleOpenMenu = (event, workoutId) => {
     setWorkoutId(workoutId);
     setOpen(event.currentTarget);
   };
 
+  // Closes the menu
   const handleCloseMenu = () => {
     setOpen(null);
   };
 
+  // Deletes a workout
   const handleDeleteWorkout = async () => {
     const confirmed = window.confirm('Are you sure you want to delete this workout?');
 
@@ -168,16 +177,19 @@ export default function WorkoutsPage() {
     }
   };
 
+  // Fetch workout data when a workout is deleted
   useEffect(() => {
     fetchData('workouts');
   }, [workoutData, workoutId]);
 
+  // Handles sorting by column
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
   };
 
+  // Handles selecting all workouts
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
       const newSelecteds = workoutData.map((n) => n.workoutName);
@@ -187,26 +199,32 @@ export default function WorkoutsPage() {
     setSelected([]);
   };
 
+
+  // Handles changing pagination page
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
 
+  // Handles changing number of rows per page
   const handleChangeRowsPerPage = (event) => {
     setPage(0);
     setRowsPerPage(parseInt(event.target.value, 10));
   };
 
+  // Handles filtering workouts by name
   const handleFilterByName = (event) => {
     setPage(0);
     setFilterName(event.target.value);
   };
 
+  // Calculates the number of empty rows to display
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - workoutData.length) : 0;
 
+  // Applies sorting and filtering to workouts
   const filteredWorkouts = applySortFilter(workoutData, getComparator(order, orderBy), filterName);
   const isNotFound = !filteredWorkouts.length && !!filterName;
 
-  // Updated function to format exercises with exercise names instead of IDs
+  // Formats exercises with exercise names instead of IDs
   const formatExercises = (exercises) => {
     return exercises.map((exercise) => {
       // Find the exercise object with matching _id
