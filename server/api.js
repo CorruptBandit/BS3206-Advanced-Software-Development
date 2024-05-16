@@ -15,7 +15,6 @@ const SECRET_KEY = process.env.JWT_SECRET_KEY || "insecure";
 const mongoDB = new MongoDBConnector();
 const revokedTokens = new Set(); // Set to store revoked tokens
 const cookieParser = require('cookie-parser');
-const { rest } = require('lodash');
 
 app.use(express.json());
 app.use(cookieParser());

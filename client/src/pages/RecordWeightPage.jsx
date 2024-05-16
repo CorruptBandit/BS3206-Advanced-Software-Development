@@ -6,7 +6,7 @@ import { Button, Container, Typography, Stack, TextField, Table, TableBody, Tabl
 export default function RecordWeightPage() {
     const { isLoggedIn, email } = useAuth();
     const [weight, setWeight] = useState('');
-    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [selectedDate] = useState(new Date());
     const [weightHistory, setWeightHistory] = useState([]);
     const [successMessage, setSuccessMessage] = useState('');
 
