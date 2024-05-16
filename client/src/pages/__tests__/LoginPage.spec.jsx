@@ -4,8 +4,7 @@ import { BrowserRouter, useNavigate } from 'react-router-dom';
 import SignIn from '../LoginPage';
 import MD5 from 'crypto-js/md5';
 
-// Mock the useAuth and react-router-dom hooks
-// Mock the useAuth hook with conditional behavior
+// Mock the useAuth and react-router-dom and react-helmet-async hooks
 vi.mock('../../context/AuthContext', () => ({
   useAuth: () => ({
     login: vi.fn((email, passwordHash) => 
@@ -38,6 +37,11 @@ vi.mock('react-router-dom', async (importOriginal) => {
   };
 });
 
+vi.mock('react-helmet-async', () => ({
+  Helmet: ({ children }) => <>{children}</>, // Render children directly
+  HelmetProvider: ({ children }) => <>{children}</> // Render children directly
+}));
+
 describe('SignIn Component', () => {
   let emailField, passwordField, signinButton, registerButton, alertMock;
   beforeEach(() => {
@@ -45,7 +49,7 @@ describe('SignIn Component', () => {
     vi.clearAllMocks();
     render(
       <BrowserRouter>
-        <SignIn />
+          <SignIn />
       </BrowserRouter>
     ),
     emailField = screen.getByLabelText('Email Address', { exact: false }),
