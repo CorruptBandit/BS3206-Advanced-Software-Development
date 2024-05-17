@@ -91,7 +91,7 @@ class MongoDBConnector {
   async insertFoodItem(collectionName, document) {
     if (!this.db) {
       console.error("MongoDB not connected");
-      return; // This return statement should be removed from here
+      return;
     }
     try {
       const result = await this.db

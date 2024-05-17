@@ -153,7 +153,7 @@ app.post("/api/addFood", async (req, res) => {
       mealName,
       calories,
       dateAdded: new Date().toISOString().split("T")[0],
-      userEmail, // Store user's email
+      userEmail,
     };
     await mongoDB.insertFoodItem("food", food);
     return res.status(200).json({ message: "Food added successfully" });

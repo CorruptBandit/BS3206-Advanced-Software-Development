@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { Helmet } from "react-helmet-async";
-import { useAuth } from "../context/AuthContext";
+import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { useAuth } from '../context/AuthContext';
 import {
   Button,
   Container,
@@ -11,12 +11,12 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-} from "@mui/material";
-import Iconify from "../components/iconify";
+} from '@mui/material';
+import Iconify from '../components/iconify';
 
 export default function RecordCaloriesPage() {
-  const { isLoggedIn, email } = useAuth(); // Retrieve isLoggedIn and email from useAuth hook
-  const [ setCalories] = useState({
+  const { isLoggedIn, email } = useAuth(); // Retrieve isLoggedIn and email from useAuth
+  const [setCalories] = useState({
     breakfast: 0,
     lunch: 0,
     dinner: 0,
@@ -24,14 +24,14 @@ export default function RecordCaloriesPage() {
     drinks: 0,
   });
   const [formData, setFormData] = useState({
-    meal: "breakfast",
-    foodName: "",
-    foodCalories: "",
+    meal: 'breakfast',
+    foodName: '',
+    foodCalories: '',
   });
   const tableCellStyle = {
-    textAlign: "center",
-    padding: "10px",
-    borderBottom: "1px solid #ddd",
+    textAlign: 'center',
+    padding: '10px',
+    borderBottom: '1px solid #ddd',
   };
 
   const [foodAdded, setFoodAdded] = useState(false); // State to track food addition success
@@ -43,13 +43,13 @@ export default function RecordCaloriesPage() {
   useEffect(() => {
     const fetchFoodItems = async () => {
       try {
-        const today = selectedDate.toISOString().split("T")[0];
-        console.log("Fetching food items for date:", today); // Log the date being fetched
-        console.log("User email:", email); // Log the user's email
+        const today = selectedDate.toISOString().split('T')[0];
+        console.log('Fetching food items for date:', today);
+        console.log('User email:', email);
         const response = await fetch(`/api/foodItemsByDate`, {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             dateAdded: today,
@@ -58,22 +58,25 @@ export default function RecordCaloriesPage() {
         });
         if (response.ok) {
           const data = await response.json();
-          console.log("Retrieved food items:", data.foodItems); // Log the retrieved food items
+          console.log('Retrieved food items:', data.foodItems);
           setDashboardData(data.foodItems);
-          setLoading(false); // Set loading to false once data is fetched
+          setLoading(false);
         } else {
-          console.error("Failed to fetch food items:", response.statusText);
-          setError("Failed to fetch food items");
-          setLoading(false); // Set loading to false in case of error
+          console.error('Failed to fetch food items:', response.statusText);
+          setError('Failed to fetch food items');
+          setLoading(false);
         }
       } catch (error) {
-        console.error("Error fetching food items", error);
-        setError("Error fetching food items");
-        setLoading(false); // Set loading to false in case of error
+        console.error('Error fetching food items', error);
+        setError('Error fetching food items');
+        setLoading(false);
       }
     };
     fetchFoodItems();
-  }, [selectedDate, email]);
+    if (foodAdded) {
+      setFoodAdded(false);
+    }
+  }, [selectedDate, email, foodAdded]);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -83,18 +86,18 @@ export default function RecordCaloriesPage() {
   };
   const handleAddFood = async () => {
     try {
-      console.log("Form data:", formData);
-      const response = await fetch("/api/addFood", {
-        method: "POST",
+      console.log('Form data:', formData);
+      const response = await fetch('/api/addFood', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
           mealType: formData.meal,
-          mealName: formData.foodName, // Access mealName directly from formData
-          calories: parseInt(formData.foodCalories), // Access calories directly from formData
-          dateAdded: new Date().toISOString().split("T")[0],
+          mealName: formData.foodName,
+          calories: parseInt(formData.foodCalories),
+          dateAdded: new Date().toISOString().split('T')[0],
           userEmail: email,
         }),
       });
@@ -106,15 +109,15 @@ export default function RecordCaloriesPage() {
             prevCalories[formData.meal] + parseInt(formData.foodCalories),
         }));
         setFormData({
-          meal: "breakfast",
-          foodName: "",
-          foodCalories: "",
+          meal: 'breakfast',
+          foodName: '',
+          foodCalories: '',
         });
       } else {
-        console.error("Failed to add food:", response.statusText);
+        console.error('Failed to add food:', response.statusText);
       }
     } catch (error) {
-      console.error("Error adding food:", error);
+      console.error('Error adding food:', error);
     }
   };
   const handleDateChange = (increment) => {
@@ -125,12 +128,15 @@ export default function RecordCaloriesPage() {
   const getMealData = (mealType) => {
     const meals = dashboardData.filter((item) => item.mealType === mealType);
     if (meals.length === 0) {
-      return "No data"; // Handle case when no data is available for a meal type
+      return 'No data'; // Handle case when no data is available for a meal type
     }
-    // Concatenate food names and calories for the meal type
     return meals
       .map((meal) => `${meal.mealName} (${meal.calories} kcal)`)
-      .join(", ");
+      .join(', ');
+  };
+  const calculateTotalCalories = () => {
+    if (!dashboardData) return 0;
+    return dashboardData.reduce((total, item) => total + item.calories, 0);
   };
 
   if (!isLoggedIn) {
@@ -168,22 +174,19 @@ export default function RecordCaloriesPage() {
           justifyContent="center"
           mb={5}
         >
-          <Typography variant="h4" gutterBottom sx={{ marginBottom: "20px" }}>
+          <Typography variant="h4" gutterBottom sx={{ marginBottom: '20px' }}>
             Log Calories
           </Typography>
           <Stack direction="row" spacing={2} alignItems="center">
             <Button variant="contained" onClick={() => handleDateChange(-1)}>
-              {" "}
-              {/* Button to move date backwards */}
+              {' '}
               Previous Day
             </Button>
             <Typography variant="h6">
               {selectedDate.toDateString()}
-            </Typography>{" "}
-            {/* Display the selected date */}
+            </Typography>{' '}
             <Button variant="contained" onClick={() => handleDateChange(1)}>
-              {" "}
-              {/* Button to move date forwards */}
+              {' '}
               Next Day
             </Button>
           </Stack>
@@ -199,6 +202,9 @@ export default function RecordCaloriesPage() {
             Food added successfully!
           </Typography>
         )}
+        <Typography variant="h6" align="center" sx={{ marginTop: 2 }}>
+          Total Calories Consumed: {calculateTotalCalories()} kcal
+        </Typography>
 
         <form
           onSubmit={(e) => {
@@ -254,51 +260,50 @@ export default function RecordCaloriesPage() {
           </Button>
         </form>
 
-        {/* Placeholder table */}
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
               <th
                 style={{
-                  textAlign: "center",
-                  padding: "10px",
-                  borderBottom: "1px solid #ddd",
+                  textAlign: 'center',
+                  padding: '10px',
+                  borderBottom: '1px solid #ddd',
                 }}
               >
                 Breakfast
               </th>
               <th
                 style={{
-                  textAlign: "center",
-                  padding: "10px",
-                  borderBottom: "1px solid #ddd",
+                  textAlign: 'center',
+                  padding: '10px',
+                  borderBottom: '1px solid #ddd',
                 }}
               >
                 Lunch
               </th>
               <th
                 style={{
-                  textAlign: "center",
-                  padding: "10px",
-                  borderBottom: "1px solid #ddd",
+                  textAlign: 'center',
+                  padding: '10px',
+                  borderBottom: '1px solid #ddd',
                 }}
               >
                 Dinner
               </th>
               <th
                 style={{
-                  textAlign: "center",
-                  padding: "10px",
-                  borderBottom: "1px solid #ddd",
+                  textAlign: 'center',
+                  padding: '10px',
+                  borderBottom: '1px solid #ddd',
                 }}
               >
                 Drinks
               </th>
               <th
                 style={{
-                  textAlign: "center",
-                  padding: "10px",
-                  borderBottom: "1px solid #ddd",
+                  textAlign: 'center',
+                  padding: '10px',
+                  borderBottom: '1px solid #ddd',
                 }}
               >
                 Snacks
@@ -308,24 +313,24 @@ export default function RecordCaloriesPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="5" style={{ textAlign: "center" }}>
+                <td colSpan="5" style={{ textAlign: 'center' }}>
                   Loading...
                 </td>
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan="5" style={{ textAlign: "center", color: "red" }}>
+                <td colSpan="5" style={{ textAlign: 'center', color: 'red' }}>
                   {error}
                 </td>
               </tr>
             ) : (
               <>
                 <tr>
-                  <td style={tableCellStyle}>{getMealData("breakfast")}</td>
-                  <td style={tableCellStyle}>{getMealData("lunch")}</td>
-                  <td style={tableCellStyle}>{getMealData("dinner")}</td>
-                  <td style={tableCellStyle}>{getMealData("drinks")}</td>
-                  <td style={tableCellStyle}>{getMealData("snacks")}</td>
+                  <td style={tableCellStyle}>{getMealData('breakfast')}</td>
+                  <td style={tableCellStyle}>{getMealData('lunch')}</td>
+                  <td style={tableCellStyle}>{getMealData('dinner')}</td>
+                  <td style={tableCellStyle}>{getMealData('drinks')}</td>
+                  <td style={tableCellStyle}>{getMealData('snacks')}</td>
                 </tr>
               </>
             )}
