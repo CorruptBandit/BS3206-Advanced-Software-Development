@@ -10,9 +10,6 @@ const verifyAdmin = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, SECRET_KEY);
-
-    // Assume the decoded token includes a field specifying the user's role
-    // This requires your token generation logic to include role information when the token is created
     if (decoded.email !== 'admin@admin.admin') {
       return res.status(403).json({ error: 'Access denied: admin role required' });
     }

@@ -220,7 +220,6 @@ app.post('/api/weightHistory', async (req, res) => {
   }
 });
 
-// ADMIN ENDPOINTS
 app.get('/api/users', verifyAdmin, async (req, res) => {
   try {
     // Exclude admin user as this should be handled directly on the DB by admin

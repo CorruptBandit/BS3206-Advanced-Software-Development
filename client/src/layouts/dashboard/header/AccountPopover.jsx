@@ -46,7 +46,6 @@ export default function AccountPopover() {
     }
   } catch (error) {
     console.error('Logout error:', error);
-    // Optionally handle error state here (e.g., show an error message)
   }
 };
 
