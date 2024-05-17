@@ -25,10 +25,9 @@ USER node
 WORKDIR /opt/node_app
 COPY --chown=node:node package.json package-lock.json* ./
 RUN if [ "$NODE_ENV" = "development" ]; \
-    then npm ci; \
-    else npm ci --omit=dev; \
+    then npm ci && npm cache clean --force; \
+    else npm ci --omit=dev && npm cache clean --force; \
     fi
-RUN npm cache clean --force
 
 # Set the PATH to include the node_modules/.bin from the /opt/node_app directory
 # Set the Vite Cache to use the node_modules/ from the /opt/node_app directory

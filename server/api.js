@@ -188,15 +188,47 @@ app.post("/api/foodItemsByDate", async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
+app.post('/api/addWeight', async (req, res) =>{
+  const{weight, userEmail} = req.body;
+  if (!weight || !userEmail){
+    return res.status(400).json({error: "Weight is required."});
+  }
+  try{
+    const document = {
+      weight,
+      dateAdded: new Date().toISOString().split("T")[0],
+      userEmail
+    }
+    await mongoDB.insertWeight("weight", document);
+    return res.status(200).json({message:"Weight added successfully"});
+  }catch(error){
+    console.error("Error adding weight", error);
+    return res.status(500).json({error:'Internal Server Error'});
+  }
+});
+app.post('/api/weightHistory', async (req, res) => {
+  const { userEmail, dateAdded } = req.body; // Retrieve userEmail and dateAdded from request body
+  if (!userEmail) {
+    return res.status(400).json({ error: "User email is required" });
+  }
+  try {
+    const weightHistory = await mongoDB.getWeightHistory("weight", userEmail, dateAdded);
+    return res.status(200).json({ weightHistory });
+  } catch (error) {
+    console.error('Error fetching weight history', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 // ADMIN ENDPOINTS
 app.get('/api/users', verifyAdmin, async (req, res) => {
   try {
-    const users = await mongoDB.queryCollection("users", {});
+    // Exclude admin user as this should be handled directly on the DB by admin
+    const users = await mongoDB.queryCollection("users", { email: { $ne: "admin@admin.admin" } });
     const userDisplay = users.map(user => ({
       email: user.email,
       name: user.name,
-      id: user._id // Assuming MongoDB so _id would be used
+      id: user._id // Assuming MongoDB, so _id would be used
     }));
     res.status(200).json(userDisplay);
   } catch (error) {
@@ -204,6 +236,7 @@ app.get('/api/users', verifyAdmin, async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 app.delete('/api/users/:userId', verifyAdmin, async (req, res) => {
   const userId = req.params.userId;

@@ -4,6 +4,7 @@ import { Box, TableRow, TableCell, TableHead, TableSortLabel } from '@mui/materi
 
 // ----------------------------------------------------------------------
 
+// Utility style for visually hiding elements
 const visuallyHidden = {
   border: 0,
   margin: -1,
@@ -16,6 +17,7 @@ const visuallyHidden = {
   clip: 'rect(0 0 0 0)',
 };
 
+// PropTypes for WorkoutListHead component to enforce type-checking
 WorkoutListHead.propTypes = {
   order: PropTypes.oneOf(['asc', 'desc']),
   orderBy: PropTypes.string,

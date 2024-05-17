@@ -126,6 +126,32 @@ class MongoDBConnector {
       throw error;
     }
   }
+  async insertWeight(collectionName, document){
+    if(!this.db){
+      console.error("MongoDB not connected");
+      return;
+    }
+    try{
+      const result = await this.db.collection(collectionName).insertOne(document);
+      return result;
+    }catch(error){
+      console.error("Error inserting weight", error);
+      throw error;
+    }
+  }
+  async getWeightHistory(collectionName, userEmail){
+    if(!this.db){
+      console.error("MongoDB not connected");
+      return;
+    }
+    try{
+      const weightHistory = await this.db.collection(collectionName).find({ userEmail: userEmail }).toArray();
+      return weightHistory;
+    }catch(error){
+      console.error("Error fetching weight history", error);
+      throw error;
+    }
+  }
 }
 
 module.exports = MongoDBConnector;

@@ -19,6 +19,7 @@ export default function WorkoutEditor() {
   const navigate = useNavigate();
   const { email, isLoggedIn } = useAuth();
 
+  // Render a message if the user is not logged in
   if (!isLoggedIn) {
     return (
       <Container>
@@ -31,6 +32,7 @@ export default function WorkoutEditor() {
     );
   }
 
+  // Extract workoutId from query params
   const searchParams = new URLSearchParams(location.search);
   const workoutId = searchParams.get('workoutId');
 
@@ -40,16 +42,19 @@ export default function WorkoutEditor() {
   const [workoutData, setWorkoutData] = useState([]);
   const [exerciseData, setExerciseData] = useState([]);
 
+  // Function to add a new exercise field
   const handleAddExercise = () => {
     setExercises([...exercises, { exerciseName: '', sets: '', reps: '', targetWeight: '' }]);
   };
 
+  // Function to handle changes in exercise fields
   const handleExerciseChange = (event, index, field) => {
     const newExercises = [...exercises];
     newExercises[index][field] = event.target.value;
     setExercises(newExercises);
   };
 
+  // Function to delete an exercise field
   const handleDeleteExercise = (index) => {
     if (index > 0) {
       const newExercises = [...exercises];
@@ -58,9 +63,10 @@ export default function WorkoutEditor() {
     }
   };
 
+// Function to apply changes to the workout
 const handleApplyChanges = async () => {
   try {
-    // Check if any field is blank
+    // Check for empty fields
     if (!workoutName || exercises.some(exercise => !exercise.exerciseName || !exercise.sets || !exercise.reps || !exercise.targetWeight)) {
       alert('Please fill in all fields.');
       return;
@@ -68,10 +74,11 @@ const handleApplyChanges = async () => {
 
     // Validate numeric fields
     if (exercises.some(exercise => isNaN(parseInt(exercise.sets)) || parseInt(exercise.sets) < 1 || parseInt(exercise.sets) > 10 || isNaN(parseInt(exercise.reps)) || parseInt(exercise.reps) < 1 || parseInt(exercise.reps) > 50 || isNaN(parseInt(exercise.targetWeight)) || parseInt(exercise.targetWeight) < 1)) {
-      alert('Please enter valid values for sets (1-10), reps (1-50), and target weight (greater than 1).');
+      alert('Please enter valid values for sets (1-10), reps (1-50). All numbers must also be < 1.');
       return;
     }
 
+    // Fetch user data
     const user_response = await fetch(`/api/getCollection?collection=users`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -81,6 +88,7 @@ const handleApplyChanges = async () => {
     const user = userData.find(user => user.email === email);
     const userId = user ? user._id : null;
 
+    // Refine exercises data
     const refinedExercises = await Promise.all(exercises.map(async (exercise) => {
       if (!exercise.exerciseId) {
         const matchingExercise = exerciseData.find((ex) => ex.exerciseName === exercise.exerciseName);
@@ -98,6 +106,7 @@ const handleApplyChanges = async () => {
       return { ...exercise };
     }));
 
+    // Prepare request body
     const requestBody = {
       workoutName,
       exercises: refinedExercises,
@@ -135,7 +144,7 @@ const handleApplyChanges = async () => {
   }
 };
 
-
+  // Fetch workout and exercise data on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -187,6 +196,7 @@ const handleApplyChanges = async () => {
     fetchData();
   }, []);
 
+  // Populate form fields if editing existing workout
   useEffect(() => {
     if (workoutId && workoutData.length > 0) {
       const foundWorkout = workoutData.find((workout) => workout._id === workoutId);
@@ -211,6 +221,7 @@ const handleApplyChanges = async () => {
             fullWidth
             value={workoutName}
             onChange={(event) => setWorkoutName(event.target.value)}
+            inputProps={{ "data-testid": "workout-name-input" }}
           />
         </Grid>
         <Grid item xs={12}>
@@ -225,6 +236,7 @@ const handleApplyChanges = async () => {
                   <Select
                     required
                     value={exercise.exerciseName}
+                    inputProps={{ "data-testid": "exercise-dropdown-" + index}}
                     onChange={(event) => handleExerciseChange(event, index, 'exerciseName')}
                   >
                     <MenuItem value="">None</MenuItem>
@@ -243,7 +255,7 @@ const handleApplyChanges = async () => {
                   variant="outlined"
                   fullWidth
                   type="number"
-                  inputProps={{ min: 1, max: 10 }}
+                  inputProps={{ min: 1, max: 10, "data-testid": "sets-input-" + index}}
                   value={exercise.sets}
                   onChange={(event) => handleExerciseChange(event, index, 'sets')}
                 />
@@ -255,7 +267,7 @@ const handleApplyChanges = async () => {
                   variant="outlined"
                   fullWidth
                   type="number"
-                  inputProps={{ min: 1, max: 50 }}
+                  inputProps={{ min: 1, max: 50,  "data-testid": "reps-input-" + index}}
                   value={exercise.reps}
                   onChange={(event) => handleExerciseChange(event, index, 'reps')}
                 />
@@ -268,12 +280,13 @@ const handleApplyChanges = async () => {
                   fullWidth
                   type="number"
                   value={exercise.targetWeight}
+                  inputProps={{ "data-testid": "weight-input-" + index}}
                   onChange={(event) => handleExerciseChange(event, index, 'targetWeight')}
                 />
               </Grid>
               {index > 0 && (
                 <Grid item xs={2}>
-                  <Button variant="outlined" color="error" style={{ height: '100%' }} onClick={() => handleDeleteExercise(index)}>
+                  <Button variant="outlined" color="error" style={{ height: '100%' }} inputProps={{ "data-testid": "delete-exercise-" + index}} onClick={() => handleDeleteExercise(index)}>
                     Delete Exercise
                   </Button>
                 </Grid>
@@ -283,7 +296,7 @@ const handleApplyChanges = async () => {
         </Grid>
         <Grid container justifyContent="center" mt={2}>
           <Grid item>
-            <Button variant="contained" color="secondary" size="large" sx={{ width: '300px', marginBottom: '40px' }} onClick={handleAddExercise}>
+            <Button variant="contained" color="secondary" size="large" sx={{ width: '300px', marginBottom: '40px' }} inputProps={{ "data-testid": "add-exercise"}} onClick={handleAddExercise}>
               Add Exercise
             </Button>
           </Grid>

@@ -22,7 +22,7 @@ These instructions will get your project up and running on your local machine fo
 
 1. **Clone the repository**
    ```bash
-   git clone git@github.com:CorruptBandit/BS3221-Developing-for-the-Cloud.git
+   git clone git@github.com:CorruptBandit/BS3206-Advanced-Software-Development.git
    ```
 
    _Then enter the directory of the repository_

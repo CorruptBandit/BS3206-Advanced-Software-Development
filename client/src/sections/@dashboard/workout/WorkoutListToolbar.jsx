@@ -7,6 +7,7 @@ import Iconify from '../../../components/iconify';
 
 // ----------------------------------------------------------------------
 
+//Styling for components
 const StyledRoot = styled(Toolbar)(({ theme }) => ({
   height: 96,
   display: 'flex',
@@ -32,6 +33,7 @@ const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
+// PropTypes for WorkoutListToolbar component to enforce type-checking
 WorkoutListToolbar.propTypes = {
   numSelected: PropTypes.number,
   filterName: PropTypes.string,
