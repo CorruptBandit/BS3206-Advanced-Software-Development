@@ -15,6 +15,13 @@ import {useAuth} from '../context/AuthContext';
 import {useEffect, useState} from "react";
 import {FetchUserId, FetchCollection} from '../../src/sections/@dashboard/app/utils/index';
 
+
+/**
+ * DashboardAppPage component renders the main dashboard page for authenticated users.
+ * It displays various sections of user data, including meals, exercise, goals, and more.
+ * If the user is an admin, it redirects to the AdminPage component.
+ * @returns {JSX.Element}
+ */
 export default function DashboardAppPage() {
     const theme = useTheme();
     const {email, name, isLoggedIn, isAdmin} = useAuth();
@@ -29,6 +36,7 @@ export default function DashboardAppPage() {
     const [weightData, setWeightData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    // Function to filter data by user ID
     const filterDataByUserId = async (collection) => {
         try {
             const userId = await FetchUserId(email);
@@ -42,6 +50,7 @@ export default function DashboardAppPage() {
         }
     };
 
+    // Function to sum up calories in daily intake data
     const sumCalories = () => {
         return calorieBreakdown.reduce((total, item) => total + item.value, 0);
     };
@@ -53,8 +62,9 @@ export default function DashboardAppPage() {
             startDate.setDate(endDate.getDate() - 6);
 
             const data = await FetchCollection("food");
+            const filteredData = data.filter(item => item.userEmail === email);
 
-            const allTimeMealCounts = data.reduce((counts, item) => {
+            const allTimeMealCounts = filteredData.reduce((counts, item) => {
                 counts[item.mealType] = (counts[item.mealType] || 0) + 1;
                 return counts;
             }, {});
@@ -63,7 +73,7 @@ export default function DashboardAppPage() {
             setMostCommonMealType(allTimeMostCommonMealType ? allTimeMostCommonMealType.charAt(0).toUpperCase() + allTimeMostCommonMealType.slice(1) : null);
 
             const currentDate = new Date().toISOString().slice(0, 10);
-            const getDailyIntake = data.filter(item => item.userEmail === email && item.dateAdded === currentDate);
+            const getDailyIntake = filteredData.filter(item => item.dateAdded === currentDate);
 
             setDailyIntake(getDailyIntake);
         } catch (error) {
@@ -97,7 +107,11 @@ export default function DashboardAppPage() {
                 const exerciseData = await FetchCollection("exercises");
                 const mostCommonExerciseData = exerciseData.find(exercise => exercise._id === mostCommonExercise);
 
-                setMostCommonExerciseName(mostCommonExerciseData.exerciseName);
+                if (mostCommonExerciseData && mostCommonExerciseData.exerciseName) {
+                    setMostCommonExerciseName(mostCommonExerciseData.exerciseName);
+                } else {
+                    setMostCommonExerciseName('N/A');
+                }
 
             } else if (collection === 'workoutHistory') {
                 setWorkoutHistoryData(filteredData);
@@ -153,17 +167,33 @@ export default function DashboardAppPage() {
 
     const fetchGoals = async () => {
         try {
-            const filteredData = await filterDataByUserId("goals");
+            const userId = await FetchUserId(email);
 
-            const fetchedGoals = filteredData.map(item => ({
-                goalName: item.goalName, achieveByDate: item.achieveByDate
-            }));
+            const data = await FetchCollection("goals");
 
-            setGoals(fetchedGoals);
+            if (data === null || !Array.isArray(data)) {
+                setGoals([]);
+                return;
+            }
+
+            const filteredData = data.filter(item => item.userId === userId);
+
+            if (filteredData.length === 0) {
+                setGoals([]);
+
+            } else {
+                const fetchedGoals = filteredData.map(item => ({
+                    goalName: item.goalName, achieveByDate: item.achieveByDate,
+                }));
+
+                setGoals(fetchedGoals);
+            }
         } catch (error) {
             console.error("Error fetching goals:", error);
+            setGoals([]);
         }
     };
+
 
     const fetchWeight = async () => {
         try {
@@ -191,7 +221,7 @@ export default function DashboardAppPage() {
         }
     };
 
-
+    // useEffect hook to calculate calorie breakdown when daily intake data changes
     useEffect(() => {
         if (dailyIntakeData.length > 0) {
             const calorieCounts = dailyIntakeData.reduce((counts, item) => {
@@ -206,7 +236,7 @@ export default function DashboardAppPage() {
         }
     }, [dailyIntakeData]);
 
-
+    // useEffect hook to fetch data when component mounts or dependencies change
     useEffect(() => {
         Promise.all([fetchWorkout('workouts'), fetchWorkout('workoutHistory'), fetchFood(), fetchWeight(), fetchGoals(), fetchWorkoutHistory()])
             .then(() => {
@@ -217,6 +247,7 @@ export default function DashboardAppPage() {
             });
     }, [email, goals,]);
 
+    // Conditional rendering based on isAdmin and isLoggedIn states
     if (isAdmin) {
         return <AdminPage/>;
     }

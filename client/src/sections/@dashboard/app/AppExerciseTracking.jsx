@@ -11,6 +11,14 @@ AppExerciseTracking.propTypes = {
     chartLabels: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
+/**
+ * AppExerciseTracking component for displaying exercise tracking data.
+ * @param {string} title - The title of the card.
+ * @param {string} subheader - The subheader of the card.
+ * @param {array} chartLabels - Array of labels for the tabs.
+ * @param {array} chartData - Array of objects containing data points for each tab.
+ * @returns {JSX.Element} - React component representing the exercise tracking card.
+ */
 export default function AppExerciseTracking({title, subheader, chartLabels, chartData, ...other}) {
     const [tabIndex, setTabIndex] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -46,7 +54,7 @@ export default function AppExerciseTracking({title, subheader, chartLabels, char
     const exportToCSV = () => {
         const csvContent = 'data:text/csv;charset=utf-8,' + chartData.map((data, index) => {
             const label = chartLabels[index];
-            const csvData = data.data.map((point) => `"${label}",${point.y}`);
+            const csvData = data.data.map((point) => `"${label}",${point}`);
             return csvData.join('\n');
         }).join('\n');
         const encodedUri = encodeURI(csvContent);
@@ -57,20 +65,23 @@ export default function AppExerciseTracking({title, subheader, chartLabels, char
         link.click();
     };
 
-
-    return (<Card {...other}>
-        <CardHeader title={title}
-                    subheader={subheader}
-                    action={<Button onClick={exportToCSV} variant="contained" color="primary">Export to CSV</Button>}
-        />
-        <Box sx={{p: 3, pb: 1}} dir="ltr">
-            <Tabs value={tabIndex} onChange={handleChangeTab} data-testid="chart-tab">
-                {chartLabels.map((label, index) => (<Tab key={index} label={label}/>))}
-            </Tabs>
-            {loading ? (<Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300}}>
-                <CircularProgress data-testid="loading-indicator"/>
-            </Box>) : (<>
-                {chartData.map((data, index) => (<Box key={index} hidden={tabIndex !== index}>
+    return (<Box sx={{width: '100%', height: '100%'}}>
+        <Card {...other} sx={{width: '100%', height: '100%'}}>
+            <CardHeader
+                title={title}
+                subheader={subheader}
+                action={<Button onClick={exportToCSV} variant="contained" color="primary">Export to CSV</Button>}
+            />
+            <Box sx={{p: 3, pb: 1}} dir="ltr">
+                <Tabs value={tabIndex} onChange={handleChangeTab} data-testid="chart-tab">
+                    {chartLabels.map((label, index) => (<Tab key={index} label={label}/>))}
+                </Tabs>
+                {loading ? (<Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300}}>
+                    <CircularProgress data-testid="loading-indicator"/>
+                </Box>) : (chartData.length === 0 ? (
+                    <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300}}>
+                        No data available
+                    </Box>) : (chartData.map((data, index) => (<Box key={index} hidden={tabIndex !== index}>
                     {tabIndex === index && (<ReactApexChart
                         type="bar"
                         series={[{data: data.data}]}
@@ -78,8 +89,8 @@ export default function AppExerciseTracking({title, subheader, chartLabels, char
                         height={300}
                         data-testid="bar-chart"
                     />)}
-                </Box>))}
-            </>)}
-        </Box>
-    </Card>);
+                </Box>))))}
+            </Box>
+        </Card>
+    </Box>);
 }

@@ -22,21 +22,30 @@ describe('AppCalorieBreakdown Component', () => {
 
     const chartData = [{label: 'Breakfast', value: 400}, {label: 'Lunch', value: 300}, {label: 'Dinner', value: 700}];
 
-    it('renders loading indicator when loading', () => {
+    it('ACB.1: renders loading indicator when loading', () => {
+        // Render the loading indicator
         const {getByTestId} = render(<AppCalorieBreakdown chartData={chartData}/>);
+
+        // Check if component exists
         expect(getByTestId('loading-indicator')).toBeInTheDocument();
     });
 
-    it('renders without crashing', () => {
+    it('ACB.2: renders without crashing', () => {
+        // Render the AppCalorieBreakdown component
         const {container} = render(<AppCalorieBreakdown chartData={chartData}/>);
+
+        // Check if component exists
         expect(container).toBeInTheDocument();
     });
 
-    it('calls export function when export button is clicked', async () => {
+    it('ACB.3: calls export function when export button is clicked', async () => {
+        // Render the AppCalorieBreakdown component
         const {getByText} = render(<AppCalorieBreakdown chartData={chartData}/>);
 
         fireEvent.click(getByText('Export to CSV'));
 
+
+        // Check data is exported after button is clicked
         await waitFor(() => {
             const expectedCSVContent = 'data:text/csv;charset=utf-8,"Breakfast",400\n"Lunch",300\n"Dinner",700';
             expect(global.encodeURI).toHaveBeenCalledWith(expectedCSVContent);

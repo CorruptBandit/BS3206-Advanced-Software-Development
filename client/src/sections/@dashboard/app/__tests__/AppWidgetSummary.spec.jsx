@@ -15,18 +15,19 @@ describe('AppWidgetSummary Component', () => {
         vi.clearAllMocks();
     });
 
-    it('renders the component with provided props', () => {
+    it('AWS.1: renders the component with provided props', () => {
         const title = 'Widget Title';
         const data = 'Widget Data';
         const icon = 'test-icon';
         const color = 'secondary';
 
+        // Render the AppWidgetSummary component
         const { getByText } = render(
             <AppWidgetSummary title={title} data={data} icon={icon} color={color} />
         );
 
+        // Check if title and data exists
         expect(getByText(title)).toBeInTheDocument();
         expect(getByText(data)).toBeInTheDocument();
-        expect(getByText('Widget Title')).toBeInTheDocument();
     });
 });

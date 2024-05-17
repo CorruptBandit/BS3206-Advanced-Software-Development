@@ -1,3 +1,8 @@
+/**
+ * FetchCollection function for fetching data from a specified collection.
+ * @param {string} collection - The name of the collection to fetch data from.
+ * @returns {Promise} - Promise that resolves to the fetched data.
+ */
 const FetchCollection = async (collection) => {
     try {
         const response = await fetch(`/api/getCollection?collection=${collection}`, {

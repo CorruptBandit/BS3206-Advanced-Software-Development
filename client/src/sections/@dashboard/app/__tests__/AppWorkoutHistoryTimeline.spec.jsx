@@ -1,5 +1,5 @@
 import {describe, it, expect, vi, beforeEach} from 'vitest';
-import {render, fireEvent, waitFor, findByText} from '@testing-library/react';
+import {render, waitFor, findByText} from '@testing-library/react';
 import {useAuth} from '../../../../context/AuthContext';
 import {AppWorkoutHistoryTimeline} from "../index";
 import '@testing-library/jest-dom';
@@ -23,13 +23,19 @@ describe('AppWorkoutHistoryTimeline Component', () => {
         id: 2, time: new Date('2024-05-11T08:00:00'), title: 'Workout 2'
     },];
 
-    it('renders loading indicator when loading', () => {
+    it('AWHT.1: renders loading indicator when loading', () => {
+        // Render the AppWorkoutHistoryTimeline component
         const {getByTestId} = render(<AppWorkoutHistoryTimeline list={[]}/>);
+
+        // Check if the loading indicator exists
         expect(getByTestId('loading-indicator')).to.exist;
     });
 
-    it('renders list of goals when loaded', async () => {
+    it('AWHT.2: renders list of workout history when loaded', async () => {
+        // Render the AppWorkoutHistoryTimeline component
         const {findByText} = render(<AppWorkoutHistoryTimeline list={mockList}/>);
+
+        // Check if the input data exists in the component
         await waitFor(() => {
             expect(findByText('Workout 1')).to.exist;
             expect(findByText('Workout 2')).to.exist;

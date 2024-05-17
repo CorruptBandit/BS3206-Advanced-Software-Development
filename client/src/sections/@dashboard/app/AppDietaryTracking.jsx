@@ -9,6 +9,13 @@ AppDietaryTracking.propTypes = {
     title: PropTypes.string, subheader: PropTypes.string, chartData: PropTypes.array.isRequired,
 };
 
+/**
+ * AppDietaryTracking component for displaying dietary tracking data.
+ * @param {string} title - The title of the card.
+ * @param {string} subheader - The subheader of the card.
+ * @param {array} chartData - Array of objects containing data points for the chart.
+ * @returns {JSX.Element} - React component representing the dietary tracking card.
+ */
 export default function AppDietaryTracking({title, subheader, chartData, ...other}) {
     const [loading, setLoading] = useState(true);
 
@@ -49,7 +56,7 @@ export default function AppDietaryTracking({title, subheader, chartData, ...othe
         link.click();
     };
 
-    return (<Card {...other}>
+    return (<Card {...other} sx={{width: '100%', height: '100%'}}>
         <CardHeader
             title={title}
             subheader={subheader}
@@ -57,8 +64,13 @@ export default function AppDietaryTracking({title, subheader, chartData, ...othe
         />
         {loading ? (<Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: 364}}>
             <CircularProgress data-testid="loading-indicator"/>
-        </Box>) : (<Box sx={{mx: 3}} dir="ltr">
-            <ReactApexChart type="line" data-testid="chart" series={[{data: chartSeries}]} options={chartOptions} height={364}/>
-        </Box>)}
+        </Box>) : (chartData.length === 0 ? (
+            <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: 364}}>
+                No data available
+            </Box>) : (<Box sx={{mx: 3}} dir="ltr">
+            <ReactApexChart type="line" data-testid="chart" series={[{data: chartSeries}]}
+                            options={chartOptions} height={364}/>
+        </Box>))}
     </Card>);
 }
+

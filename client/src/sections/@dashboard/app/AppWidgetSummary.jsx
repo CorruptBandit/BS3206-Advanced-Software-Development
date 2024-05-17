@@ -22,6 +22,15 @@ AppWidgetSummary.propTypes = {
     sx: PropTypes.object,
 };
 
+/**
+ * AppWidgetSummary component for displaying summarized data with an icon.
+ * @param {string} title - The title of the summary.
+ * @param {string} data - The data to be displayed.
+ * @param {string} icon - The icon to be displayed.
+ * @param {string} color - The color scheme for the card.
+ * @param {object} sx - The style object for customization.
+ * @returns {JSX.Element} - React component representing the summarized data with an icon.
+ */
 export default function AppWidgetSummary({title, data, icon, color = 'primary', sx, ...other}) {
     return (<Card
         sx={{
@@ -35,8 +44,7 @@ export default function AppWidgetSummary({title, data, icon, color = 'primary', 
     >
         <StyledIcon
             sx={{
-                color: (theme) => theme.palette[color].dark,
-                backgroundImage: (theme) => `linear-gradient(135deg, 
+                color: (theme) => theme.palette[color].dark, backgroundImage: (theme) => `linear-gradient(135deg, 
                 ${alpha(theme.palette[color].dark, 0)} 0%, ${alpha(theme.palette[color].dark, 0.24)} 100%)`,
             }}
         >

@@ -36,6 +36,14 @@ AppCalorieBreakdown.propTypes = {
     chartData: PropTypes.array,
 };
 
+/**
+ * AppCalorieBreakdown component for displaying calorie breakdown data in a pie chart.
+ * @param {string} title - The title of the card.
+ * @param {string} subheader - The subheader of the card.
+ * @param {array} chartColors - Array of colors for the chart.
+ * @param {array} chartData - Array of objects containing data points for the chart.
+ * @returns {JSX.Element} - React component representing the calorie breakdown card.
+ */
 export default function AppCalorieBreakdown({title, subheader, chartColors, chartData, ...other}) {
     const theme = useTheme();
     const [loading, setLoading] = useState(true);
@@ -89,11 +97,18 @@ export default function AppCalorieBreakdown({title, subheader, chartColors, char
             subheader={subheader}
             action={<Button onClick={exportToCSV} variant="contained" color="primary">Export to CSV</Button>}
         />
-        {loading ? ( // Conditional rendering based on loading state
-            <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: CHART_HEIGHT}}>
-                <CircularProgress data-testid="loading-indicator"/>
-            </div>) : (<StyledChartWrapper dir="ltr">
-            <ReactApexChart type="pie" data-testid="chart" series={chartSeries} options={chartOptions} height={180}/>
-        </StyledChartWrapper>)}
+        <StyledChartWrapper dir="ltr">
+            {chartData.length === 0 ? ( // Check if chart data is empty
+                <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: CHART_HEIGHT}}>
+                    No data available
+                </div>) : (loading ? ( // Conditional rendering based on loading state
+                    <div
+                        style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: CHART_HEIGHT}}>
+                        <CircularProgress data-testid="loading-indicator"/>
+                    </div>) : (
+                    <ReactApexChart type="pie" data-testid="chart" series={chartSeries} options={chartOptions}
+                                    height={180}/>))}
+        </StyledChartWrapper>
     </Card>);
 }
+

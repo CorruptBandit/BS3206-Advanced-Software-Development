@@ -1,3 +1,9 @@
+/**
+ * fetchUserIdByEmail function for fetching the ID of a user by their email.
+ * @param {string} email - The email of the user.
+ * @returns {Promise} - Promise that resolves to the ID of the user.
+ */
+
 const fetchUserIdByEmail = async (email) => {
     try {
         const userResponse = await fetch(`/api/getCollection?collection=users`, {
@@ -14,7 +20,6 @@ const fetchUserIdByEmail = async (email) => {
         const currentUser = userData.find(user => user.email === email);
 
         if (!currentUser) {
-            console.error('User data not found for email:', email);
             return null;
         }
 
