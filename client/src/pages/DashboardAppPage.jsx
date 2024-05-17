@@ -1,238 +1,327 @@
-import { Helmet } from 'react-helmet-async';
-import { faker } from '@faker-js/faker';
+import {Helmet} from 'react-helmet-async';
 // @mui
-import { useTheme } from '@mui/material/styles';
-import { Grid, Container, Typography, Box } from '@mui/material';
+import {useTheme} from '@mui/material/styles';
+import {Box, Container, Grid, Typography} from '@mui/material';
+
 // components
-import Iconify from '../components/iconify';
 import AdminPage from './AdminPage';
+
 // sections
 import {
-  AppTasks,
-  AppNewsUpdate,
-  AppOrderTimeline,
-  AppCurrentVisits,
-  AppWebsiteVisits,
-  AppTrafficBySite,
-  AppWidgetSummary,
-  AppCurrentSubject,
-  AppConversionRates,
+    AppCalorieBreakdown, AppDietaryTracking, AppExerciseTracking, AppGoals, AppWidgetSummary, AppWorkoutHistoryTimeline
 } from '../sections/@dashboard/app';
-import { useAuth } from '../context/AuthContext';
 
+import {useAuth} from '../context/AuthContext';
+import {useEffect, useState} from "react";
+import {FetchUserId, FetchCollection} from '../../src/sections/@dashboard/app/utils/index';
+
+
+/**
+ * DashboardAppPage component renders the main dashboard page for authenticated users.
+ * It displays various sections of user data, including meals, exercise, goals, and more.
+ * If the user is an admin, it redirects to the AdminPage component.
+ * @returns {JSX.Element}
+ */
 export default function DashboardAppPage() {
-  const theme = useTheme();
-  const { isLoggedIn, isAdmin, name } = useAuth();
+    const theme = useTheme();
+    const {email, name, isLoggedIn, isAdmin} = useAuth();
+    const [dailyIntakeData, setDailyIntake] = useState([]);
+    const [mostCommonMealType, setMostCommonMealType] = useState(null);
+    const [calorieBreakdown, setCalorieBreakdown] = useState([]);
+    const [exerciseTrackingLabels, setExerciseTrackingDataLabels] = useState([]);
+    const [exerciseTrackingData, setExerciseTrackingData] = useState([]);
+    const [mostCommonExerciseName, setMostCommonExerciseName] = useState('');
+    const [workoutHistoryData, setWorkoutHistoryData] = useState([]);
+    const [goals, setGoals] = useState([]);
+    const [weightData, setWeightData] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-  if (isAdmin) {
-    return <AdminPage />; // Render AdminPage if the user is admin
-  }
+    // Function to filter data by user ID
+    const filterDataByUserId = async (collection) => {
+        try {
+            const userId = await FetchUserId(email);
+            const data = await FetchCollection(collection);
 
-  return (
-    <>
-      <Helmet>
-        <title> Meals & Movement </title>
-      </Helmet>
+            return data.filter(item => item.userId === userId);
 
-      <Container maxWidth="xl" sx={{ filter: isLoggedIn ? 'none' : 'grayscale(1)' }}>
-      {isLoggedIn && (
-        <Typography variant="h4" sx={{ mb: 5 }}>
-          Hi, Welcome back {name}
-        </Typography>
-      )}
+        } catch (error) {
+            console.error(`Error fetching ${collection}:`, error);
+            throw error;
+        }
+    };
 
-        <Grid container spacing={3}>
-          {/* Conditional rendering based on isLoggedIn state */}
-          {isLoggedIn ? (
-            <>
-            <Grid item xs={12} sm={6} md={3}>
-              <AppWidgetSummary title="Weekly Sales" total={714000} icon={'ant-design:android-filled'} />
-            </Grid>
+    // Function to sum up calories in daily intake data
+    const sumCalories = () => {
+        return calorieBreakdown.reduce((total, item) => total + item.value, 0);
+    };
 
-            <Grid item xs={12} sm={6} md={3}>
-              <AppWidgetSummary title="New Users" total={1352831} color="info" icon={'ant-design:apple-filled'} />
-            </Grid>
+    const fetchFood = async () => {
+        try {
+            const endDate = new Date();
+            const startDate = new Date(endDate);
+            startDate.setDate(endDate.getDate() - 6);
 
-          <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Item Orders" total={1723315} color="warning" icon={'ant-design:windows-filled'} />
-          </Grid>
+            const data = await FetchCollection("food");
+            const filteredData = data.filter(item => item.userEmail === email);
 
-          <Grid item xs={12} sm={6} md={3}>
-            <AppWidgetSummary title="Bug Reports" total={234} color="error" icon={'ant-design:bug-filled'} />
-          </Grid>
+            const allTimeMealCounts = filteredData.reduce((counts, item) => {
+                counts[item.mealType] = (counts[item.mealType] || 0) + 1;
+                return counts;
+            }, {});
 
-          <Grid item xs={12} md={6} lg={8}>
-            <AppWebsiteVisits
-              title="Website Visits"
-              subheader="(+43%) than last year"
-              chartLabels={[
-                '01/01/2003',
-                '02/01/2003',
-                '03/01/2003',
-                '04/01/2003',
-                '05/01/2003',
-                '06/01/2003',
-                '07/01/2003',
-                '08/01/2003',
-                '09/01/2003',
-                '10/01/2003',
-                '11/01/2003',
-              ]}
-              chartData={[
-                {
-                  name: 'Team A',
-                  type: 'column',
-                  fill: 'solid',
-                  data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30],
-                },
-                {
-                  name: 'Team B',
-                  type: 'area',
-                  fill: 'gradient',
-                  data: [44, 55, 41, 67, 22, 43, 21, 41, 56, 27, 43],
-                },
-                {
-                  name: 'Team C',
-                  type: 'line',
-                  fill: 'solid',
-                  data: [30, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39],
-                },
-              ]}
-            />
-          </Grid>
+            const allTimeMostCommonMealType = Object.keys(allTimeMealCounts).reduce((a, b) => allTimeMealCounts[a] > allTimeMealCounts[b] ? a : b, null);
+            setMostCommonMealType(allTimeMostCommonMealType ? allTimeMostCommonMealType.charAt(0).toUpperCase() + allTimeMostCommonMealType.slice(1) : null);
 
-          <Grid item xs={12} md={6} lg={4}>
-            <AppCurrentVisits
-              title="Current Visits"
-              chartData={[
-                { label: 'America', value: 4344 },
-                { label: 'Asia', value: 5435 },
-                { label: 'Europe', value: 1443 },
-                { label: 'Africa', value: 4443 },
-              ]}
-              chartColors={[
-                theme.palette.primary.main,
-                theme.palette.info.main,
-                theme.palette.warning.main,
-                theme.palette.error.main,
-              ]}
-            />
-          </Grid>
+            const currentDate = new Date().toISOString().slice(0, 10);
+            const getDailyIntake = filteredData.filter(item => item.dateAdded === currentDate);
 
-          <Grid item xs={12} md={6} lg={8}>
-            <AppConversionRates
-              title="Conversion Rates"
-              subheader="(+43%) than last year"
-              chartData={[
-                { label: 'Italy', value: 400 },
-                { label: 'Japan', value: 430 },
-                { label: 'China', value: 448 },
-                { label: 'Canada', value: 470 },
-                { label: 'France', value: 540 },
-                { label: 'Germany', value: 580 },
-                { label: 'South Korea', value: 690 },
-                { label: 'Netherlands', value: 1100 },
-                { label: 'United States', value: 1200 },
-                { label: 'United Kingdom', value: 1380 },
-              ]}
-            />
-          </Grid>
+            setDailyIntake(getDailyIntake);
+        } catch (error) {
+            console.error('Error fetching food data:', error);
+        }
+    };
 
-          <Grid item xs={12} md={6} lg={4}>
-            <AppCurrentSubject
-              title="Current Subject"
-              chartLabels={['English', 'History', 'Physics', 'Geography', 'Chinese', 'Math']}
-              chartData={[
-                { name: 'Series 1', data: [80, 50, 30, 40, 100, 20] },
-                { name: 'Series 2', data: [20, 30, 40, 80, 20, 80] },
-                { name: 'Series 3', data: [44, 76, 78, 13, 43, 10] },
-              ]}
-              chartColors={[...Array(6)].map(() => theme.palette.text.secondary)}
-            />
-          </Grid>
+    const fetchWorkout = async (collection) => {
+        try {
+            const userId = await FetchUserId(email);
 
-          <Grid item xs={12} md={6} lg={8}>
-            <AppNewsUpdate
-              title="News Update"
-              list={[...Array(5)].map((_, index) => ({
-                id: faker.datatype.uuid(),
-                title: faker.name.jobTitle(),
-                description: faker.name.jobTitle(),
-                image: `/assets/images/covers/cover_${index + 1}.jpg`,
-                postedAt: faker.date.recent(),
-              }))}
-            />
-          </Grid>
+            const data = await FetchCollection(collection);
+            const filteredData = data.filter(item => item.userId === userId);
 
-          <Grid item xs={12} md={6} lg={4}>
-            <AppOrderTimeline
-              title="Order Timeline"
-              list={[...Array(5)].map((_, index) => ({
-                id: faker.datatype.uuid(),
-                title: [
-                  '1983, orders, $4220',
-                  '12 Invoices have been paid',
-                  'Order #37745 from September',
-                  'New order placed #XF-2356',
-                  'New order placed #XF-2346',
-                ][index],
-                type: `order${index + 1}`,
-                time: faker.date.past(),
-              }))}
-            />
-          </Grid>
+            let mostCommonExercise = null;
+            let maxCount = 0;
+            const exerciseCounts = {};
 
-          <Grid item xs={12} md={6} lg={4}>
-            <AppTrafficBySite
-              title="Traffic by Site"
-              list={[
-                {
-                  name: 'FaceBook',
-                  value: 323234,
-                  icon: <Iconify icon={'eva:facebook-fill'} color="#1877F2" width={32} />,
-                },
-                {
-                  name: 'Google',
-                  value: 341212,
-                  icon: <Iconify icon={'eva:google-fill'} color="#DF3E30" width={32} />,
-                },
-                {
-                  name: 'Linkedin',
-                  value: 411213,
-                  icon: <Iconify icon={'eva:linkedin-fill'} color="#006097" width={32} />,
-                },
-                {
-                  name: 'Twitter',
-                  value: 443232,
-                  icon: <Iconify icon={'eva:twitter-fill'} color="#1C9CEA" width={32} />,
-                },
-              ]}
-            />
-          </Grid>
+            if (collection === 'workouts') {
+                filteredData.forEach(item => {
+                    item.exercises.forEach(exercise => {
+                        const exerciseId = exercise.exerciseId;
+                        exerciseCounts[exerciseId] = (exerciseCounts[exerciseId] || 0) + 1;
+                        if (exerciseCounts[exerciseId] > maxCount) {
+                            maxCount = exerciseCounts[exerciseId];
+                            mostCommonExercise = exerciseId;
+                        }
+                    });
+                });
 
-          <Grid item xs={12} md={6} lg={8}>
-            <AppTasks
-              title="Tasks"
-              list={[
-                { id: '1', label: 'Create FireStone Logo' },
-                { id: '2', label: 'Add SCSS and JS files if required' },
-                { id: '3', label: 'Stakeholder Meeting' },
-                { id: '4', label: 'Scoping & Estimations' },
-                { id: '5', label: 'Sprint Showcase' },
-              ]}
-              />
-              </Grid>
-              </>
-          ) : (
-            // Display a message or a login button when logged out
-            <Box sx={{ width: '100%', textAlign: 'center', mt: 5 }}>
-              <Typography variant="h5" sx={{ mb: 2 }}>
-                You are currently logged out
-              </Typography>
-            </Box>
-          )}
-          </Grid>
-      </Container>
-    </>
-    )
+                const exerciseData = await FetchCollection("exercises");
+                const mostCommonExerciseData = exerciseData.find(exercise => exercise._id === mostCommonExercise);
+
+                if (mostCommonExerciseData && mostCommonExerciseData.exerciseName) {
+                    setMostCommonExerciseName(mostCommonExerciseData.exerciseName);
+                } else {
+                    setMostCommonExerciseName('N/A');
+                }
+
+            } else if (collection === 'workoutHistory') {
+                setWorkoutHistoryData(filteredData);
+            }
+
+            return data;
+        } catch (error) {
+            console.error(`Error fetching ${collection}:`, error);
+            throw error;
+        }
+    };
+
+    const fetchWorkoutHistory = async () => {
+        try {
+            const response = await filterDataByUserId('workoutHistory');
+            const exercisesMap = {};
+
+            response.forEach(workout => {
+                workout.logs.forEach(log => {
+                    const exerciseId = log.exerciseId;
+                    const date = new Date(workout.date).getTime();
+                    const targetWeight = parseInt(log.targetWeight);
+
+                    if (!exercisesMap[exerciseId]) {
+                        exercisesMap[exerciseId] = {
+                            exerciseName: exerciseId, data: [],
+                        };
+                    }
+                    exercisesMap[exerciseId].data.push({x: date, y: targetWeight});
+                });
+            });
+
+            const exerciseIds = Object.keys(exercisesMap);
+            const exerciseData = await FetchCollection("exercises");
+
+            exerciseData.forEach(exercise => {
+                if (exerciseIds.includes(exercise._id)) {
+                    exercisesMap[exercise._id].exerciseName = exercise.exerciseName;
+                }
+            });
+
+            const chartData = Object.values(exercisesMap).map(exercise => ({
+                name: exercise.exerciseName, data: exercise.data,
+            }));
+            const chartLabels = Object.keys(exercisesMap).map(exerciseId => exercisesMap[exerciseId].exerciseName);
+
+            setExerciseTrackingData(chartData);
+            setExerciseTrackingDataLabels(chartLabels);
+        } catch (error) {
+            console.error('Error fetching workout data:', error);
+        }
+    };
+
+    const fetchGoals = async () => {
+        try {
+            const userId = await FetchUserId(email);
+
+            const data = await FetchCollection("goals");
+
+            if (data === null || !Array.isArray(data)) {
+                setGoals([]);
+                return;
+            }
+
+            const filteredData = data.filter(item => item.userId === userId);
+
+            if (filteredData.length === 0) {
+                setGoals([]);
+
+            } else {
+                const fetchedGoals = filteredData.map(item => ({
+                    goalName: item.goalName, achieveByDate: item.achieveByDate,
+                }));
+
+                setGoals(fetchedGoals);
+            }
+        } catch (error) {
+            console.error("Error fetching goals:", error);
+            setGoals([]);
+        }
+    };
+
+
+    const fetchWeight = async () => {
+        try {
+            const data = await FetchCollection("weight");
+
+            const userWeightData = data.filter(item => item.userEmail === email);
+
+            const aggregatedWeightData = userWeightData.reduce((accumulator, currentItem) => {
+                const {dateAdded, weight} = currentItem;
+                if (!accumulator[dateAdded]) {
+                    accumulator[dateAdded] = {sum: 0, count: 0};
+                }
+                accumulator[dateAdded].sum += parseFloat(weight);
+                accumulator[dateAdded].count++;
+                return accumulator;
+            }, {});
+
+            const formattedWeightData = Object.entries(aggregatedWeightData).map(([date, {sum, count}]) => ({
+                label: date, value: (sum / count).toFixed(2)
+            }));
+
+            setWeightData(formattedWeightData);
+        } catch (error) {
+            console.error('Error fetching food data:', error);
+        }
+    };
+
+    // useEffect hook to calculate calorie breakdown when daily intake data changes
+    useEffect(() => {
+        if (dailyIntakeData.length > 0) {
+            const calorieCounts = dailyIntakeData.reduce((counts, item) => {
+                counts[item.mealType] = (counts[item.mealType] || 0) + parseInt(item.calories);
+                return counts;
+            }, {});
+
+            const chartData = Object.entries(calorieCounts).map(([label, value]) => ({
+                label, value
+            }));
+            setCalorieBreakdown(chartData);
+        }
+    }, [dailyIntakeData]);
+
+    // useEffect hook to fetch data when component mounts or dependencies change
+    useEffect(() => {
+        Promise.all([fetchWorkout('workouts'), fetchWorkout('workoutHistory'), fetchFood(), fetchWeight(), fetchGoals(), fetchWorkoutHistory()])
+            .then(() => {
+                setIsLoading(false);
+            })
+            .catch((error) => {
+                console.error('Error fetching data:', error);
+            });
+    }, [email, goals,]);
+
+    // Conditional rendering based on isAdmin and isLoggedIn states
+    if (isAdmin) {
+        return <AdminPage/>;
     }
+
+    return (<>
+        <Helmet>
+            <title> Meals & Movement </title>
+        </Helmet>
+
+        <Container maxWidth="xl" sx={{filter: isLoggedIn ? 'none' : 'grayscale(1)'}}>
+            {isLoggedIn && (<Typography variant="h4" sx={{mb: 5}}>
+                Hi, Welcome back {name}
+            </Typography>)}
+
+            <Grid container spacing={3}>
+                {/* Conditional rendering based on isLoggedIn state */}
+                {isLoggedIn ? (<>
+                    <Grid item xs={12} sm={6} md={4}>
+                        <AppWidgetSummary title="Favourite Meal"
+                                          data={isLoading ? "Loading..." : mostCommonMealType || "N/A"} color="info"
+                                          icon={'fluent-emoji-high-contrast:shallow-pan-of-food'}/>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={4}>
+                        <AppCalorieBreakdown
+                            title="Daily Calorie Breakdown"
+                            subheader={`Total Calories: ${sumCalories()}`}
+                            chartData={calorieBreakdown}
+                            chartColors={[theme.palette.primary.main, theme.palette.info.main, theme.palette.warning.main, theme.palette.success.main, theme.palette.error.main]}
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={4}>
+                        <AppWidgetSummary title="Favourite Workout"
+                                          data={isLoading ? "Loading..." : mostCommonExerciseName || "N/A"}
+                                          color="success"
+                                          icon={'icon-park-solid:weightlifting'}/>
+                    </Grid>
+                    <Grid item xs={12} md={6} lg={9}>
+                        <AppExerciseTracking
+                            title="Exercise Weight Progression Timeline"
+                            subheader={`Timeline of ${name}'s Different Exercises`}
+                            chartData={exerciseTrackingData}
+                            chartLabels={exerciseTrackingLabels}
+                        />
+                    </Grid>
+                    <Grid item xs={12} md={6} lg={3}>
+                        <AppWorkoutHistoryTimeline
+                            title="Workout History"
+                            subheader="Timeline of Workouts Completed"
+                            list={workoutHistoryData.map((item) => ({
+                                id: item._id, title: item.workoutName, type: 'workout', time: new Date(item.date),
+                            }))}
+                        />
+                    </Grid>
+                    <Grid item xs={12} md={6} lg={9}>
+                        <AppDietaryTracking
+                            title="Weight History"
+                            subheader={`Timeline of ${name}'s Weight`}
+                            chartData={weightData}
+                        />
+                    </Grid>
+                    <Grid item xs={12} md={6} lg={3}>
+                        <AppGoals
+                            title="Goals"
+                            subheader="Your Goals Journey"
+                            list={goals}
+                        />
+                    </Grid>
+                </>) : (// Display a message or a login button when logged out
+                    <Box sx={{width: '100%', textAlign: 'center', mt: 5}}>
+                        <Typography variant="h5" sx={{mb: 2}}>
+                            You are currently logged out
+                        </Typography>
+                    </Box>)}
+            </Grid>
+        </Container>
+    </>)
+}
